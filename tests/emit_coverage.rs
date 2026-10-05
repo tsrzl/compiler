@@ -61,6 +61,70 @@ fn should_lower_right_associative_exponentiation_given_es2015_target_when_emitti
 }
 
 #[test]
+fn should_lower_exponentiation_assignment_given_es2015_target_when_emitting_javascript() {
+    // Pinned TypeScript case: conformance/es7/exponentiationOperator/emitCompoundExponentiationOperator1.ts.
+    // TS-Go 7.0.2 lowers `value **= 3` to `value = Math.pow(value, 3)`.
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("compound-exponentiation.ts"),
+        "let value = 2;\nvalue **= 3;",
+    )
+    .expect("the TypeScript path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    assert!(
+        result.diagnostics().is_empty(),
+        "exponentiation assignment is valid syntax: {:?}",
+        result.diagnostics()
+    );
+    assert!(
+        result.emitted_files()[0]
+            .text()
+            .contains("value = Math.pow(value, 3)"),
+        "ES2015 output should lower exponentiation assignment: {}",
+        result.emitted_files()[0].text()
+    );
+}
+
+#[test]
+fn should_evaluate_exponentiation_assignment_receiver_once_given_side_effectful_access_when_emitting_javascript()
+ {
+    // Pinned TypeScript case: conformance/es7/exponentiationOperator/emitCompoundExponentiationAssignmentWithPropertyAccessingOnLHS1.ts.
+    // TS-Go 7.0.2 saves `getTarget()` in a temporary before lowering the assignment.
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("compound-exponentiation-receiver.ts"),
+        "let calls = 0;\nfunction getTarget() { calls += 1; return { value: 2 }; }\ngetTarget().value **= 3;",
+    )
+    .expect("the TypeScript path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    assert!(
+        result.diagnostics().is_empty(),
+        "exponentiation assignment with a side-effectful receiver is valid syntax: {:?}",
+        result.diagnostics()
+    );
+    let javascript = result.emitted_files()[0].text();
+    assert!(
+        javascript.contains("Math.pow"),
+        "ES2015 output should lower exponentiation assignment: {javascript}"
+    );
+    assert_eq!(
+        javascript.matches("getTarget()").count(),
+        2,
+        "the function declaration and its single call should remain: {javascript}"
+    );
+}
+
+#[test]
 fn should_lower_object_spread_given_es2015_target_when_emitting_javascript() {
     // Pinned TypeScript case: conformance/types/spread/objectSpread.ts (target ES2015).
     // Direct TypeScript-Go output uses Object.assign for object spread.
