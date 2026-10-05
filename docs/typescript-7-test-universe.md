@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 711 behavior tests: 324 pass, 387 deliberately
+The Rust suite currently has 713 behavior tests: 324 pass, 389 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 396 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 398 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 387 deliberate Rust failures have
+The red-test map validator confirms that all 389 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -384,6 +384,8 @@ test executed that fixture or covered every output/configuration.
 | `should_parse_await_using_declaration_given_null_initializer_when_building_tree` | `conformance/statements/VariableStatements/usingDeclarations/awaitUsingDeclarations.1.ts` | Parse `await using` as a variable declaration under ESNext module syntax. |
 | `should_report_invalid_variable_decorator_given_decorated_variable_when_compiling` | `conformance/decorators/invalid/decoratorOnVar.ts` | Report TS1206 when a decorator is applied to a variable declaration. |
 | `should_lower_nullish_assignment_given_es2015_target_when_emitting_javascript` | `conformance/es2021/logicalAssignment/logicalAssignment1.ts` | Lower `??=` to an ES2015 nullish check and assignment. |
+| `should_lower_conjunction_assignment_given_es2015_target_when_emitting_javascript` | `conformance/es2021/logicalAssignment/logicalAssignment1.ts` | Lower `&&=` to a short-circuit check and assignment for ES2015. |
+| `should_lower_disjunction_assignment_given_es2015_target_when_emitting_javascript` | `conformance/es2021/logicalAssignment/logicalAssignment1.ts` | Lower `||=` to a short-circuit check and assignment for ES2015. |
 | `should_report_unused_expect_error_given_valid_following_statement_when_compiling` | `conformance/directives/ts-expect-error.ts` | Report TS2578 for an unused `@ts-expect-error` directive. |
 | `should_suppress_type_error_given_ignore_directive_on_preceding_line_when_compiling` | `conformance/directives/ts-ignore.ts` | Suppress the following line's type diagnostic with `@ts-ignore`. |
 | `should_parse_using_declaration_given_null_initializer_when_building_tree` | `conformance/statements/VariableStatements/usingDeclarations/usingDeclarations.1.ts` | Parse synchronous `using` as a variable declaration. |
