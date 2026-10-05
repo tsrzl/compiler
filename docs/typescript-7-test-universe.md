@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 677 behavior tests: 324 pass, 353 deliberately
+The Rust suite currently has 678 behavior tests: 324 pass, 354 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 362 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 363 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 353 deliberate Rust failures have
+The red-test map validator confirms that all 354 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -547,6 +547,7 @@ test executed that fixture or covered every output/configuration.
 | `should_resolve_versioned_package_types_given_types_versions_mapping_when_running_compiler_cli` | `conformance/moduleResolution/typesVersions.multiFile.ts` | Resolve declarations selected by a package `typesVersions` mapping. |
 | `should_resolve_browser_export_condition_given_custom_conditions_when_running_compiler_cli` | `conformance/moduleResolution/customConditions.ts` | Resolve the `browser` package-export condition when it is enabled in `customConditions`. |
 | `should_report_invalid_allow_importing_ts_extensions_given_emit_when_running_cli` | `typescript-go/internal/compiler/program.go`, `conformance/moduleResolution/allowImportingTsExtensions.ts` | Report TS5096 when `allowImportingTsExtensions` is enabled while JavaScript emission remains enabled. |
+| `should_report_ts_extension_import_given_option_disabled_when_running_cli` | `typescript-go/internal/checker/checker.go`, `conformance/moduleResolution/allowImportingTsExtensions.ts` | Report TS5097 for a `.ts` import when `allowImportingTsExtensions` is disabled. |
 | `should_retain_following_class_given_unexpected_top_level_brace_when_parsing` | `conformance/parser/ecmascript5/ErrorRecovery/SourceUnits/parserErrorRecovery_SourceUnit1.ts` | Recover from an unexpected top-level brace and retain the following class declaration. |
 | `should_suppress_javascript_output_given_type_error_and_no_emit_on_error_project_option_when_running_compiler_cli` | `compiler/noEmitOnError.ts` | Suppress JavaScript output when a project has a type error and `noEmitOnError`. |
 | `should_assign_derived_instance_to_base_return_type_given_class_inheritance_when_checking_types` | `conformance/types/typeRelationships/assignmentCompatibility/unionTypesAssignability.ts` | Accept a derived class instance where its base class is expected. |
