@@ -89,6 +89,32 @@ fn should_resolve_package_main_given_non_index_package_entry_when_running_compil
     );
 }
 
+#[test]
+fn should_report_removed_classic_module_resolution_given_project_option_when_running_compiler_cli()
+{
+    // Pinned project case: projects/RelativePaths/app.ts.
+    // TS-Go 7.0.2 reports TS5108 because moduleResolution=Classic was removed.
+    // Arrange
+    let directory = project_directory("relative-paths-classic-resolution");
+    write_file(
+        &directory.join("tsconfig.json"),
+        r#"{"files":["app.ts"],"compilerOptions":{"moduleResolution":"classic"}}"#,
+    );
+    write_file(
+        &directory.join("app.ts"),
+        "import a = require('A/a');\na.A();",
+    );
+
+    // Act
+    let process = run_cli(&["--project".as_ref(), directory.as_os_str()], &directory);
+
+    // Assert
+    assert_eq!(
+        String::from_utf8_lossy(&process.stderr),
+        "error TS5108: Option 'moduleResolution=Classic' has been removed. Please remove it from your configuration.\n"
+    );
+}
+
 // Pinned TypeScript input: conformance/moduleResolution/nodeModulesAtTypesPriority.ts.
 #[test]
 fn should_resolve_at_types_package_given_bare_import_when_compiling_sources() {
