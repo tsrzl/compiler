@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 684 behavior tests: 324 pass, 360 deliberately
+The Rust suite currently has 685 behavior tests: 324 pass, 361 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 369 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 370 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 360 deliberate Rust failures have
+The red-test map validator confirms that all 361 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -287,6 +287,7 @@ test executed that fixture or covered every output/configuration.
 | `should_accept_mapped_type_given_keyof_type_parameter_when_checking_types` | `conformance/types/mapped/mappedTypeModifiers.ts` | Accept a mapped type over `keyof`. |
 | `should_accept_template_literal_type_given_string_type_interpolation_when_checking_types` | `conformance/types/literal/templateLiteralTypes1.ts` | Accept a template literal type. |
 | `should_resolve_dynamic_import_given_relative_module_when_compiling_sources` | `conformance/dynamicImport/importCallExpression1ES2020.ts` | Resolve and emit a relative dynamic import. |
+| `should_parse_dynamic_import_call_given_string_specifier_when_building_syntax_tree` | `conformance/dynamicImport/importCallExpression1ES2020.ts` | Parse a dynamic import call with a string module specifier. |
 | `should_reject_escaped_keyword_given_unicode_escape_when_scanning_typescript` | `conformance/scanner/ecmascript5/scannerUnicodeEscapeInKeyword1.ts` | Report TS1260 for an escaped keyword. |
 | `should_report_consecutive_numeric_separators_given_numeric_literal_when_scanning_typescript` | `conformance/parser/ecmascript2021/numericSeparators/parser.numericSeparators.decimal.ts` | Report TS6189 for consecutive separators. |
 | `should_report_unterminated_string_given_unescaped_line_terminator_when_scanning_typescript` | `conformance/scanner/ecmascript5/scannerStringLiterals.ts` | Report TS1002 for a raw line terminator in a string. |
