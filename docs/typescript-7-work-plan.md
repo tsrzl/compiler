@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 675 tests: 324 pass and 351 deliberately fail;
-none are ignored. The compiler/oracle map links 360 behaviors to upstream cases
+The Rust suite currently has 676 tests: 324 pass and 352 deliberately fail;
+none are ignored. The compiler/oracle map links 361 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 105
 of 110 source-suite/area groups; 5 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 351 failures mapped by
+full test run has all 352 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -136,6 +136,11 @@ contracts for `baseUrl`, `moduleResolution=node10`, `module=AMD`, `module=System
 compiler reports TS5102 or TS5108 for these settings; TSRZL does not yet report
 the corresponding TypeScript diagnostics. For AMD, System, and UMD it prints an
 `unsupported module` message instead.
+
+The `conformance/moduleResolution/customConditions.ts` behavior now has a
+focused project test: TypeScript-Go resolves the `browser` package-export
+condition when `customConditions` includes it; TSRZL reports TS2305 for the
+export available only under that condition.
 
 ## Unsampled project groups
 
