@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 622 tests: 324 pass and 298 deliberately fail;
-none are ignored. The compiler/oracle map links 307 behaviors to upstream cases
+The Rust suite currently has 630 tests: 324 pass and 306 deliberately fail;
+none are ignored. The compiler/oracle map links 315 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 101
 of 110 source-suite/area groups; 9 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 298 failures mapped by
+full test run has all 306 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -68,6 +68,12 @@ Cross-file augmentation isolation has a separate named-import contract: TS-Go
 reports TS2305 when an export added to `a.foo` is imported from `b.foo`, while
 TSRZL currently stops at ambient-declaration parsing. Patterns with multiple
 asterisks also have a TS5061 diagnostic contract that TSRZL does not yet report.
+Ambient declaration diagnostics now separately cover TS1039 initializers,
+TS1183 function bodies, TS1066 computed enum members, TS2435 nested modules,
+TS2436 relative module names, and TS2309 mixed export assignments; TSRZL does
+not yet produce these specific diagnostics. A default parameter in an ambient
+signature also needs TS2371, and an exported ambient namespace variable is a
+separate acceptance case.
 
 ## Work packages
 
