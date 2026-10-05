@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 665 behavior tests: 324 pass, 341 deliberately
+The Rust suite currently has 666 behavior tests: 324 pass, 342 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 350 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 351 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 341 deliberate Rust failures have
+The red-test map validator confirms that all 342 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -577,6 +577,7 @@ test executed that fixture or covered every output/configuration.
 | `should_parse_global_namespace_export_given_ambient_declaration_when_building_syntax_tree` | `projects/declarations_ExportNamespace/decl.d.ts` | Accept `export as namespace` in an ambient declaration file. |
 | `should_resolve_ambient_global_namespace_type_given_export_as_namespace_when_emitting_declarations` | `projects/declarations_ExportNamespace/decl.d.ts`, `projects/declarations_ExportNamespace/useModule.ts` | Resolve the ambient global namespace type and preserve it in declaration output. |
 | `should_report_removed_out_file_option_given_project_configuration_when_running_compiler_cli` | `projects/outputdir_singleFile/test.ts` | Report TS5102 when a project config uses TypeScript 7's removed `outFile` option. |
+| `should_report_removed_base_url_given_project_configuration_when_running_compiler_cli` | `typescript-go/internal/compiler/program.go` | Report TS5102 and suggest `paths` when a project config uses TypeScript 7's removed `baseUrl` option. |
 | `should_reject_removed_project_target_given_es5_configuration_when_running_compiler_cli` | `projects/decoratorMetadata/emitDecoratorMetadataCommonJSIsolatedModule/main.ts` | Report TS5108 for the TypeScript 7 project configuration's removed ES5 target. |
 | `should_parse_import_equals_given_namespace_declaration_when_building_syntax_tree` | `projects/NestedLocalModule-SimpleCase/test1.ts` | Parse import-equals syntax nested inside a namespace without syntax diagnostics; TypeScript 7 later reports TS1147 semantically. |
 | `should_report_invalid_module_reference_given_import_equals_inside_namespace_when_compiling` | `projects/NestedLocalModule-WithRecursiveTypecheck/test1.ts` | Report TS1147 for an import-equals module reference inside a namespace. |
