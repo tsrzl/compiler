@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 630 tests: 324 pass and 306 deliberately fail;
-none are ignored. The compiler/oracle map links 315 behaviors to upstream cases
+The Rust suite currently has 636 tests: 324 pass and 312 deliberately fail;
+none are ignored. The compiler/oracle map links 321 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 101
 of 110 source-suite/area groups; 9 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 306 failures mapped by
+full test run has all 312 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -74,6 +74,11 @@ TS2436 relative module names, and TS2309 mixed export assignments; TSRZL does
 not yet produce these specific diagnostics. A default parameter in an ambient
 signature also needs TS2371, and an exported ambient namespace variable is a
 separate acceptance case.
+Shorthand module imports, duplicate shorthand declarations, repeated explicit
+module declarations, and shorthand-to-explicit merging each have separate
+acceptance tests; TSRZL currently cannot parse these declarations.
+Shorthand declaration output must also survive `.d.ts` emission, and reserved
+namespace identifiers need their TS2819 diagnostic.
 
 ## Work packages
 
