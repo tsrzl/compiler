@@ -112,6 +112,20 @@ fn should_accept_constant_expressions_given_ambient_enum_members_when_compiling_
 }
 
 #[test]
+fn should_assign_incrementing_values_given_ambient_const_enum_members_when_compiling_sources() {
+    // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientEnumDeclaration2.ts.
+    // TS-Go assigns 0 and 1 to uninitialized ambient const enum members.
+    // Arrange
+    let source = "declare const enum E { a, b }\nconst first: 0 = E.a;\nconst second: 1 = E.b;";
+
+    // Act
+    let result = compile_source(source);
+
+    // Assert
+    assert_eq!(result.diagnostics(), []);
+}
+
+#[test]
 fn should_accept_exported_ambient_variable_given_namespace_member_when_compiling_sources() {
     // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientInsideNonAmbient.ts.
     // TS-Go accepts an exported ambient variable inside a namespace declaration.
@@ -142,6 +156,27 @@ fn should_reject_export_modifier_given_ambient_module_augmentation_when_compilin
             .iter()
             .any(|diagnostic| diagnostic.code() == 2668),
         "expected TS2668 for an exported ambient module augmentation, got {:?}",
+        result.diagnostics()
+    );
+}
+
+#[test]
+fn should_reject_export_modifier_given_nested_ambient_module_when_compiling_sources() {
+    // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientExternalModuleInsideNonAmbient.ts.
+    // TS-Go reports TS2668 for an export modifier on a nested ambient module.
+    // Arrange
+    let source = "namespace M { export declare module \"M\" {} }";
+
+    // Act
+    let result = compile_source(source);
+
+    // Assert
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 2668),
+        "expected TS2668 for an exported nested ambient module, got {:?}",
         result.diagnostics()
     );
 }
