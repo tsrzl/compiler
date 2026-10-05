@@ -12,17 +12,21 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 700 tests: 324 pass and 376 deliberately fail;
-none are ignored. The compiler/oracle map links 385 behaviors to upstream cases
+The Rust suite currently has 704 tests: 324 pass and 380 deliberately fail;
+none are ignored. The compiler/oracle map links 389 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 105
 of 110 source-suite/area groups; 5 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 376 failures mapped by
+full test run has all 380 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
-Recent coverage adds independent parse and emit contracts for postfix
-non-null assertions, a JSDoc `@returns` mismatch contract, return-line
+Recent coverage adds parse and emit contracts for async arrow functions,
+including parenthesized and single-parameter forms and await bodies. TSRZL
+currently parses the parenthesized and await-body examples as errors, treats the
+single-parameter form as a different AST, and emits `async()` instead of the
+arrow function. Other coverage adds independent parse and emit contracts for
+postfix non-null assertions, a JSDoc `@returns` mismatch contract, return-line
 terminator behavior, labeled breaks, both assertion-function narrowing forms,
 identifier-aliased namespace re-exports, and `instanceof` syntax and narrowing.
 TSRZL
