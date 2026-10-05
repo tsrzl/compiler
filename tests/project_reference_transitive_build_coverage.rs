@@ -42,6 +42,27 @@ impl TemporaryProject {
             .output()
             .expect("the compiler CLI can be started")
     }
+
+    fn clean_application(&self) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+            .current_dir(&self.path)
+            .arg("--build")
+            .arg("--clean")
+            .arg(self.path.join("app/tsconfig.json"))
+            .output()
+            .expect("the compiler CLI can be started")
+    }
+
+    fn force_dry_build_application(&self) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+            .current_dir(&self.path)
+            .arg("--build")
+            .arg("--dry")
+            .arg("--force")
+            .arg(self.path.join("app/tsconfig.json"))
+            .output()
+            .expect("the compiler CLI can be started")
+    }
 }
 
 impl Drop for TemporaryProject {
@@ -201,4 +222,168 @@ fn should_skip_project_outputs_given_dry_build_when_running_compiler_cli() {
             "dry build unexpectedly wrote {output_directory}"
         );
     }
+}
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_remove_outputs_given_clean_build_of_referenced_projects_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("clean-build");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const value = 1;\n");
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "app/index.ts",
+        "import { value } from \"../core\";\nexport const result = value;\n",
+    );
+    let initial_build = project.build_application();
+    assert!(
+        initial_build.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&initial_build.stdout),
+        String::from_utf8_lossy(&initial_build.stderr)
+    );
+    let outputs = [
+        "core/dist/index.js",
+        "core/dist/index.d.ts",
+        "core/dist/tsconfig.tsbuildinfo",
+        "app/dist/index.js",
+        "app/dist/index.d.ts",
+        "app/dist/tsconfig.tsbuildinfo",
+    ];
+    for output in outputs {
+        assert!(
+            project.path.join(output).is_file(),
+            "expected initial build output {output}"
+        );
+    }
+
+    // Act
+    let output = project.clean_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    for output in outputs {
+        assert!(
+            !project.path.join(output).exists(),
+            "clean build left output {output}"
+        );
+    }
+}
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_rebuild_all_referenced_projects_given_force_option_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("force-build");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const coreValue = 1;\n");
+    project.write(
+        "middle/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "middle/index.ts",
+        "import { coreValue } from \"../core\";\nexport const middleValue = coreValue;\n",
+    );
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../middle"}],"include":["main.ts"]}"#,
+    );
+    project.write(
+        "app/main.ts",
+        "import { middleValue } from \"../middle\";\nexport const result = middleValue;\n",
+    );
+    let initial_build = project.build_application();
+    assert!(
+        initial_build.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&initial_build.stdout),
+        String::from_utf8_lossy(&initial_build.stderr)
+    );
+
+    // Act
+    let output = project.force_dry_build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout)
+            .matches("A non-dry build would build project")
+            .count(),
+        3,
+        "{diagnostics}"
+    );
+}
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_skip_up_to_date_projects_given_dry_build_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("up-to-date-dry-build");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const coreValue = 1;\n");
+    project.write(
+        "middle/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "middle/index.ts",
+        "import { coreValue } from \"../core\";\nexport const middleValue = coreValue;\n",
+    );
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../middle"}],"include":["main.ts"]}"#,
+    );
+    project.write(
+        "app/main.ts",
+        "import { middleValue } from \"../middle\";\nexport const result = middleValue;\n",
+    );
+    let initial_build = project.build_application();
+    assert!(
+        initial_build.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&initial_build.stdout),
+        String::from_utf8_lossy(&initial_build.stderr)
+    );
+
+    // Act
+    let output = project.dry_build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout)
+            .matches(" is up to date")
+            .count(),
+        3,
+        "{diagnostics}"
+    );
 }
