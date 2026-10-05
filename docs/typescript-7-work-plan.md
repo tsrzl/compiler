@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 614 tests: 324 pass and 290 deliberately fail;
-none are ignored. The compiler/oracle map links 299 behaviors to upstream cases
-or areas. A separate map records 16 extension contracts. Corpus links touch 100
+The Rust suite currently has 615 tests: 324 pass and 291 deliberately fail;
+none are ignored. The compiler/oracle map links 300 behaviors to upstream cases
+or areas. A separate map records 16 extension contracts. Corpus links touch 101
 of 110 source-suite/area groups; 9 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 290 failures mapped by
+full test run has all 291 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -45,6 +45,10 @@ tests. The pinned TypeScript-Go accepts both forms in the ambient-module
 fixture; TSRZL reports TS1005 for both. A separate red test requires an import
 type to resolve a sibling module's exported interface; TSRZL stops at the
 unparsed import type and unresolved alias.
+
+JSDoc `@template` return inference has a focused mismatch contract. TS-Go
+infers `number` from the argument and reports TS2322 for a string assignment;
+TSRZL currently reports TS2304 for the JSDoc parameter name instead.
 
 ## Work packages
 
@@ -86,7 +90,7 @@ outputs may need several tests.
 
 ## Unsampled project groups
 
-All ten groups without a linked Rust test are in the project suite. Several
+All nine groups without a linked Rust test are in the project suite. Several
 cannot yet produce a trustworthy focused red from the direct TS-Go CLI because
 the project runner has different resolution context or the inputs fail earlier
 on import-equals syntax. Keep those groups visible and add tests only when the
@@ -102,7 +106,6 @@ expected behavior can be established independently.
 | `privacyCheck-IndirectReference` | TS-Go CLI stops at TS2307 for a bare import before declaration privacy; TSRZL would stop earlier on import-equals parsing. | Recover the project-runner resolution context. |
 | `privacyCheck-InsideModule` | No TS-Go project baseline is present; the fixture uses nested namespaces, import-equals, and bare modules, which mask the privacy behavior. | Obtain the pinned runner oracle or keep this as an explicit gap. |
 | `privacyCheck-SimpleReference` | TS-Go CLI reports TS2307 for bare module specifiers before privacy behavior. | Recover the project-runner resolution context. |
-| `relative-nested` | The focused test maps `app.ts`, `main/consume.ts`, and `decl.ts`; TS-Go 7 accepts the exact import chain, while TSRZL fails with TS1005 at import-equals parsing. | Keep the resolver contract red until import-equals syntax reaches project resolution. |
 | `relative-nested-ref` | TS-Go defaults report TS1202/TS7010; CommonJS adaptation reaches a known ambient-module diagnostic. | Avoid duplicating the existing ambient-reference test. |
 
 ## Sequencing and parallel work
