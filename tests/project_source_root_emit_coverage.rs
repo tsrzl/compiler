@@ -1,0 +1,71 @@
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
+
+struct TemporaryProject {
+    root: PathBuf,
+}
+
+impl TemporaryProject {
+    fn new() -> Self {
+        let root =
+            std::env::temp_dir().join(format!("tsrzl-project-source-root-{}", std::process::id()));
+        fs::create_dir_all(&root).expect("the project directory can be created");
+        Self { root }
+    }
+
+    fn path(&self) -> &Path {
+        &self.root
+    }
+
+    fn write(&self, relative_path: &str, contents: &str) {
+        fs::write(self.root.join(relative_path), contents)
+            .expect("the project fixture can be written");
+    }
+
+    fn run_cli(&self) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+            .current_dir(self.path())
+            .args(["--project", "."])
+            .output()
+            .expect("the compiler CLI can be started")
+    }
+}
+
+impl Drop for TemporaryProject {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.root);
+    }
+}
+
+// Pinned project cases: projects/outputdir_simple/test.ts and projects/outputdir_subfolder/test.ts.
+#[test]
+fn should_emit_source_root_in_source_map_given_out_dir_and_source_map_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new();
+    project.write(
+        "tsconfig.json",
+        r#"{"files":["test.ts"],"compilerOptions":{"strict":false,"declaration":true,"sourceMap":true,"sourceRoot":"../src","outDir":"outdir/simple"}}"#,
+    );
+    project.write(
+        "test.ts",
+        "/// <reference path='m1.ts'/>\nvar a1 = 10;\nclass c1 { public p1: number; }\nvar instance1 = new c1();\nfunction f1() { return instance1; }",
+    );
+    project.write("m1.ts", "var m1_a1 = 10;");
+
+    // Act
+    let output = project.run_cli();
+
+    // Assert
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let source_map = fs::read_to_string(project.path().join("outdir/simple/test.js.map"))
+        .expect("the emitted source map can be read");
+    assert!(
+        source_map.contains("\"sourceRoot\":\"../src/\""),
+        "expected the normalized sourceRoot in source map JSON, got {source_map:?}"
+    );
+}
