@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 718 behavior tests: 324 pass, 394 deliberately
+The Rust suite currently has 719 behavior tests: 324 pass, 395 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 403 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 404 behavior entries, touching
 106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 394 deliberate Rust failures have
+The red-test map validator confirms that all 395 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -375,6 +375,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_unterminated_regex_given_regex_at_end_of_file_when_scanning` | `compiler/unterminatedRegexAtEndOfSource1.ts` | Report TS1161 for a regular-expression literal that reaches end of file. |
 | `should_resolve_cross_root_imports_given_root_dirs_project_option_when_running_compiler_cli` | `compiler/pathMappingBasedModuleResolution6_node.ts` | Resolve a relative import through configured `rootDirs`. |
 | `should_resolve_non_relative_project_import_given_paths_pattern_when_running_compiler_cli` | `projects/non-relative/consume.ts` | Resolve a non-relative import through a TypeScript 7 `paths` mapping. |
+| `should_resolve_inherited_path_pattern_given_project_import_when_running_compiler_cli` | `projects/non-relative/consume.ts` | Resolve an inherited `paths` pattern relative to its declaring config instead of a conflicting root-level candidate. |
 | `should_report_boolean_enum_initializer_given_computed_member_when_checking_types` | `conformance/enums/enumErrors.ts` | Report TS18033 for a boolean computed enum member initializer. |
 | `should_report_boxed_number_given_computed_enum_member_when_checking_types` | `conformance/enums/enumErrors.ts` | Report TS18033 when a boxed `Number` initializes a computed enum member. |
 | `should_fold_string_enum_initializer_given_constant_concatenation_when_emitting_javascript` | `conformance/enums/enumConstantMemberWithString.ts` | Fold a constant string concatenation in a string-valued enum member. |

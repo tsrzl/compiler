@@ -7,10 +7,10 @@ struct TemporaryProject {
 }
 
 impl TemporaryProject {
-    fn new() -> Self {
+    fn new(name: &str) -> Self {
         let path = std::env::temp_dir().join(format!(
-            "tsrzl-project-non-relative-paths-{}",
-            std::process::id()
+            "tsrzl-project-non-relative-paths-{}-{name}",
+            std::process::id(),
         ));
         fs::create_dir_all(&path).expect("the temporary project directory can be created");
         Self { path }
@@ -48,7 +48,7 @@ impl Drop for TemporaryProject {
 #[test]
 fn should_resolve_non_relative_project_import_given_paths_pattern_when_running_compiler_cli() {
     // Arrange
-    let project = TemporaryProject::new();
+    let project = TemporaryProject::new("root-config");
     project.write(
         "tsconfig.json",
         r#"{"files":["consume.ts"],"compilerOptions":{"target":"es2015","module":"commonjs","paths":{"lib/*":["./lib/*"]}}}"#,
@@ -58,6 +58,42 @@ fn should_resolve_non_relative_project_import_given_paths_pattern_when_running_c
         "import { hello } from 'lib/bar/a';\nhello();\n",
     );
     project.write("lib/bar/a.ts", "export function hello(): void {}\n");
+
+    // Act
+    let output = project.run_cli();
+
+    // Assert
+    assert!(
+        output.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+// Pinned project group: projects/non-relative/consume.ts with a TS 7 paths configuration.
+#[test]
+fn should_resolve_inherited_path_pattern_given_project_import_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("inherited-config");
+    project.write(
+        "configs/base/tsconfig.json",
+        r#"{"compilerOptions":{"paths":{"lib/*":["./lib/*"]}}}"#,
+    );
+    project.write(
+        "tsconfig.json",
+        r#"{"extends":"./configs/base/tsconfig.json","files":["consume.ts"],"compilerOptions":{"target":"es2015","module":"commonjs"}}"#,
+    );
+    project.write(
+        "consume.ts",
+        "import { hello } from 'lib/bar/a';\nhello();\n",
+    );
+    project.write(
+        "configs/base/lib/bar/a.ts",
+        "export function hello(): void {}\n",
+    );
+    // A project-root-relative mapping would select this incompatible decoy.
+    project.write("lib/bar/a.ts", "export const hello: number = 42;\n");
 
     // Act
     let output = project.run_cli();
