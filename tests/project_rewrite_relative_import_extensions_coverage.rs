@@ -52,7 +52,7 @@ fn should_rewrite_relative_typescript_import_given_rewrite_option_when_emitting_
     );
     project.write(
         "main.ts",
-        "import { answer } from './dep.ts';\nexport const result: number = answer;\n",
+        "import { answer } from \"./dep.ts\";\nexport const result: number = answer;\n",
     );
     project.write("dep.ts", "export const answer: number = 42;\n");
 
@@ -83,7 +83,7 @@ fn should_rewrite_mts_import_to_mjs_given_rewrite_option_when_emitting_javascrip
     );
     project.write(
         "main.ts",
-        "import { answer } from './dep.mts';\nexport const result: number = answer;\n",
+        "import { answer } from \"./dep.mts\";\nexport const result: number = answer;\n",
     );
     project.write("dep.mts", "export const answer: number = 42;\n");
 
@@ -101,5 +101,131 @@ fn should_rewrite_mts_import_to_mjs_given_rewrite_option_when_emitting_javascrip
         fs::read_to_string(project.path().join("dist/main.js"))
             .expect("the emitted JavaScript can be read"),
         "import { answer } from \"./dep.mjs\";\nexport const result = answer;\n"
+    );
+}
+
+// Pinned TypeScript fixture: conformance/externalModules/rewriteRelativeImportExtensions/emit.ts.
+// TS-Go 7.0.2 rewrites the relative .cts import to .cjs in emitted JavaScript.
+#[test]
+fn should_rewrite_cts_import_to_cjs_given_rewrite_option_when_emitting_javascript() {
+    // Arrange
+    let project = TemporaryProject::new("cts-import");
+    project.write(
+        "tsconfig.json",
+        r#"{"compilerOptions":{"target":"esnext","module":"preserve","moduleResolution":"bundler","rewriteRelativeImportExtensions":true,"outDir":"dist"},"files":["main.ts","dep.cts"]}"#,
+    );
+    project.write(
+        "main.ts",
+        "import { answer } from \"./dep.cts\";\nexport const result: number = answer;\n",
+    );
+    project.write("dep.cts", "export const answer: number = 42;\n");
+
+    // Act
+    let output = project.run_cli();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.path().join("dist/main.js"))
+            .expect("the emitted JavaScript can be read"),
+        "import { answer } from \"./dep.cjs\";\nexport const result = answer;\n"
+    );
+}
+
+// Pinned TypeScript fixture: conformance/externalModules/rewriteRelativeImportExtensions/emit.ts.
+// TS-Go 7.0.2 rewrites the relative .tsx import to .jsx in emitted JavaScript.
+#[test]
+fn should_rewrite_tsx_import_to_jsx_given_rewrite_option_when_emitting_javascript() {
+    // Arrange
+    let project = TemporaryProject::new("tsx-import");
+    project.write(
+        "tsconfig.json",
+        r#"{"compilerOptions":{"target":"esnext","module":"preserve","moduleResolution":"bundler","jsx":"preserve","rewriteRelativeImportExtensions":true,"outDir":"dist"},"files":["main.ts","dep.tsx"]}"#,
+    );
+    project.write(
+        "main.ts",
+        "import { answer } from \"./dep.tsx\";\nexport const result: number = answer;\n",
+    );
+    project.write("dep.tsx", "export const answer: number = 42;\n");
+
+    // Act
+    let output = project.run_cli();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.path().join("dist/main.js"))
+            .expect("the emitted JavaScript can be read"),
+        "import { answer } from \"./dep.jsx\";\nexport const result = answer;\n"
+    );
+}
+
+// Pinned TypeScript fixture: conformance/externalModules/rewriteRelativeImportExtensions/emit.ts.
+// TS-Go 7.0.2 rewrites the relative .ts side-effect import to .js in emitted JavaScript.
+#[test]
+fn should_rewrite_side_effect_typescript_import_given_rewrite_option_when_emitting_javascript() {
+    // Arrange
+    let project = TemporaryProject::new("side-effect-ts-import");
+    project.write(
+        "tsconfig.json",
+        r#"{"compilerOptions":{"target":"esnext","module":"preserve","moduleResolution":"bundler","rewriteRelativeImportExtensions":true,"outDir":"dist"},"files":["main.ts","dep.ts"]}"#,
+    );
+    project.write("main.ts", "import \"./dep.ts\";\n");
+    project.write("dep.ts", "export const answer: number = 42;\n");
+
+    // Act
+    let output = project.run_cli();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.path().join("dist/main.js"))
+            .expect("the emitted JavaScript can be read"),
+        "import \"./dep.js\";\n"
+    );
+}
+
+// Pinned TypeScript fixture: conformance/externalModules/rewriteRelativeImportExtensions/emit.ts.
+// TS-Go 7.0.2 rewrites the relative .ts star re-export to .js in emitted JavaScript.
+#[test]
+fn should_rewrite_typescript_star_reexport_given_rewrite_option_when_emitting_javascript() {
+    // Arrange
+    let project = TemporaryProject::new("ts-star-reexport");
+    project.write(
+        "tsconfig.json",
+        r#"{"compilerOptions":{"target":"esnext","module":"preserve","moduleResolution":"bundler","rewriteRelativeImportExtensions":true,"outDir":"dist"},"files":["main.ts","dep.ts"]}"#,
+    );
+    project.write("main.ts", "export * from \"./dep.ts\";\n");
+    project.write("dep.ts", "export const answer: number = 42;\n");
+
+    // Act
+    let output = project.run_cli();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.path().join("dist/main.js"))
+            .expect("the emitted JavaScript can be read"),
+        "export * from \"./dep.js\";\n"
     );
 }
