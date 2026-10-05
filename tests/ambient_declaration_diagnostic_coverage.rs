@@ -76,6 +76,31 @@ fn should_report_parameter_initializer_given_ambient_function_signature_when_com
     );
 }
 
+// Pinned project case: projects/relative-nested-ref/decl.d.ts.
+// TS-Go 7.0.2 reports TS7010 for an ambient function without a return annotation.
+#[test]
+fn should_report_implicit_any_return_given_unannotated_ambient_function_when_compiling() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("decl.d.ts"),
+        "declare module \"decl\" { export function call(); }",
+    )
+    .expect("a TypeScript path has a supported source kind");
+
+    // Act
+    let result = Compiler::new().compile(source);
+
+    // Assert
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 7010),
+        "expected TS7010 for an ambient function without a return annotation, got {:?}",
+        result.diagnostics()
+    );
+}
+
 #[test]
 fn should_report_nonconstant_initializer_given_ambient_enum_member_when_compiling_sources() {
     // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientErrors.ts.
