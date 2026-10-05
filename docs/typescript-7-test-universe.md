@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 685 behavior tests: 324 pass, 361 deliberately
+The Rust suite currently has 687 behavior tests: 324 pass, 363 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -253,7 +253,7 @@ remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 361 deliberate Rust failures have
+The red-test map validator confirms that all 363 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -333,6 +333,8 @@ test executed that fixture or covered every output/configuration.
 | `should_narrow_nullable_string_given_assertion_function_call_when_checking_types` | `conformance/controlFlow/assertionTypePredicates1.ts` | Narrow a nullable string after a call to a function declared with `asserts value`. |
 | `should_narrow_unknown_given_assertion_type_predicate_call_when_checking_types` | `conformance/controlFlow/assertionTypePredicates1.ts` | Narrow `unknown` to `string` after a call declared with `asserts value is string`. |
 | `should_parse_import_attributes_given_json_import_when_building_syntax_tree` | `conformance/importAttributes/importAttributes1.ts` | Parse an import declaration with a JSON import attribute. |
+| `should_parse_side_effect_import_given_json_attribute_when_building_syntax_tree` | `conformance/importAttributes/importAttributes1.ts` | Parse a side-effect import with a JSON import attribute. |
+| `should_parse_reexport_given_json_import_attribute_when_building_syntax_tree` | `conformance/importAttributes/importAttributes2.ts` | Parse a re-export declaration with a JSON import attribute. |
 | `should_parse_deferred_import_given_default_binding_when_building_syntax_tree` | `conformance/importDefer/importBindingDefer.ts` | Parse a deferred import declaration with its default binding. |
 | `should_write_source_map_given_source_map_option_when_running_compiler_cli` | `conformance/es6/computedProperties/computedPropertyNamesSourceMap1_ES6.ts` | Write JavaScript source maps and link the emitted JavaScript to its map. |
 | `should_map_computed_class_members_given_source_map_option_when_emitting_javascript` | `conformance/es6/computedProperties/computedPropertyNamesSourceMap1_ES6.ts` | Emit the pinned source-map segment mappings for computed class methods and accessors. |

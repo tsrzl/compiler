@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 685 tests: 324 pass and 361 deliberately fail;
-none are ignored. The compiler/oracle map links 370 behaviors to upstream cases
+The Rust suite currently has 687 tests: 324 pass and 363 deliberately fail;
+none are ignored. The compiler/oracle map links 372 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 105
 of 110 source-suite/area groups; 5 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 361 failures mapped by
+full test run has all 363 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -38,6 +38,11 @@ Dynamic import parsing now has a syntax-only contract against
 `conformance/dynamicImport/importCallExpression1ES2020.ts`. TS-Go accepts
 `import("./0")`; TSRZL reports TS1005 at the call's opening parenthesis, hiding
 the existing end-to-end import-resolution gap.
+
+The static import-attributes parser tests separately cover default and
+side-effect imports from `conformance/importAttributes/importAttributes1.ts`,
+plus a re-export from `importAttributes2.ts`. TS-Go accepts each JSON `with`
+clause; TSRZL reports TS1005 while parsing the clause.
 
 The switch-narrowing behavior has focused red tests for object-type unions,
 string-literal property types, and the end-to-end member narrowing. A separate
