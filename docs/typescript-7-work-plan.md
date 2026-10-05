@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 716 tests: 324 pass and 392 deliberately fail;
-none are ignored. The compiler/oracle map links 401 behaviors to upstream cases
-or areas. A separate map records 16 extension contracts. Corpus links touch 105
-of 110 source-suite/area groups; 5 project groups have no mapped Rust behavior
+The Rust suite currently has 717 tests: 324 pass and 393 deliberately fail;
+none are ignored. The compiler/oracle map links 402 behaviors to upstream cases
+or areas. A separate map records 16 extension contracts. Corpus links touch 106
+of 110 source-suite/area groups; 4 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 392 failures mapped by
+full test run has all 393 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -186,11 +186,12 @@ leaves that extension unchanged.
 
 ## Unsampled project groups
 
-All five groups without a linked Rust test are in the project suite. Several
+All four groups without a linked Rust test are in the project suite. Several
 cannot yet produce a trustworthy focused red from the direct TS-Go CLI because
 the project runner has different resolution context or the inputs fail earlier
-on import-equals syntax. Keep those groups visible and add tests only when the
-expected behavior can be established independently.
+on import-equals syntax. `privacyCheck-SimpleReference` now has an oracle-backed
+reduced test for public import-equals declaration preservation; the original
+project's broader privacy behavior remains unverified.
 
 | Group | Current evidence | Next action |
 | --- | --- | --- |
@@ -198,7 +199,6 @@ expected behavior can be established independently.
 | `privacyCheck-ImportInParent` | TS-Go CLI reports TS1147/TS2307 before privacy checks. | Recover the project-runner baseline. |
 | `privacyCheck-IndirectReference` | TS-Go CLI stops at TS2307 for a bare import before declaration privacy; TSRZL would stop earlier on import-equals parsing. | Recover the project-runner resolution context. |
 | `privacyCheck-InsideModule` | No TS-Go project baseline is present; the fixture uses nested namespaces, import-equals, and bare modules, which mask the privacy behavior. | Obtain the pinned runner oracle or keep this as an explicit gap. |
-| `privacyCheck-SimpleReference` | TS-Go CLI reports TS2307 for bare module specifiers before privacy behavior. | Recover the project-runner resolution context. |
 
 ## Sequencing and parallel work
 

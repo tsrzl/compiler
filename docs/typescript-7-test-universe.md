@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 716 behavior tests: 324 pass, 392 deliberately
+The Rust suite currently has 717 behavior tests: 324 pass, 393 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -240,25 +240,25 @@ and string index-signature parsing, async generator and tagged-template parsing,
 interface extensions of union types, overload implementation compatibility,
 derived-to-base assignment, versioned package type resolution, `noEmitOnError`,
 syntax error recovery, the CLI `--project`/source-file conflict, required
-return-value diagnostics, type-only star re-exports, and local type queries in
-declaration output.
+return-value diagnostics, type-only star re-exports, local type queries, and
+import-equals aliases in declaration output.
 The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 401 behavior entries, touching
-105 of the 110 source-suite/area groups in the inventory; 5 project groups
+At this checkpoint, the compiler/oracle map has 402 behavior entries, touching
+106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 392 deliberate Rust failures have
+The red-test map validator confirms that all 393 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
-adds one row for every source fixture. It currently records 296 fixtures
-referenced by exact path, 511 with only an area sample, and 11,834 with no
+adds one row for every source fixture. It currently records 314 fixtures
+referenced by exact path, 510 with only an area sample, and 11,817 with no
 mapped behavior-test reference. Each row also carries its recorded option
 directives/configurations, reference-artifact names and kinds, and oracle
 status. Project/transpile rows also carry the runner configuration and oracle
@@ -474,6 +474,7 @@ test executed that fixture or covered every output/configuration.
 | `should_emit_declaration_for_referenced_source_given_triple_slash_path_when_compiling_root` | `projects/ReferenceResolution/src/ts/foo/foo.ts` | Include the triple-slash referenced source in declaration output. |
 | `should_preserve_triple_slash_reference_given_declaration_path_when_emitting_javascript` | `projects/DeclareExportAdded/consumer.ts` | Preserve the triple-slash reference directive in emitted JavaScript. |
 | `should_preserve_imported_class_type_given_exported_inferred_value_when_emitting_declarations` | `projects/declarations_SimpleImport/useModule.ts` | Preserve the imported class type in an exported inferred declaration. |
+| `should_preserve_import_equals_alias_given_exported_imported_type_when_emitting_declarations` | `projects/privacyCheck-SimpleReference/test.ts` | Preserve the import-equals alias and its qualified imported class type in declaration output. |
 | `should_resolve_nested_import_equals_dependencies_given_multilevel_project_when_running_compiler_cli` | `projects/MultipleLevels/B/B.ts` | Resolve nested relative import-equals dependencies when compiling the project module. |
 | `should_report_removed_classic_module_resolution_given_project_option_when_running_compiler_cli` | `projects/RelativePaths/app.ts` | Report TS5108 when the project selects removed `moduleResolution=Classic`. |
 | `should_erase_ambient_function_given_typed_call_when_emitting_javascript` | `conformance/ambient/ambientDeclarations.ts` | Erase the ambient function declaration and preserve its call. |

@@ -99,7 +99,7 @@ projects	outputdir_subfolder	2	0	0	"{""no-submodule-reference-suite"":2}"	2	2	0	
 projects	privacyCheck-ImportInParent	3	0	0	"{""no-submodule-reference-suite"":3}"	0	0	0				pending-focused-tests
 projects	privacyCheck-IndirectReference	3	0	0	"{""no-submodule-reference-suite"":3}"	0	0	0				pending-focused-tests
 projects	privacyCheck-InsideModule	4	0	0	"{""no-submodule-reference-suite"":4}"	0	0	0				pending-focused-tests
-projects	privacyCheck-SimpleReference	3	0	0	"{""no-submodule-reference-suite"":3}"	0	0	0				pending-focused-tests
+projects	privacyCheck-SimpleReference	3	0	0	"{""no-submodule-reference-suite"":3}"	1	1	0	should_preserve_import_equals_alias_given_exported_imported_type_when_emitting_declarations	projects/privacyCheck-SimpleReference/test.ts		focused-samples-only
 projects	projectOption	28	0	0	"{""no-submodule-reference-suite"":28}"	1	1	0	should_exclude_output_directory_from_implicit_roots_given_out_dir_option_when_running_compiler_cli	projects/projectOption/DefaultExcludeNodeModulesAndOutDir/a.ts		focused-samples-only
 projects	reference-1	3	0	0	"{""no-submodule-reference-suite"":3}"	1	3	0	should_resolve_transitive_triple_slash_reference_given_nested_reference_when_compiling_project	projects/reference-1/lib/classA.ts;projects/reference-1/lib/classB.ts;projects/reference-1/main.ts		focused-samples-only
 projects	reference-path-static	2	0	0	"{""no-submodule-reference-suite"":2}"	1	2	0	should_resolve_static_triple_slash_reference_given_global_type_when_compiling_project	projects/reference-path-static/lib.ts;projects/reference-path-static/test.ts		focused-samples-only
