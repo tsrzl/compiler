@@ -7,10 +7,10 @@ struct TemporaryProject {
 }
 
 impl TemporaryProject {
-    fn new() -> Self {
+    fn new(name: &str) -> Self {
         let path = std::env::temp_dir().join(format!(
-            "tsrzl-project-config-extends-array-{}",
-            std::process::id()
+            "tsrzl-project-config-extends-array-{}-{name}",
+            std::process::id(),
         ));
         fs::create_dir_all(&path).expect("the temporary project directory can be created");
         Self { path }
@@ -45,7 +45,7 @@ impl Drop for TemporaryProject {
 fn should_report_implicit_any_given_array_extends_project_configuration_when_running_compiler_cli()
 {
     // Arrange
-    let project = TemporaryProject::new();
+    let project = TemporaryProject::new("implicit-any");
     project.write(
         "tsconfig1.json",
         r#"{"compilerOptions":{"strictNullChecks":true}}"#,
@@ -72,5 +72,39 @@ fn should_report_implicit_any_given_array_extends_project_configuration_when_run
     assert!(
         diagnostics.contains("TS7006"),
         "the second inherited config should enable noImplicitAny; got {diagnostics}"
+    );
+}
+
+// Pinned fixture: compiler/configFileExtendsAsList.ts.
+#[test]
+fn should_apply_later_array_extended_option_given_conflicting_values_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("option-precedence");
+    project.write(
+        "tsconfig-first.json",
+        r#"{"compilerOptions":{"noImplicitAny":false}}"#,
+    );
+    project.write(
+        "tsconfig-second.json",
+        r#"{"compilerOptions":{"noImplicitAny":true}}"#,
+    );
+    project.write(
+        "tsconfig.json",
+        r#"{"extends":["./tsconfig-first.json","./tsconfig-second.json"],"files":["index.ts"],"compilerOptions":{"noEmit":true}}"#,
+    );
+    project.write("index.ts", "function identity(value) {}\n");
+
+    // Act
+    let output = project.run_cli();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(
+        diagnostics.contains("TS7006"),
+        "the later config should override noImplicitAny=false; got {diagnostics}"
     );
 }

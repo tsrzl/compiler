@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 717 behavior tests: 324 pass, 393 deliberately
+The Rust suite currently has 718 behavior tests: 324 pass, 394 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 402 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 403 behavior entries, touching
 106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 393 deliberate Rust failures have
+The red-test map validator confirms that all 394 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -396,6 +396,7 @@ test executed that fixture or covered every output/configuration.
 | `should_resolve_referenced_ambient_module_given_named_import_when_running_compiler_cli` | `projects/relative-global-ref/consume.ts` | Load a referenced ambient module and resolve its named import in a project. |
 | `should_report_implicit_any_this_given_unannotated_function_declaration_when_compiling_project` | `compiler/thisInFunctionCall.ts` | Report TS2683 for an unannotated function declaration's `this` value with `noImplicitThis`. |
 | `should_report_implicit_any_given_array_extends_project_configuration_when_running_compiler_cli` | `compiler/configFileExtendsAsList.ts` | Apply inherited `noImplicitAny` from an array-valued `extends` chain and report TS7006. |
+| `should_apply_later_array_extended_option_given_conflicting_values_when_running_compiler_cli` | `compiler/configFileExtendsAsList.ts` | Apply `noImplicitAny=true` from the later array-extended config when the earlier config sets it to false. |
 | `should_report_implicit_any_return_given_circular_imported_calls_when_compiling_project` | `projects/CircularReferencing/consume.ts`, `projects/CircularReferencing/decl.ts` | Report TS7023 for implicitly typed functions with mutually recursive return inference. |
 | `should_compile_relative_import_equals_dependency_given_project_root_when_running_compiler_cli` | `projects/relative-global/consume.ts`, `projects/relative-global/decl.ts` | Parse and resolve a relative import-equals dependency when compiling the project. |
 | `should_resolve_nested_relative_import_equals_given_project_root_when_running_compiler_cli` | `projects/relative-nested/app.ts`, `projects/relative-nested/main/consume.ts`, `projects/relative-nested/decl.ts` | Resolve the root's nested relative import-equals dependency chain when compiling a project. |
