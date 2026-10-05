@@ -7,9 +7,9 @@ struct TemporaryProject {
 }
 
 impl TemporaryProject {
-    fn new() -> Self {
+    fn new(name: &str) -> Self {
         let path = std::env::temp_dir().join(format!(
-            "tsrzl-project-reference-transitive-build-{}",
+            "tsrzl-project-reference-transitive-build-{name}-{}",
             std::process::id()
         ));
         fs::create_dir_all(&path).expect("the temporary project directory can be created");
@@ -44,7 +44,7 @@ impl Drop for TemporaryProject {
 #[test]
 fn should_build_transitive_project_references_given_three_level_graph_when_running_compiler_cli() {
     // Arrange
-    let project = TemporaryProject::new();
+    let project = TemporaryProject::new("transitive");
     project.write(
         "core/tsconfig.json",
         r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2015","outDir":"dist"},"include":["index.ts"]}"#,
@@ -87,4 +87,64 @@ fn should_build_transitive_project_references_given_three_level_graph_when_runni
             "expected transitive build output {output}"
         );
     }
+}
+
+// Pinned TypeScript-Go test: internal/project/projectreferencesprogram_test.go.
+#[test]
+fn should_rebuild_dependent_declarations_given_dependency_type_changes_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("dependent-rebuild");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2015","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const coreValue: number = 42;\n");
+    project.write(
+        "middle/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2015","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "middle/index.ts",
+        "import { coreValue } from \"../core\";\nexport const middleValue = coreValue;\n",
+    );
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2015","outDir":"dist"},"references":[{"path":"../middle"}],"include":["main.ts"]}"#,
+    );
+    project.write(
+        "app/main.ts",
+        "import { middleValue } from \"../middle\";\nexport const result = middleValue;\n",
+    );
+    let initial_build = project.build_application();
+    assert!(
+        initial_build.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&initial_build.stdout),
+        String::from_utf8_lossy(&initial_build.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(project.path.join("app/dist/main.d.ts"))
+            .expect("the initial application declaration can be read"),
+        "export declare const result: number;\n"
+    );
+    project.write(
+        "core/index.ts",
+        "export const coreValue: string = \"changed\";\n",
+    );
+
+    // Act
+    let output = project.build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.path.join("app/dist/main.d.ts"))
+            .expect("the rebuilt application declaration can be read"),
+        "export declare const result: string;\n"
+    );
 }
