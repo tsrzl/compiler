@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 618 tests: 324 pass and 294 deliberately fail;
-none are ignored. The compiler/oracle map links 303 behaviors to upstream cases
+The Rust suite currently has 619 tests: 324 pass and 295 deliberately fail;
+none are ignored. The compiler/oracle map links 304 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 101
 of 110 source-suite/area groups; 9 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 294 failures mapped by
+full test run has all 295 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -59,6 +59,8 @@ TSRZL reports parser diagnostics and TS2307 for the unresolved import.
 Wildcard declaration merging has its own contract for combining a concrete
 ambient module's exports with a matching suffix pattern; TSRZL currently stops
 at wildcard module declaration parsing.
+An isolation contract ensures a concrete augmentation of `a.foo` does not leak
+into `b.foo`; TS-Go reports TS2339, while TSRZL currently stops at the parser.
 
 ## Work packages
 
