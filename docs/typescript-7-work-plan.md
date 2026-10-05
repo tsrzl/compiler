@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 653 tests: 324 pass and 329 deliberately fail;
-none are ignored. The compiler/oracle map links 338 behaviors to upstream cases
+The Rust suite currently has 654 tests: 324 pass and 330 deliberately fail;
+none are ignored. The compiler/oracle map links 339 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 105
 of 110 source-suite/area groups; 5 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 329 failures mapped by
+full test run has all 330 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -51,7 +51,7 @@ infers `number` from the argument and reports TS2322 for a string assignment;
 TSRZL currently reports TS2304 for the JSDoc parameter name instead.
 JSDoc `@callback` contextual typing has a separate contract: TS-Go types the
 callback parameter as `string` and reports TS2551 for `toFixed`, while TSRZL
-currently reports no diagnostic. A JSDoc `@satisfies` test also requires TS2353 for an extra object property; TSRZL currently emits no diagnostic. JSDoc `@typedef` property checking has a separate TS2322 test; TSRZL also emits no diagnostic for that input. JSDoc constructor overloads have a focused TS2769 mismatch test; TSRZL emits no diagnostic. JSDoc `@implements` has TS2420 coverage for a missing interface member; TSRZL emits no diagnostic. A JSDoc `@this` contract expects TS2339 for a missing member; TSRZL currently reports TS2304 for `this`.
+currently reports no diagnostic. A JSDoc `@satisfies` test also requires TS2353 for an extra object property; TSRZL currently emits no diagnostic. JSDoc `@typedef` property checking has a separate TS2322 test; TSRZL also emits no diagnostic for that input. JSDoc constructor overloads have a focused TS2769 mismatch test; TSRZL emits no diagnostic. JSDoc `@implements` has TS2420 coverage for a missing interface member; TSRZL emits no diagnostic. A JSDoc `@this` contract expects TS2339 for a missing member; TSRZL currently reports TS2304 for `this`. A constrained JSDoc `@template` typedef has separate TS2344 coverage; TSRZL emits no diagnostic.
 
 Wildcard ambient-module resolution has a focused `*!text` contract from the
 ambient declarations pattern fixture. TS-Go resolves the suffix import;
