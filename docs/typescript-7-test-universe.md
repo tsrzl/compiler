@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 688 behavior tests: 324 pass, 364 deliberately
+The Rust suite currently has 690 behavior tests: 324 pass, 366 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -226,7 +226,7 @@ contracts and three red path/output-path contracts; their separate map is
 [`typescript-7-extension-contracts.tsv`](typescript-7-extension-contracts.tsv).
 The immutable semantic views and shared identity APIs still needed for full
 extension support are described in [`compiler-contract-gaps.md`](compiler-contract-gaps.md).
-Twenty-one compiler-option tests cover fifteen options, including both the
+Twenty-three compiler-option tests cover fifteen options, including both the
 project configuration and CLI forms of `noImplicitAny`, plus strict-null
 diagnostics for property and nullish-coalescing reads. Each remains red for
 its mapped diagnostic. Other cases require pinned diagnostics for
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 373 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 375 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 364 deliberate Rust failures have
+The red-test map validator confirms that all 366 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -552,6 +552,8 @@ test executed that fixture or covered every output/configuration.
 | `should_report_invalid_allow_importing_ts_extensions_given_emit_when_running_cli` | `typescript-go/internal/compiler/program.go`, `conformance/moduleResolution/allowImportingTsExtensions.ts` | Report TS5096 when `allowImportingTsExtensions` is enabled while JavaScript emission remains enabled. |
 | `should_report_ts_extension_import_given_option_disabled_when_running_cli` | `typescript-go/internal/checker/checker.go`, `conformance/moduleResolution/allowImportingTsExtensions.ts` | Report TS5097 for a `.ts` import when `allowImportingTsExtensions` is disabled. |
 | `should_allow_unresolved_side_effect_import_given_option_disabled_when_compiling_project` | `compiler/sideEffectImports1.ts` | Accept and emit a missing side-effect import when `noUncheckedSideEffectImports` is false. |
+| `should_allow_unresolved_relative_side_effect_import_given_option_disabled_when_compiling_project` | `compiler/sideEffectImports1.ts` | Accept and emit an unresolved extensionless relative side-effect import when the option is false. |
+| `should_allow_unresolved_javascript_side_effect_import_given_option_disabled_when_compiling_project` | `compiler/sideEffectImports1.ts` | Accept and emit an unresolved relative `.js` side-effect import when the option is false. |
 | `should_rewrite_relative_typescript_import_given_rewrite_option_when_emitting_javascript` | `conformance/externalModules/rewriteRelativeImportExtensions/emit.ts` | Rewrite a relative `.ts` import to `.js` in emitted JavaScript. |
 | `should_rewrite_mts_import_to_mjs_given_rewrite_option_when_emitting_javascript` | `conformance/externalModules/rewriteRelativeImportExtensions/emit.ts` | Rewrite a relative `.mts` import to `.mjs` in emitted JavaScript. |
 | `should_rewrite_cts_import_to_cjs_given_rewrite_option_when_emitting_javascript` | `conformance/externalModules/rewriteRelativeImportExtensions/emit.ts` | Rewrite a relative `.cts` import to `.cjs` in emitted JavaScript. |

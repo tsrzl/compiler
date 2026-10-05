@@ -219,6 +219,62 @@ fn should_allow_unresolved_side_effect_import_given_option_disabled_when_compili
 }
 
 #[test]
+fn should_allow_unresolved_relative_side_effect_import_given_option_disabled_when_compiling_project()
+ {
+    // Upstream: compiler/sideEffectImports1.ts, module=preserve, noUncheckedSideEffectImports=false.
+    // Arrange
+    let project = TempProject::new(
+        "unchecked-relative-side-effect-imports-disabled",
+        "import \"./does-not-exist-either\";",
+        r#""module":"preserve","noUncheckedSideEffectImports":false"#,
+    );
+
+    // Act
+    let output = project.compile();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.root.join("input.js"))
+            .expect("the JavaScript output can be read"),
+        "import \"./does-not-exist-either\";\n"
+    );
+}
+
+#[test]
+fn should_allow_unresolved_javascript_side_effect_import_given_option_disabled_when_compiling_project()
+ {
+    // Upstream: compiler/sideEffectImports1.ts, module=preserve, noUncheckedSideEffectImports=false.
+    // Arrange
+    let project = TempProject::new(
+        "unchecked-javascript-side-effect-imports-disabled",
+        "import \"./does-not-exist-either.js\";",
+        r#""module":"preserve","noUncheckedSideEffectImports":false"#,
+    );
+
+    // Act
+    let output = project.compile();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.root.join("input.js"))
+            .expect("the JavaScript output can be read"),
+        "import \"./does-not-exist-either.js\";\n"
+    );
+}
+
+#[test]
 fn should_report_index_signature_property_access_given_option_when_compiling_project() {
     // Pinned fixture: conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts.
     // Arrange
