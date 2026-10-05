@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 692 behavior tests: 324 pass, 368 deliberately
+The Rust suite currently has 693 behavior tests: 324 pass, 369 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 377 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 378 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 368 deliberate Rust failures have
+The red-test map validator confirms that all 369 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -356,6 +356,7 @@ test executed that fixture or covered every output/configuration.
 | `should_suppress_javascript_output_given_no_emit_project_configuration_when_running_compiler_cli` | `compiler/compilerOptionsOutDirAndNoEmit.ts` | Honor project `noEmit` and leave the JavaScript output absent. |
 | `should_ignore_first_line_hashbang_given_typescript_source_when_parsing` | `compiler/shebang.ts` | Accept and preserve a first-line hashbang in a TypeScript source file. |
 | `should_lower_exponentiation_operator_given_es2015_target_when_emitting_javascript` | `conformance/es7/exponentiationOperator/emitExponentiationOperator1.ts` | Lower exponentiation to `Math.pow` when targeting ES2015. |
+| `should_lower_right_associative_exponentiation_given_es2015_target_when_emitting_javascript` | `conformance/es7/exponentiationOperator/emitExponentiationOperator1.ts` | Lower `2 ** 3 ** 2` to nested `Math.pow(2, Math.pow(3, 2))` calls. |
 | `should_include_javascript_project_source_given_allow_js_option_when_running_compiler_cli` | `compiler/allowJsClassThisTypeCrash.ts` | Include `.js` root files in default project discovery with `allowJs`. |
 | `should_report_duplicate_block_scoped_bindings_given_same_scope_when_checking_types` | `compiler/letDeclarations-scopes-duplicates.ts` | Report TS2451 for same-scope duplicate `let` declarations. |
 | `should_lower_object_spread_given_es2015_target_when_emitting_javascript` | `conformance/types/spread/objectSpread.ts` | Lower object spread to `Object.assign` when targeting ES2015. |

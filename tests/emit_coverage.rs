@@ -31,6 +31,36 @@ fn should_lower_exponentiation_operator_given_es2015_target_when_emitting_javasc
 }
 
 #[test]
+fn should_lower_right_associative_exponentiation_given_es2015_target_when_emitting_javascript() {
+    // Pinned TypeScript case: conformance/es7/exponentiationOperator/emitExponentiationOperator1.ts.
+    // TS-Go 7.0.2 emits `2 ** 3 ** 2` as `Math.pow(2, Math.pow(3, 2))`.
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("nested-exponentiation.ts"),
+        "const answer: number = 2 ** 3 ** 2;",
+    )
+    .expect("the TypeScript path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    assert!(
+        result.diagnostics().is_empty(),
+        "right-associative exponentiation is valid syntax: {:?}",
+        result.diagnostics()
+    );
+    assert!(
+        result.emitted_files()[0]
+            .text()
+            .contains("Math.pow(2, Math.pow(3, 2))"),
+        "ES2015 output should preserve exponentiation's right associativity: {}",
+        result.emitted_files()[0].text()
+    );
+}
+
+#[test]
 fn should_lower_object_spread_given_es2015_target_when_emitting_javascript() {
     // Pinned TypeScript case: conformance/types/spread/objectSpread.ts (target ES2015).
     // Direct TypeScript-Go output uses Object.assign for object spread.
