@@ -192,6 +192,68 @@ fn should_report_possible_undefined_given_array_index_when_compiling_project() {
 }
 
 #[test]
+fn should_report_index_signature_property_access_given_option_when_compiling_project() {
+    // Pinned fixture: conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts.
+    // Arrange
+    let project = TempProject::new(
+        "no-property-access-from-index-signature",
+        "interface Settings { [name: string]: string; }\ndeclare const settings: Settings;\nsettings.theme;",
+        r#""noPropertyAccessFromIndexSignature": true"#,
+    );
+
+    // Act
+    let output = project.compile();
+
+    // Assert
+    assert_diagnostic(&output, 4111);
+}
+
+#[test]
+fn should_allow_bracket_access_given_index_signature_property_and_option_when_compiling_project() {
+    // Pinned fixture: conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts.
+    // Arrange
+    let project = TempProject::new(
+        "bracket-index-signature-access",
+        "interface Settings { [name: string]: string; }\ndeclare const settings: Settings;\nsettings[\"theme\"];",
+        r#""noPropertyAccessFromIndexSignature": true"#,
+    );
+
+    // Act
+    let output = project.compile();
+
+    // Assert
+    assert!(
+        output.status.success(),
+        "bracket access remains valid with the option enabled: {}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+#[test]
+fn should_allow_declared_property_dot_access_given_index_signature_and_option_when_compiling_project()
+ {
+    // Pinned fixture: conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts.
+    // Arrange
+    let project = TempProject::new(
+        "declared-property-index-signature-access",
+        "interface Settings { theme: string; [name: string]: string; }\ndeclare const settings: Settings;\nsettings.theme;",
+        r#""noPropertyAccessFromIndexSignature": true"#,
+    );
+
+    // Act
+    let output = project.compile();
+
+    // Assert
+    assert!(
+        output.status.success(),
+        "an explicitly declared property remains available with the option enabled: {}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+#[test]
 fn should_report_unknown_catch_binding_given_unannotated_catch_when_compiling_project() {
     // Upstream: compiler/useUnknownInCatchVariables01.ts
     // Arrange

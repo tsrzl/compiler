@@ -7,10 +7,10 @@ struct TemporaryProject {
 }
 
 impl TemporaryProject {
-    fn new() -> Self {
+    fn new(name: &str) -> Self {
         let path = std::env::temp_dir().join(format!(
-            "tsrzl-project-resolution-gap-{}",
-            std::process::id()
+            "tsrzl-project-resolution-gap-{}-{name}",
+            std::process::id(),
         ));
         fs::create_dir_all(&path).expect("the temporary project directory can be created");
         Self { path }
@@ -48,7 +48,7 @@ impl Drop for TemporaryProject {
 #[test]
 fn should_resolve_versioned_package_types_given_types_versions_mapping_when_running_compiler_cli() {
     // Arrange
-    let project = TemporaryProject::new();
+    let project = TemporaryProject::new("types-versions");
     project.write(
         "tsconfig.json",
         r#"{"files":["main.ts"],"compilerOptions":{"target":"esnext","module":"commonjs"}}"#,
@@ -63,6 +63,38 @@ fn should_resolve_versioned_package_types_given_types_versions_mapping_when_runn
         "node_modules/ext/ts3.1/index.d.ts",
         "export const a: number;",
     );
+
+    // Act
+    let process = project.run_cli(&["--project".as_ref(), project.path().as_os_str()]);
+
+    // Assert
+    assert!(
+        process.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&process.stdout),
+        String::from_utf8_lossy(&process.stderr)
+    );
+}
+
+// Pinned TypeScript project fixtures: projects/relative-nested/app.ts, projects/relative-nested/main/consume.ts, projects/relative-nested/decl.ts.
+// TS-Go 7.0.2 accepts the root and resolves both relative import-equals dependencies.
+#[test]
+fn should_resolve_nested_relative_import_equals_given_project_root_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("nested-relative-import-equals");
+    project.write(
+        "tsconfig.json",
+        r#"{"files":["app.ts"],"compilerOptions":{"noEmit":true,"target":"es2015","module":"commonjs","strict":false}}"#,
+    );
+    project.write(
+        "app.ts",
+        "import consume = require(\"./main/consume\");\n\nconsume.call();",
+    );
+    project.write(
+        "main/consume.ts",
+        "import decl = require(\"../decl\");\n\ndeclare function fail();\n\nexport function call() {\n    var str = decl.call();\n\n    if (str !== \"success\") {\n        fail();\n    }\n}",
+    );
+    project.write("decl.ts", "export function call() { return \"success\"; }");
 
     // Act
     let process = project.run_cli(&["--project".as_ref(), project.path().as_os_str()]);

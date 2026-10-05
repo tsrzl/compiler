@@ -173,12 +173,12 @@ full set of Rust behavior tests. Resume implementation only after the coverage
 map identifies the failing behavior tests and records any intentionally
 unsupported oracle cases.
 
-## Initial Rust baseline
+## Rust behavior coverage status
 
-The Rust suite has 452 behavior tests: 314 pass, 138 deliberately fail, and none
-are ignored. This test-first pass has added 109 tests, including one green
-parser regression and nine green extension-lifecycle cases. The 304
-tests that preceded this test-first pass are grouped as follows:
+The Rust suite currently has 614 behavior tests: 324 pass, 290 deliberately
+fail, and none are ignored. Coverage remains test-first: these red tests record
+compiler, project, and extension behavior that still needs implementation. The
+304 tests that preceded this test-first pass are grouped as follows:
 
 | Rust integration suite | Tests before this test-first pass |
 | --- | ---: |
@@ -226,7 +226,7 @@ contracts and three red path/output-path contracts; their separate map is
 [`typescript-7-extension-contracts.tsv`](typescript-7-extension-contracts.tsv).
 The immutable semantic views and shared identity APIs still needed for full
 extension support are described in [`compiler-contract-gaps.md`](compiler-contract-gaps.md).
-Seventeen compiler-option tests cover thirteen options, including both the
+Twenty compiler-option tests cover fourteen options, including both the
 project configuration and CLI forms of `noImplicitAny`, plus strict-null
 diagnostics for property and nullish-coalescing reads. Each remains red for
 its mapped diagnostic. Other cases require pinned diagnostics for
@@ -246,19 +246,19 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 258 behavior entries, touching
-100 of the 110 source-suite/area groups in the inventory; 10 project groups
+At this checkpoint, the compiler/oracle map has 299 behavior entries, touching
+101 of the 110 source-suite/area groups in the inventory; 9 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 250 deliberate Rust failures have
+The red-test map validator confirms that all 290 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
-adds one row for every source fixture. It currently records 237 fixtures
-referenced by exact path, 503 with only an area sample, and 11,901 with no
+adds one row for every source fixture. It currently records 263 fixtures
+referenced by exact path, 511 with only an area sample, and 11,867 with no
 mapped behavior-test reference. Each row also carries its recorded option
 directives/configurations, reference-artifact names and kinds, and oracle
 status. Project/transpile rows also carry the runner configuration and oracle
@@ -312,8 +312,24 @@ test executed that fixture or covered every output/configuration.
 | `should_accept_keyof_type_given_interface_property_when_checking_types` | `conformance/types/keyof/keyofAndIndexedAccess.ts` | Accept an interface property name in its `keyof` type. |
 | `should_reject_mapped_readonly_assignment_given_readonly_property_when_checking_types` | `conformance/types/mapped/mappedTypeModifiers.ts` | Report TS2540 for assignment through a readonly mapped property. |
 | `should_narrow_discriminated_union_given_literal_property_guard_when_checking_types` | `conformance/types/union/discriminatedUnionTypes1.ts` | Narrow a union to the matching literal-tagged object type. |
+| `should_narrow_discriminated_union_given_switch_case_when_checking_types` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Narrow the union to the member matching each switch case and accept its member-specific property access. |
+| `should_parse_bigint_literal_union_given_type_alias_when_building_syntax_tree` | `compiler/bigintPropertyName.ts` | Parse BigInt literal types in a type alias without syntax diagnostics. |
+| `should_parse_boolean_literal_union_given_type_alias_when_building_syntax_tree` | `conformance/types/literal/booleanLiteralTypes1.ts` | Parse a type alias whose members are boolean literal types. |
+| `should_parse_union_of_object_types_given_type_alias_when_building_syntax_tree` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Parse a union of object type literals in a type alias without syntax diagnostics. |
+| `should_parse_string_literal_property_type_given_interface_when_building_syntax_tree` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Parse a string literal type on an interface property without syntax diagnostics. |
+| `should_parse_string_literal_union_given_type_alias_when_building_syntax_tree` | `conformance/types/stringLiteral/stringLiteralTypesInUnionTypes01.ts` | Parse a type alias whose members are string literal types. |
+| `should_parse_numeric_literal_union_given_type_alias_when_building_syntax_tree` | `conformance/types/literal/numericLiteralTypes1.ts` | Parse a type alias whose members are numeric literal types. |
+| `should_parse_negative_numeric_literal_given_type_alias_when_building_syntax_tree` | `conformance/types/literal/numericLiteralTypes1.ts` | Parse a negative numeric literal member in a type alias. |
+| `should_narrow_union_given_in_operator_true_branch_when_checking_types` | `conformance/expressions/typeGuards/typeGuardOfFromPropNameInUnionType.ts` | Narrow a class union to the member containing the tested property in the `in` true branch. |
+| `should_parse_in_operator_given_return_expression_when_building_syntax_tree` | `conformance/expressions/typeGuards/typeGuardOfFromPropNameInUnionType.ts` | Parse the full `"a" in value` expression without syntax diagnostics. |
+| `should_parse_instanceof_operator_given_return_expression_when_building_syntax_tree` | `conformance/controlFlow/controlFlowInstanceOfGuardPrimitives.ts` | Retain the full `value instanceof X` expression in the return-expression span. |
+| `should_narrow_class_union_given_instanceof_guard_when_checking_types` | `conformance/controlFlow/controlFlowInstanceofExtendsFunction.ts` | Narrow an `X | number` value to `X` inside an `instanceof X` branch. |
 | `should_accept_intersection_type_given_matching_object_properties_when_checking_types` | `conformance/types/intersection/intersectionTypeMembers.ts` | Accept a value with the properties required by both intersection members. |
 | `should_narrow_unknown_given_typeof_string_guard_when_checking_types` | `conformance/types/unknown/unknownControlFlow.ts` | Narrow `unknown` to `string` in a `typeof` guard. |
+| `should_accept_derived_member_access_given_true_branch_of_user_type_guard_when_checking_types` | `conformance/expressions/typeGuards/typeGuardFunction.ts` | Accept access to a derived member after a user-defined type predicate narrows the base value. |
+| `should_parse_type_predicate_return_type_given_function_declaration_when_building_syntax_tree` | `conformance/expressions/typeGuards/typeGuardFunction.ts` | Parse and retain the complete `parameter is Type` return annotation on a function declaration. |
+| `should_narrow_nullable_string_given_assertion_function_call_when_checking_types` | `conformance/controlFlow/assertionTypePredicates1.ts` | Narrow a nullable string after a call to a function declared with `asserts value`. |
+| `should_narrow_unknown_given_assertion_type_predicate_call_when_checking_types` | `conformance/controlFlow/assertionTypePredicates1.ts` | Narrow `unknown` to `string` after a call declared with `asserts value is string`. |
 | `should_parse_import_attributes_given_json_import_when_building_syntax_tree` | `conformance/importAttributes/importAttributes1.ts` | Parse an import declaration with a JSON import attribute. |
 | `should_parse_deferred_import_given_default_binding_when_building_syntax_tree` | `conformance/importDefer/importBindingDefer.ts` | Parse a deferred import declaration with its default binding. |
 | `should_write_source_map_given_source_map_option_when_running_compiler_cli` | `conformance/es6/computedProperties/computedPropertyNamesSourceMap1_ES6.ts` | Write JavaScript source maps and link the emitted JavaScript to its map. |
@@ -323,10 +339,15 @@ test executed that fixture or covered every output/configuration.
 | `should_resolve_json_import_given_resolve_json_module_project_option_when_running_compiler_cli` | `compiler/isolatedModules_resolveJsonModule.ts` | Resolve and emit an imported JSON module when `resolveJsonModule` is enabled. |
 | `should_report_unassigned_variable_read_given_declaration_without_initializer_when_checking_types` | `conformance/types/stringLiteral/stringLiteralMatchedInSwitch01.ts` | Report TS2454 when reading a local variable before it has been assigned. |
 | `should_parse_import_meta_expression_given_module_source_when_building_syntax_tree` | `conformance/es2019/importMeta/importMeta.ts` | Parse `import.meta` in a valid ES module source without syntax diagnostics. |
+| `should_parse_import_type_given_module_specifier_when_building_syntax_tree` | `conformance/types/import/importTypeAmbient.ts` | Parse an import type with a module specifier and qualified exported type. |
+| `should_resolve_imported_interface_given_import_type_reference_when_compiling_sources` | `conformance/types/import/importTypeLocal.ts` | Resolve an imported interface through a relative import type in a sibling source. |
+| `should_parse_typeof_import_given_module_specifier_when_building_syntax_tree` | `conformance/types/import/importTypeAmbient.ts` | Parse `typeof import("foo")` as an imported module type query. |
 | `should_resolve_scoped_package_types_given_package_json_types_field_when_running_compiler_cli` | `compiler/moduleResolution_packageJson_scopedPackage.ts` | Follow a scoped package's `types` field and resolve the imported declaration. |
 | `should_report_uninitialized_property_given_strict_project_option_when_compiling_project` | `conformance/classes/propertyMemberDeclarations/strictPropertyInitialization.ts` | Report TS2564 for an uninitialized required class property under strict mode. |
 | `should_emit_type_predicate_given_exported_function_when_emitting_declarations` | `conformance/declarationEmit/typePredicates/declarationEmitIdentifierPredicates01.ts` | Emit the exported function's `x is number` type predicate in its declaration. |
 | `should_report_indexed_property_type_mismatch_given_string_index_signature_when_checking_types` | `conformance/types/objectTypeLiteral/indexSignatures/stringIndexerConstrainsPropertyDeclarations.ts` | Report TS2411 when a named property violates its string index signature. |
+| `should_report_numeric_property_mismatch_given_numeric_index_signature_when_checking_types` | `conformance/types/objectTypeLiteral/indexSignatures/numericIndexerConstrainsPropertyDeclarations.ts` | Report TS2411 when a numeric property violates its numeric index signature. |
+| `should_read_numeric_index_signature_value_given_number_key_when_checking_types` | `conformance/types/objectTypeLiteral/indexSignatures/numericIndexingResults.ts` | Infer the numeric index signature's value type when a number key is read. |
 | `should_parse_new_target_meta_property_given_function_body_when_building_syntax_tree` | `conformance/es6/newTarget/newTarget.es6.ts` | Parse the `new.target` meta-property within a function body. |
 | `should_suppress_javascript_output_given_no_emit_project_configuration_when_running_compiler_cli` | `compiler/compilerOptionsOutDirAndNoEmit.ts` | Honor project `noEmit` and leave the JavaScript output absent. |
 | `should_ignore_first_line_hashbang_given_typescript_source_when_parsing` | `compiler/shebang.ts` | Accept and preserve a first-line hashbang in a TypeScript source file. |
@@ -351,6 +372,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_implicit_any_given_array_extends_project_configuration_when_running_compiler_cli` | `compiler/configFileExtendsAsList.ts` | Apply inherited `noImplicitAny` from an array-valued `extends` chain and report TS7006. |
 | `should_report_implicit_any_return_given_circular_imported_calls_when_compiling_project` | `projects/CircularReferencing/consume.ts`, `projects/CircularReferencing/decl.ts` | Report TS7023 for implicitly typed functions with mutually recursive return inference. |
 | `should_compile_relative_import_equals_dependency_given_project_root_when_running_compiler_cli` | `projects/relative-global/consume.ts`, `projects/relative-global/decl.ts` | Parse and resolve a relative import-equals dependency when compiling the project. |
+| `should_resolve_nested_relative_import_equals_given_project_root_when_running_compiler_cli` | `projects/relative-nested/app.ts`, `projects/relative-nested/main/consume.ts`, `projects/relative-nested/decl.ts` | Resolve the root's nested relative import-equals dependency chain when compiling a project. |
 | `should_elide_unused_cycle_import_given_commonjs_project_when_emitting_javascript` | `projects/CircularReferencing-2/a.ts`, `projects/CircularReferencing-2/b.ts`, `projects/CircularReferencing-2/c.ts` | Omit an unused import that closes a project dependency cycle from CommonJS output. |
 | `should_emit_one_import_given_repeated_module_imports_when_emitting_declarations` | `projects/declarations_MultipleTimesImport/useModule.ts`, `projects/declarations_MultipleTimesImport/m4.ts` | Emit one declaration import for repeated references to the same module. |
 | `should_preserve_transitive_imported_type_given_declaration_emit_when_compiling_project` | `projects/declarations_IndirectImport/useModule.ts`, `projects/declarations_IndirectImport/m5.ts`, `projects/declarations_IndirectImport/m4.ts` | Preserve the transitive module origin of an exported inferred declaration type. |
@@ -401,6 +423,10 @@ test executed that fixture or covered every output/configuration.
 | `should_accept_regexp_escape_given_es2025_regexp_library_when_checking_types` | `conformance/es2025/regExpEscape.ts` | Resolve `RegExp.escape` as a string-to-string function from the ES2025 RegExp library. |
 | `should_report_invalid_unicode_escape_given_non_hex_digit_when_scanning_string_literal` | `conformance/scanner/ecmascript5/scannerS7.8.4_A7.1_T4.ts` | Report TS1125 for a non-hexadecimal digit in a string Unicode escape. |
 | `should_reject_private_member_as_public_structural_assignment_given_class_instance_when_checking_types` | `conformance/types/typeRelationships/assignmentCompatibility/assignmentCompatWithObjectMembersAccessibility.ts` | Report TS2322 when a private class member does not satisfy a public structural property. |
+| `should_reject_protected_property_access_given_external_instance_when_checking_types` | `conformance/classes/members/accessibility/classPropertyAsProtected.ts` | Report TS2445 when code outside the class reads a protected property. |
+| `should_reject_protected_member_access_through_base_receiver_given_derived_class_method_when_checking_types` | `conformance/classes/members/accessibility/protectedInstanceMemberAccessibility.ts` | Report TS2446 when a derived class reads a protected member through a base-class-typed receiver. |
+| `should_erase_non_null_assertion_given_nullable_variable_when_emitting_javascript` | `compiler/narrowingWithNonNullExpression.ts` | Erase a postfix non-null assertion while preserving its operand in JavaScript output. |
+| `should_parse_non_null_assertion_given_variable_expression_when_building_syntax_tree` | `compiler/narrowingWithNonNullExpression.ts` | Parse `value!` as a full expression without syntax diagnostics. |
 | `should_accept_get_canonical_locales_given_es2016_target_when_checking_types` | `conformance/es2016/es2016IntlAPIs.ts` | Resolve `Intl.getCanonicalLocales` and accept its `string[]` return under the ES2016 target. |
 | `should_report_missing_hex_digit_given_hex_prefix_without_digits_when_scanning_typescript` | `conformance/scanner/ecmascript5/scannerS7.8.3_A6.1_T1.ts` | Report TS1125 for a hexadecimal prefix with no digits. |
 | `should_reject_number_assignment_given_destructured_constrained_generic_result_when_checking_types` | `conformance/inferFromBindingPattern.ts` | Report TS2322 when a constrained generic tuple element inferred as `string` is assigned to `number`. |
@@ -427,7 +453,10 @@ test executed that fixture or covered every output/configuration.
 | `should_emit_export_assignment_given_commonjs_module_when_emitting_javascript` | `conformance/externalModules/exportAssignTypes.ts` | Emit `module.exports` for an export assignment. |
 | `should_load_type_reference_given_type_roots_configuration_when_running_compiler_cli` | `conformance/references/library-reference-1.ts` | Resolve a triple-slash type reference through configured type roots. |
 | `should_report_jsdoc_argument_mismatch_given_number_parameter_when_checking_javascript` | `conformance/jsdoc/checkJsdocParamTag1.ts` | Report TS2345 for a mismatched JSDoc-typed argument. |
+| `should_report_required_parameter_after_optional_jsdoc_parameter_given_checked_javascript_when_checking_types` | `conformance/jsdoc/checkJsdocOptionalParamOrder.ts` | Report TS1016 when a required parameter follows an optional JSDoc parameter in checked JavaScript. |
+| `should_report_return_type_mismatch_given_jsdoc_returns_tag_when_checking_types` | `conformance/jsdoc/checkJsdocReturnTag2.ts` | Report TS2322 when a JavaScript function returns a number against `@returns {string}`. |
 | `should_emit_jsdoc_parameter_type_given_annotated_javascript_function_when_emitting_declarations` | `conformance/jsdoc/declarations/jsDeclarationsFunctionJSDoc.ts` | Preserve the JSDoc parameter type in declaration output. |
+| `should_report_comma_operator_in_jsx_expression_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxParsingError1.tsx` | Report TS18007 for a comma operator in a JSX expression container. |
 | `should_merge_interface_members_given_duplicate_declarations_when_checking_types` | `conformance/interfaces/declarationMerging/mergeTwoInterfaces.ts` | Combine the members of merged interface declarations. |
 | `should_reject_legacy_out_file_given_allow_js_project_when_running_compiler_cli` | `projects/jsFileCompilation/DifferentNamesNotSpecifiedWithAllowJs/a.ts` | Report TS5102 for the removed `outFile` option. |
 | `should_write_declarations_to_declaration_dir_given_declaration_dir_project_option_when_running_compiler_cli` | `projects/declarationDir` | Write declaration files under the configured declaration directory. |
@@ -454,22 +483,34 @@ test executed that fixture or covered every output/configuration.
 | `should_report_source_reference_to_itself_given_triple_slash_directive_when_running_compiler_cli` | `projects/InvalidReferences/main.ts` | Report TS1006 for a source file that references itself. |
 | `should_report_missing_source_references_given_unresolved_triple_slash_paths_when_running_compiler_cli` | `projects/InvalidReferences/main.ts` | Report TS6053 for unresolved triple-slash source paths. |
 | `should_parse_string_index_signature_given_interface_member_when_building_syntax_tree` | `conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts` | Accept a string index signature in an interface. |
+| `should_parse_numeric_index_signature_given_interface_member_when_building_syntax_tree` | `conformance/types/objectTypeLiteral/indexSignatures/numericIndexingResults.ts` | Accept a numeric index signature in an interface. |
+| `should_parse_numeric_index_signature_in_object_type_given_numeric_key_when_building_syntax_tree` | `conformance/types/objectTypeLiteral/indexSignatures/numericIndexingResults.ts` | Accept a numeric index signature in an object type literal. |
+| `should_parse_numeric_index_signature_given_class_member_when_building_syntax_tree` | `conformance/types/objectTypeLiteral/indexSignatures/numericIndexingResults.ts` | Accept a numeric index signature in a class. |
+| `should_report_index_signature_property_access_given_option_when_compiling_project` | `conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts` | Report TS4111 when dot access reads a key supplied only by an index signature under `noPropertyAccessFromIndexSignature`. |
+| `should_allow_bracket_access_given_index_signature_property_and_option_when_compiling_project` | `conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts` | Allow bracket access to an index-signature-only key when `noPropertyAccessFromIndexSignature` is enabled. |
+| `should_allow_declared_property_dot_access_given_index_signature_and_option_when_compiling_project` | `conformance/additionalChecks/noPropertyAccessFromIndexSignature1.ts` | Allow dot access to an explicitly declared property even when the type also has an index signature. |
 | `should_parse_async_generator_declaration_given_es2018_function_syntax_when_building_tree` | `conformance/asyncGenerators/asyncGeneratorParameterEvaluation.ts` | Parse an adjacent `async function*` declaration in the ES2018 configuration. |
 | `should_reject_project_option_mixed_with_source_files_given_project_and_file_arguments_when_running_compiler_cli` | `tsc/ignoreConfig/mixing-project-and-files.js` | Report TS5042 when `--project` and source files are passed together. |
 | `should_report_invalid_interface_extension_given_union_base_when_checking_types` | `conformance/interfaces/interfaceDeclarations/interfaceExtendsObjectIntersectionErrors.ts` | Report TS2312 when an interface extends a union with non-static members. |
 | `should_report_incompatible_overload_implementation_given_function_signature_when_checking_types` | `conformance/functions/functionOverloadCompatibilityWithVoid01.ts` | Report TS2394 when an overload signature is incompatible with its implementation. |
 | `should_parse_tagged_template_as_single_statement_given_tag_expression_when_building_tree` | `conformance/es6/templates/taggedTemplateStringsWithTagsTypedAsAny.ts` | Parse a tagged template expression as one expression statement. |
+| `should_preserve_labeled_break_given_labeled_while_loop_when_emitting_javascript` | `conformance/statements/labeledStatements` | Preserve the labeled loop and its labeled `break` in JavaScript output. |
 | `should_resolve_versioned_package_types_given_types_versions_mapping_when_running_compiler_cli` | `conformance/moduleResolution/typesVersions.multiFile.ts` | Resolve declarations selected by a package `typesVersions` mapping. |
 | `should_retain_following_class_given_unexpected_top_level_brace_when_parsing` | `conformance/parser/ecmascript5/ErrorRecovery/SourceUnits/parserErrorRecovery_SourceUnit1.ts` | Recover from an unexpected top-level brace and retain the following class declaration. |
 | `should_suppress_javascript_output_given_type_error_and_no_emit_on_error_project_option_when_running_compiler_cli` | `compiler/noEmitOnError.ts` | Suppress JavaScript output when a project has a type error and `noEmitOnError`. |
 | `should_assign_derived_instance_to_base_return_type_given_class_inheritance_when_checking_types` | `conformance/types/typeRelationships/assignmentCompatibility/unionTypesAssignability.ts` | Accept a derived class instance where its base class is expected. |
 | `should_report_required_return_value_given_non_void_function_without_return_when_checking_types` | `compiler/missingReturnStatement.ts` | Report TS2355 when a non-void function has no return value. |
+| `should_insert_return_terminator_given_line_break_before_expression_when_emitting_javascript` | `conformance/statements/returnStatements/returnStatementNoAsiAfterTransform.ts` | Preserve automatic semicolon insertion after `return` when a line terminator precedes the following expression. |
 | `should_report_call_on_non_callable_value_given_number_expression_when_checking_types` | `compiler/callOnInstance.ts` | Report TS2349 when a numeric value is called as a function. |
 | `should_report_missing_return_path_given_non_void_function_with_partial_return_when_checking_types` | `compiler/exhaustiveSwitchImplicitReturn.ts` | Report TS2366 when a non-void function has a path that falls through without returning. |
 | `should_reject_private_member_redeclaration_given_derived_class_override_when_checking_types` | `compiler/inheritanceGrandParentPrivateMemberCollision.ts` | Report TS2415 when a derived class redeclares an inherited private member. |
+| `should_report_static_member_suggestion_given_unqualified_static_member_reference_when_checking_types` | `compiler/accessInstanceMemberFromStaticMethod01.ts` | Report TS2662 with a suggestion when an unqualified name refers to a class static member. |
+| `should_report_static_member_access_suggestion_given_instance_property_read_when_checking_types` | `compiler/classStaticPropertyAccess.ts` | Report TS2576 with a suggestion to access a static member through its class after an instance property read. |
 | `should_report_unreachable_statement_given_allow_unreachable_code_false_when_compiling_project` | `compiler/reachabilityChecks11.ts` | Report TS7027 for a statement after an unconditional return when `allowUnreachableCode` is false. |
 | `should_parse_ambient_namespace_given_namespace_declaration_when_building_syntax_tree` | `projects/declareVariableCollision/decl.d.ts` | Parse an ambient `declare namespace` in a project declaration file. |
 | `should_parse_type_only_star_reexport_given_export_declaration_when_building_syntax_tree` | `conformance/externalModules/typeOnly/exportNamespace4.ts` | Parse `export type * from './a'` without syntax diagnostics. |
+| `should_parse_namespace_reexport_given_identifier_alias_when_building_syntax_tree` | `conformance/externalModules/typeOnly/exportNamespace2.ts` | Parse `export * as api from './module'` as a namespace re-export. |
+| `should_emit_namespace_reexport_given_commonjs_module_when_compiling_sources` | `conformance/externalModules/typeOnly/exportNamespace2.ts` | Lower a namespace re-export to a CommonJS `__importStar(require(...))` assignment. |
 | `should_parse_parameter_decorator_given_class_method_parameter_when_building_syntax_tree` | `conformance/decorators/class/method/parameter/decoratorOnClassMethodParameter1.ts` | Parse a legacy decorator on a class method parameter. |
 | `should_emit_literal_return_type_given_local_type_query_when_emitting_declarations` | `transpile/declarationNotInScopeTypes.ts` | Emit `export declare function two(): "";` for a local `typeof` query. |
 | `should_preserve_value_type_query_given_type_alias_when_emitting_declarations` | `conformance/types/specifyingTypes/typeQueries/circularTypeofWithVarOrFunc.ts` | Preserve `typeof value` in a type alias declaration. |
