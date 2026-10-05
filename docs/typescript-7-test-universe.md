@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 636 behavior tests: 324 pass, 312 deliberately
+The Rust suite currently has 641 behavior tests: 324 pass, 317 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,19 +246,19 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 321 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 326 behavior entries, touching
 101 of the 110 source-suite/area groups in the inventory; 9 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 312 deliberate Rust failures have
+The red-test map validator confirms that all 317 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
-adds one row for every source fixture. It currently records 278 fixtures
-referenced by exact path, 511 with only an area sample, and 11,852 with no
+adds one row for every source fixture. It currently records 281 fixtures
+referenced by exact path, 511 with only an area sample, and 11,849 with no
 mapped behavior-test reference. Each row also carries its recorded option
 directives/configurations, reference-artifact names and kinds, and oracle
 status. Project/transpile rows also carry the runner configuration and oracle
@@ -452,15 +452,20 @@ test executed that fixture or covered every output/configuration.
 | `should_report_function_body_given_ambient_function_declaration_when_compiling_sources` | `conformance/ambient/ambientErrors.ts` | Report TS1183 when an ambient function declares an implementation body. |
 | `should_report_parameter_initializer_given_ambient_function_signature_when_compiling_sources` | `conformance/ambient/ambientErrors.ts` | Report TS2371 for a default parameter in an ambient function signature. |
 | `should_report_nonconstant_initializer_given_ambient_enum_member_when_compiling_sources` | `conformance/ambient/ambientErrors.ts` | Report TS1066 for a computed initializer in an ambient enum declaration. |
+| `should_accept_constant_expressions_given_ambient_enum_members_when_compiling_sources` | `conformance/ambient/ambientEnumDeclaration1.ts` | Accept arithmetic expressions and prior member references in ambient enum constants. |
 | `should_report_nested_module_given_ambient_module_inside_namespace_when_compiling_sources` | `conformance/ambient/ambientErrors.ts` | Report TS2435 when an ambient module is nested inside a namespace. |
 | `should_report_relative_name_given_ambient_module_declaration_when_compiling_sources` | `conformance/ambient/ambientErrors.ts` | Report TS2436 when an ambient module declaration uses a relative module name. |
 | `should_report_mixed_ambient_exports_given_export_assignment_when_compiling_sources` | `conformance/ambient/ambientErrors.ts` | Report TS2309 when an ambient module combines `export =` with named exports. |
 | `should_accept_exported_ambient_variable_given_namespace_member_when_compiling_sources` | `conformance/ambient/ambientInsideNonAmbient.ts` | Accept an exported ambient variable declaration inside a namespace. |
+| `should_reject_export_modifier_given_ambient_module_augmentation_when_compiling_sources` | `conformance/ambient/ambientExternalModuleInsideNonAmbientExternalModule.ts` | Report TS2668 when an ambient module augmentation inside an external module has an `export` modifier. |
+| `should_report_missing_module_given_ambient_augmentation_when_compiling_sources` | `conformance/ambient/ambientExternalModuleInsideNonAmbientExternalModule.ts` | Report TS2664 when an ambient module augmentation targets a missing module. |
 | `should_allow_arbitrary_member_given_shorthand_module_import_when_compiling_sources` | `conformance/ambient/ambientShorthand.ts` | Treat an import from a shorthand ambient module as `any`. |
 | `should_merge_duplicate_shorthand_modules_given_import_when_compiling_sources` | `conformance/ambient/ambientShorthand_duplicate.ts` | Merge repeated shorthand module declarations and resolve an import from the module. |
 | `should_merge_members_given_repeated_ambient_module_declarations_when_compiling_sources` | `conformance/ambient/ambientExternalModuleMerging.ts` | Combine exports from repeated ambient module declarations for imported member access. |
 | `should_merge_shorthand_module_with_named_module_declaration_when_compiling_sources` | `conformance/ambient/ambientShorthand_merging.ts` | Combine a shorthand ambient module with a declaration that adds named exports. |
 | `should_emit_shorthand_module_declaration_given_declaration_option_when_emitting` | `conformance/ambient/ambientShorthand_declarationEmit.ts` | Preserve a shorthand ambient module declaration in emitted `.d.ts` output. |
+| `should_resolve_named_reexport_given_shorthand_module_when_compiling_sources` | `conformance/ambient/ambientShorthand_reExport.ts` | Resolve a named re-export from a shorthand ambient module. |
+| `should_resolve_star_reexport_given_shorthand_module_when_compiling_sources` | `conformance/ambient/ambientShorthand_reExport.ts` | Resolve a star re-export from a shorthand ambient module. |
 | `should_report_reserved_namespace_name_given_declare_namespace_when_compiling_sources` | `conformance/ambient/ambientModuleDeclarationWithReservedIdentifierInDottedPath2.ts` | Report TS2819 for a namespace named with the reserved identifier `debugger`. |
 | `should_resolve_ambient_module_given_named_import_when_compiling_sources` | `conformance/ambient/ambientDeclarationsExternal.ts` | Resolve the named import supplied by an ambient module. |
 | `should_resolve_wildcard_ambient_module_given_suffix_import_when_compiling_sources` | `conformance/ambient/ambientDeclarationsPatterns.ts` | Resolve an import ending in `!text` through a wildcard ambient module declaration. |

@@ -98,6 +98,20 @@ fn should_report_nonconstant_initializer_given_ambient_enum_member_when_compilin
 }
 
 #[test]
+fn should_accept_constant_expressions_given_ambient_enum_members_when_compiling_sources() {
+    // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientEnumDeclaration1.ts.
+    // TS-Go accepts arithmetic and prior-member references in ambient enum constants.
+    // Arrange
+    let source = "declare enum E { a = 10, b = 10 + 1, c = b, d = c + 1 }";
+
+    // Act
+    let result = compile_source(source);
+
+    // Assert
+    assert_eq!(result.diagnostics(), []);
+}
+
+#[test]
 fn should_accept_exported_ambient_variable_given_namespace_member_when_compiling_sources() {
     // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientInsideNonAmbient.ts.
     // TS-Go accepts an exported ambient variable inside a namespace declaration.
@@ -109,6 +123,48 @@ fn should_accept_exported_ambient_variable_given_namespace_member_when_compiling
 
     // Assert
     assert_eq!(result.diagnostics(), []);
+}
+
+#[test]
+fn should_reject_export_modifier_given_ambient_module_augmentation_when_compiling_sources() {
+    // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientExternalModuleInsideNonAmbientExternalModule.ts.
+    // TS-Go reports TS2668 because an ambient module augmentation cannot use export.
+    // Arrange
+    let source = "export declare module \"M\" {}";
+
+    // Act
+    let result = compile_source(source);
+
+    // Assert
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 2668),
+        "expected TS2668 for an exported ambient module augmentation, got {:?}",
+        result.diagnostics()
+    );
+}
+
+#[test]
+fn should_report_missing_module_given_ambient_augmentation_when_compiling_sources() {
+    // Pinned TypeScript 7.0.2 case: conformance/ambient/ambientExternalModuleInsideNonAmbientExternalModule.ts.
+    // TS-Go reports TS2664 when the augmented external module does not exist.
+    // Arrange
+    let source = "export declare module \"M\" {}";
+
+    // Act
+    let result = compile_source(source);
+
+    // Assert
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 2664),
+        "expected TS2664 for the missing augmentation target, got {:?}",
+        result.diagnostics()
+    );
 }
 
 #[test]
