@@ -2,6 +2,21 @@ use std::path::Path;
 
 use tsrzl::compiler::Compiler;
 use tsrzl::source_file::SourceFile;
+use tsrzl::syntax::SyntaxTree;
+
+#[test]
+fn should_parse_generator_declaration_given_asterisk_modifier_when_building_syntax_tree() {
+    // Upstream: conformance/generators/generatorImplicitAny.ts, function g.
+    // Arrange
+    let source = SourceFile::from_path(Path::new("generator.ts"), "function* g() {}")
+        .expect("a TypeScript path has a supported source kind");
+
+    // Act
+    let syntax_tree = SyntaxTree::parse(source);
+
+    // Assert
+    assert_eq!(syntax_tree.diagnostics(), []);
+}
 
 #[test]
 fn should_report_implicit_any_yield_given_unannotated_generator_when_checking_types() {
