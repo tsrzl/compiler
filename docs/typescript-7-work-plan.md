@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 615 tests: 324 pass and 291 deliberately fail;
-none are ignored. The compiler/oracle map links 300 behaviors to upstream cases
+The Rust suite currently has 616 tests: 324 pass and 292 deliberately fail;
+none are ignored. The compiler/oracle map links 301 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 101
 of 110 source-suite/area groups; 9 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 291 failures mapped by
+full test run has all 292 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -49,6 +49,9 @@ unparsed import type and unresolved alias.
 JSDoc `@template` return inference has a focused mismatch contract. TS-Go
 infers `number` from the argument and reports TS2322 for a string assignment;
 TSRZL currently reports TS2304 for the JSDoc parameter name instead.
+JSDoc `@callback` contextual typing has a separate contract: TS-Go types the
+callback parameter as `string` and reports TS2551 for `toFixed`, while TSRZL
+currently reports no diagnostic.
 
 ## Work packages
 
