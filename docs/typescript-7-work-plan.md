@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 709 tests: 324 pass and 385 deliberately fail;
-none are ignored. The compiler/oracle map links 394 behaviors to upstream cases
+The Rust suite currently has 711 tests: 324 pass and 387 deliberately fail;
+none are ignored. The compiler/oracle map links 396 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 105
 of 110 source-suite/area groups; 5 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 385 failures mapped by
+full test run has all 387 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -34,7 +34,9 @@ assertion-function narrowing forms, identifier-aliased namespace re-exports,
 and `instanceof` syntax and narrowing. Generator tests require `function*`
 declaration parsing, TS7057 for an unannotated used `yield`, and acceptance of a
 contextually typed yield; TSRZL currently rejects the generator declaration
-before reaching either type-checking result.
+before reaching either type-checking result. Function-overload tests pair
+signature parsing with the valid `void`-overload case whose implementation
+returns a value; TSRZL currently stops at TS1005 on the overload semicolon.
 TSRZL
 currently reports TS1005 / TS2322 for the non-null assertion, no TS2322 for a
 numeric return against `@returns {string}`, emits the line-separated `return 42`

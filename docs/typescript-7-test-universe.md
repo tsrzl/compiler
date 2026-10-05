@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 709 behavior tests: 324 pass, 385 deliberately
+The Rust suite currently has 711 behavior tests: 324 pass, 387 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 394 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 396 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 385 deliberate Rust failures have
+The red-test map validator confirms that all 387 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -564,6 +564,8 @@ test executed that fixture or covered every output/configuration.
 | `should_reject_project_option_mixed_with_source_files_given_project_and_file_arguments_when_running_compiler_cli` | `tsc/ignoreConfig/mixing-project-and-files.js` | Report TS5042 when `--project` and source files are passed together. |
 | `should_report_invalid_interface_extension_given_union_base_when_checking_types` | `conformance/interfaces/interfaceDeclarations/interfaceExtendsObjectIntersectionErrors.ts` | Report TS2312 when an interface extends a union with non-static members. |
 | `should_report_incompatible_overload_implementation_given_function_signature_when_checking_types` | `conformance/functions/functionOverloadCompatibilityWithVoid01.ts` | Report TS2394 when an overload signature is incompatible with its implementation. |
+| `should_parse_function_overload_signature_given_following_implementation_when_building_syntax_tree` | `conformance/functions/functionOverloadCompatibilityWithVoid02.ts` | Parse an overload signature followed by its implementation. |
+| `should_accept_void_overload_given_value_returning_implementation_when_checking_types` | `conformance/functions/functionOverloadCompatibilityWithVoid02.ts` | Accept a value-returning implementation for a `void` overload. |
 | `should_parse_tagged_template_as_single_statement_given_tag_expression_when_building_tree` | `conformance/es6/templates/taggedTemplateStringsWithTagsTypedAsAny.ts` | Parse a tagged template expression as one expression statement. |
 | `should_preserve_labeled_break_given_labeled_while_loop_when_emitting_javascript` | `conformance/statements/labeledStatements` | Preserve the labeled loop and its labeled `break` in JavaScript output. |
 | `should_resolve_versioned_package_types_given_types_versions_mapping_when_running_compiler_cli` | `conformance/moduleResolution/typesVersions.multiFile.ts` | Resolve declarations selected by a package `typesVersions` mapping. |
