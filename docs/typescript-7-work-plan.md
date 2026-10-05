@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 697 tests: 324 pass and 373 deliberately fail;
-none are ignored. The compiler/oracle map links 382 behaviors to upstream cases
+The Rust suite currently has 699 tests: 324 pass and 375 deliberately fail;
+none are ignored. The compiler/oracle map links 384 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 105
 of 110 source-suite/area groups; 5 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 373 failures mapped by
+full test run has all 375 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
