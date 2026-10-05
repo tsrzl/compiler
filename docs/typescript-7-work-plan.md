@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 722 tests: 324 pass and 398 deliberately fail;
-none are ignored. The compiler/oracle map links 407 behaviors to upstream cases
+The Rust suite currently has 723 tests: 324 pass and 399 deliberately fail;
+none are ignored. The compiler/oracle map links 408 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 106
 of 110 source-suite/area groups; 4 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 398 failures mapped by
+full test run has all 399 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -154,6 +154,9 @@ Incremental project-reference coverage now verifies that changing the core
 project's exported type rebuilds the app declaration through a middle project.
 TypeScript-Go updates the emitted type from `number` to `string`; TSRZL still
 rejects the initial `--build` invocation.
+
+Dry-build mode now has a two-project contract: TypeScript-Go lists both pending
+builds and writes no output directories; TSRZL rejects the `--build` option.
 
 Array-based `tsconfig` inheritance now has a precedence contract: TypeScript-Go
 reports TS7006 when the later config enables `noImplicitAny` after the earlier

@@ -32,6 +32,16 @@ impl TemporaryProject {
             .output()
             .expect("the compiler CLI can be started")
     }
+
+    fn dry_build_application(&self) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+            .current_dir(&self.path)
+            .arg("--build")
+            .arg("--dry")
+            .arg(self.path.join("app/tsconfig.json"))
+            .output()
+            .expect("the compiler CLI can be started")
+    }
 }
 
 impl Drop for TemporaryProject {
@@ -147,4 +157,48 @@ fn should_rebuild_dependent_declarations_given_dependency_type_changes_when_runn
             .expect("the rebuilt application declaration can be read"),
         "export declare const result: string;\n"
     );
+}
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_skip_project_outputs_given_dry_build_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("dry-build");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const value = 1;\n");
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "app/index.ts",
+        "import { value } from \"../core\";\nexport const result = value;\n",
+    );
+
+    // Act
+    let output = project.dry_build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout)
+            .matches("A non-dry build would build project")
+            .count(),
+        2,
+        "{diagnostics}"
+    );
+    for output_directory in ["core/dist", "app/dist"] {
+        assert!(
+            !project.path.join(output_directory).exists(),
+            "dry build unexpectedly wrote {output_directory}"
+        );
+    }
 }
