@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 619 behavior tests: 324 pass, 295 deliberately
+The Rust suite currently has 622 behavior tests: 324 pass, 298 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,19 +246,19 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 304 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 307 behavior entries, touching
 101 of the 110 source-suite/area groups in the inventory; 9 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 295 deliberate Rust failures have
+The red-test map validator confirms that all 298 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
-adds one row for every source fixture. It currently records 268 fixtures
-referenced by exact path, 511 with only an area sample, and 11,862 with no
+adds one row for every source fixture. It currently records 270 fixtures
+referenced by exact path, 511 with only an area sample, and 11,860 with no
 mapped behavior-test reference. Each row also carries its recorded option
 directives/configurations, reference-artifact names and kinds, and oracle
 status. Project/transpile rows also carry the runner configuration and oracle
@@ -451,7 +451,10 @@ test executed that fixture or covered every output/configuration.
 | `should_resolve_ambient_module_given_named_import_when_compiling_sources` | `conformance/ambient/ambientDeclarationsExternal.ts` | Resolve the named import supplied by an ambient module. |
 | `should_resolve_wildcard_ambient_module_given_suffix_import_when_compiling_sources` | `conformance/ambient/ambientDeclarationsPatterns.ts` | Resolve an import ending in `!text` through a wildcard ambient module declaration. |
 | `should_merge_concrete_module_with_wildcard_ambient_declaration_when_compiling_sources` | `conformance/ambient/ambientDeclarationsPatterns_merging1.ts` | Merge a concrete ambient module's export with the export provided by a matching wildcard declaration. |
+| `should_report_missing_wildcard_export_given_standalone_ambient_declaration_when_compiling_sources` | `conformance/ambient/ambientDeclarationsPatterns_merging1.ts` | Report TS2305 when a standalone concrete ambient module declaration in a separate file does not inherit the wildcard module's export. |
+| `should_report_missing_export_given_augmentation_for_another_wildcard_module_when_compiling_sources` | `conformance/ambient/ambientDeclarationsPatterns_merging2.ts` | Report TS2305 when a named import targets a wildcard-matched module outside the augmented module's specifier. |
 | `should_reject_augmentation_member_given_distinct_wildcard_module_specifier_when_checking_types` | `conformance/ambient/ambientDeclarationsPatterns_merging3.ts` | Keep a concrete module augmentation scoped to its specifier and report TS2339 for another wildcard-matched module. |
+| `should_report_multiple_asterisks_given_wildcard_ambient_module_when_compiling_sources` | `conformance/ambient/ambientDeclarationsPatterns_tooManyAsterisks.ts` | Report TS5061 when an ambient module pattern contains more than one asterisk. |
 | `should_preserve_symbol_computed_property_given_symbol_key_when_emitting_javascript` | `conformance/Symbols/ES5SymbolProperty1.ts` | Preserve the computed symbol property key. |
 | `should_emit_export_assignment_given_commonjs_module_when_emitting_javascript` | `conformance/externalModules/exportAssignTypes.ts` | Emit `module.exports` for an export assignment. |
 | `should_load_type_reference_given_type_roots_configuration_when_running_compiler_cli` | `conformance/references/library-reference-1.ts` | Resolve a triple-slash type reference through configured type roots. |
