@@ -7,10 +7,10 @@ struct TemporaryProject {
 }
 
 impl TemporaryProject {
-    fn new() -> Self {
+    fn new(case: &str) -> Self {
         let root = std::env::temp_dir().join(format!(
-            "tsrzl-rewrite-relative-import-extensions-{}",
-            std::process::id()
+            "tsrzl-rewrite-relative-import-extensions-{}-{case}",
+            std::process::id(),
         ));
         fs::create_dir_all(&root).expect("the project directory can be created");
         Self { root }
@@ -45,7 +45,7 @@ impl Drop for TemporaryProject {
 #[test]
 fn should_rewrite_relative_typescript_import_given_rewrite_option_when_emitting_javascript() {
     // Arrange
-    let project = TemporaryProject::new();
+    let project = TemporaryProject::new("ts-import");
     project.write(
         "tsconfig.json",
         r#"{"compilerOptions":{"target":"esnext","module":"preserve","moduleResolution":"bundler","verbatimModuleSyntax":true,"rewriteRelativeImportExtensions":true,"outDir":"dist"},"files":["main.ts","dep.ts"]}"#,
@@ -70,5 +70,36 @@ fn should_rewrite_relative_typescript_import_given_rewrite_option_when_emitting_
         fs::read_to_string(project.path().join("dist/main.js"))
             .expect("the emitted JavaScript can be read"),
         "import { answer } from \"./dep.js\";\nexport const result = answer;\n"
+    );
+}
+
+#[test]
+fn should_rewrite_mts_import_to_mjs_given_rewrite_option_when_emitting_javascript() {
+    // Arrange
+    let project = TemporaryProject::new("mts-import");
+    project.write(
+        "tsconfig.json",
+        r#"{"compilerOptions":{"target":"esnext","module":"preserve","moduleResolution":"bundler","verbatimModuleSyntax":true,"rewriteRelativeImportExtensions":true,"outDir":"dist"},"files":["main.ts","dep.mts"]}"#,
+    );
+    project.write(
+        "main.ts",
+        "import { answer } from './dep.mts';\nexport const result: number = answer;\n",
+    );
+    project.write("dep.mts", "export const answer: number = 42;\n");
+
+    // Act
+    let output = project.run_cli();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        fs::read_to_string(project.path().join("dist/main.js"))
+            .expect("the emitted JavaScript can be read"),
+        "import { answer } from \"./dep.mjs\";\nexport const result = answer;\n"
     );
 }
