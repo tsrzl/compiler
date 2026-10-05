@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 720 behavior tests: 324 pass, 396 deliberately
+The Rust suite currently has 721 behavior tests: 324 pass, 397 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 405 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 406 behavior entries, touching
 106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 396 deliberate Rust failures have
+The red-test map validator confirms that all 397 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -278,6 +278,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_possibly_undefined_given_optional_parameter_read_when_checking_types` | `compiler/optionalParamArgsTest.ts` | Report TS18048 for an optional parameter read without narrowing. |
 | `should_accept_unicode_escape_given_identifier_when_compiling` | `conformance/scanner/ecmascript5/scannerS7.6_A4.2_T1.ts` | Decode Unicode escapes in identifiers. |
 | `should_build_referenced_project_given_project_reference_when_running_compiler_cli` | `typescript-go/internal/project/projectreferencesprogram_test.go` | Build a referenced library before the application project. |
+| `should_build_transitive_project_references_given_three_level_graph_when_running_compiler_cli` | `typescript-go/internal/project/projectreferencesprogram_test.go` | Build core and middle dependencies before the app and emit JavaScript for all three projects. |
 | `should_report_unbuilt_project_reference_given_composite_import_when_running_cli` | `typescript-go/internal/checker/checker.go` | Report TS6305 when an imported composite project reference has no emitted declaration output. |
 | `should_emit_async_function_given_async_function_declaration_when_compiling` | `conformance/async/es6/functionDeclarations` | Preserve async function syntax and emit its body. |
 | `should_parse_async_arrow_function_given_parenthesized_parameters_when_building_syntax_tree` | `conformance/async/es2017/asyncArrowFunction/asyncArrowFunction1_es2017.ts` | Parse an async arrow with a parenthesized parameter list. |

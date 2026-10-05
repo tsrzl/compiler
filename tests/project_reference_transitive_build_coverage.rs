@@ -1,0 +1,90 @@
+use std::fs;
+use std::path::PathBuf;
+use std::process::{Command, Output};
+
+struct TemporaryProject {
+    path: PathBuf,
+}
+
+impl TemporaryProject {
+    fn new() -> Self {
+        let path = std::env::temp_dir().join(format!(
+            "tsrzl-project-reference-transitive-build-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&path).expect("the temporary project directory can be created");
+        Self { path }
+    }
+
+    fn write(&self, relative_path: &str, contents: &str) {
+        let path = self.path.join(relative_path);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).expect("the project directory can be created");
+        }
+        fs::write(path, contents).expect("the project configuration or source can be written");
+    }
+
+    fn build_application(&self) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+            .current_dir(&self.path)
+            .arg("--build")
+            .arg(self.path.join("app/tsconfig.json"))
+            .output()
+            .expect("the compiler CLI can be started")
+    }
+}
+
+impl Drop for TemporaryProject {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.path);
+    }
+}
+
+// Pinned TypeScript-Go test: internal/project/projectreferencesprogram_test.go.
+#[test]
+fn should_build_transitive_project_references_given_three_level_graph_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new();
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2015","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const coreValue: number = 42;\n");
+    project.write(
+        "middle/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2015","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "middle/index.ts",
+        "import { coreValue } from \"../core\";\nexport const middleValue: number = coreValue;\n",
+    );
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"module":"commonjs","target":"es2015","outDir":"dist"},"references":[{"path":"../middle"}],"include":["main.ts"]}"#,
+    );
+    project.write(
+        "app/main.ts",
+        "import { middleValue } from \"../middle\";\nexport const result: number = middleValue;\n",
+    );
+
+    // Act
+    let output = project.build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    for output in [
+        "core/dist/index.js",
+        "middle/dist/index.js",
+        "app/dist/main.js",
+    ] {
+        assert!(
+            project.path.join(output).is_file(),
+            "expected transitive build output {output}"
+        );
+    }
+}
