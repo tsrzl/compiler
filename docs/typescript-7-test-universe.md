@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 656 behavior tests: 324 pass, 332 deliberately
+The Rust suite currently has 665 behavior tests: 324 pass, 341 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 341 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 350 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 332 deliberate Rust failures have
+The red-test map validator confirms that all 341 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -480,6 +480,15 @@ test executed that fixture or covered every output/configuration.
 | `should_report_multiple_asterisks_given_wildcard_ambient_module_when_compiling_sources` | `conformance/ambient/ambientDeclarationsPatterns_tooManyAsterisks.ts` | Report TS5061 when an ambient module pattern contains more than one asterisk. |
 | `should_preserve_symbol_computed_property_given_symbol_key_when_emitting_javascript` | `conformance/Symbols/ES5SymbolProperty1.ts` | Preserve the computed symbol property key. |
 | `should_emit_export_assignment_given_commonjs_module_when_emitting_javascript` | `conformance/externalModules/exportAssignTypes.ts` | Emit `module.exports` for an export assignment. |
+| `should_preserve_export_assignment_type_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Preserve a string export-assignment type through a relative CommonJS import-equals. |
+| `should_preserve_numeric_export_type_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Preserve an exported number type through a relative CommonJS import-equals. |
+| `should_preserve_boolean_export_type_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Preserve an exported boolean type through a relative CommonJS import-equals. |
+| `should_preserve_array_element_type_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Preserve an exported array element type through a relative CommonJS import-equals. |
+| `should_preserve_object_property_type_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Preserve an exported object's numeric property type through a relative CommonJS import-equals. |
+| `should_preserve_any_value_type_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Accept an unannotated any export through a relative CommonJS import-equals. |
+| `should_preserve_function_return_type_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Preserve an exported function's numeric return type through a relative CommonJS import-equals. |
+| `should_infer_generic_call_result_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Infer the numeric result type of calling an exported generic function through a relative CommonJS import-equals. |
+| `should_report_string_to_number_mismatch_given_relative_import_equals_when_compiling_sources` | `conformance/externalModules/exportAssignTypes.ts` | Report TS2322 when a string export-assignment value is assigned to number through a relative import-equals. |
 | `should_load_type_reference_given_type_roots_configuration_when_running_compiler_cli` | `conformance/references/library-reference-1.ts` | Resolve a triple-slash type reference through configured type roots. |
 | `should_report_jsdoc_argument_mismatch_given_number_parameter_when_checking_javascript` | `conformance/jsdoc/checkJsdocParamTag1.ts` | Report TS2345 for a mismatched JSDoc-typed argument. |
 | `should_report_missing_string_member_given_jsdoc_callback_parameter_when_checking_javascript` | `conformance/jsdoc/callbackTag1.ts` | Contextually type a JSDoc callback parameter as string and report TS2551 for toFixed. |
