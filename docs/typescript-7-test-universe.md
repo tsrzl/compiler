@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 704 behavior tests: 324 pass, 380 deliberately
+The Rust suite currently has 706 behavior tests: 324 pass, 382 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 389 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 391 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 380 deliberate Rust failures have
+The red-test map validator confirms that all 382 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -347,6 +347,8 @@ test executed that fixture or covered every output/configuration.
 | `should_resolve_json_import_given_resolve_json_module_project_option_when_running_compiler_cli` | `compiler/isolatedModules_resolveJsonModule.ts` | Resolve and emit an imported JSON module when `resolveJsonModule` is enabled. |
 | `should_report_unassigned_variable_read_given_declaration_without_initializer_when_checking_types` | `conformance/types/stringLiteral/stringLiteralMatchedInSwitch01.ts` | Report TS2454 when reading a local variable before it has been assigned. |
 | `should_parse_import_meta_expression_given_module_source_when_building_syntax_tree` | `conformance/es2019/importMeta/importMeta.ts` | Parse `import.meta` in a valid ES module source without syntax diagnostics. |
+| `should_accept_global_this_property_access_given_unknown_member_when_checking_types` | `conformance/es2019/globalThisUnknown.ts` | Accept an unknown `globalThis` property when implicit-any checking is disabled. |
+| `should_accept_global_this_element_access_given_unknown_member_when_checking_types` | `conformance/es2019/globalThisUnknown.ts` | Accept an unknown `globalThis` element access when implicit-any checking is disabled. |
 | `should_parse_import_type_given_module_specifier_when_building_syntax_tree` | `conformance/types/import/importTypeAmbient.ts` | Parse an import type with a module specifier and qualified exported type. |
 | `should_resolve_imported_interface_given_import_type_reference_when_compiling_sources` | `conformance/types/import/importTypeLocal.ts` | Resolve an imported interface through a relative import type in a sibling source. |
 | `should_parse_typeof_import_given_module_specifier_when_building_syntax_tree` | `conformance/types/import/importTypeAmbient.ts` | Parse `typeof import("foo")` as an imported module type query. |
