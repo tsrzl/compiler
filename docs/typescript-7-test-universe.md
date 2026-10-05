@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 690 behavior tests: 324 pass, 366 deliberately
+The Rust suite currently has 692 behavior tests: 324 pass, 368 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 375 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 377 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 366 deliberate Rust failures have
+The red-test map validator confirms that all 368 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -413,6 +413,8 @@ test executed that fixture or covered every output/configuration.
 | `should_resolve_package_main_given_non_index_package_entry_when_running_compiler_cli` | `conformance/moduleResolution/packageJsonMain.ts` | Resolve a package through its `main` entry. |
 | `should_resolve_at_types_package_given_bare_import_when_compiling_sources` | `conformance/moduleResolution/nodeModulesAtTypesPriority.ts` | Resolve package types from `node_modules/@types`. |
 | `should_resolve_exported_package_subpath_given_node16_project_when_running_compiler_cli` | `conformance/node/nodeModulesPackageExports.ts` | Resolve a package subpath selected by the Node16 `exports` map. |
+| `should_resolve_package_import_map_given_hash_specifier_when_running_compiler_cli` | `conformance/node/nodeModulesPackageImports.ts` | Resolve a `#` package import through `package.json` and type-check the mapped source. |
+| `should_resolve_package_import_wildcard_given_nested_hash_specifier_when_running_compiler_cli` | `conformance/node/nodeModulesPackageImportsRootWildcard.ts` | Substitute a wildcard in `package.json` imports and resolve a nested `.js` specifier to TypeScript. |
 | `should_suppress_javascript_output_given_no_emit_option_when_running_compiler_cli` | `typescript-go/internal/project` and `tsc/noEmit/when-project-has-strict-true.js` | Accept `--noEmit` and produce no JavaScript file. |
 | `should_preserve_source_subdirectories_given_out_dir_option_when_running_compiler_cli` | `compiler/commonSourceDirectory.ts` | Preserve source subdirectories below the configured output directory. |
 | `should_emit_division_in_template_substitution_given_template_expression_when_emitting_javascript` | `conformance/es6/templates/templateStringWithEmbeddedDivision.ts` | Preserve the division expression within a template substitution. |
