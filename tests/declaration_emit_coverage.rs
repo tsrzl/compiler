@@ -39,3 +39,38 @@ fn should_emit_type_predicate_given_exported_function_when_emitting_declarations
         "export declare function f(x: any): x is number;\n"
     );
 }
+
+#[test]
+fn should_preserve_folded_string_enum_value_given_constant_initializer_when_emitting_declarations()
+{
+    // Pinned TypeScript 7.0.2 case: conformance/enums/enumConstantMemberWithStringEmitDeclaration.ts.
+    // TS-Go folds the member value and preserves it in the exported declaration.
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("string-enum.ts"),
+        "export enum Value { Name = \"ab\" + \"cd\" }",
+    )
+    .expect("the TypeScript path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015).with_declaration(true);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    assert!(
+        result.diagnostics().is_empty(),
+        "the string enum declaration is valid: {:?}",
+        result.diagnostics()
+    );
+    let declaration = result
+        .emitted_files()
+        .iter()
+        .find(|file| {
+            file.path().file_name().and_then(|name| name.to_str()) == Some("string-enum.d.ts")
+        })
+        .expect("the string enum declaration is emitted");
+    assert_eq!(
+        declaration.text(),
+        "export declare enum Value {\n    Name = \"abcd\"\n}\n"
+    );
+}

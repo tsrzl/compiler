@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 699 behavior tests: 324 pass, 375 deliberately
+The Rust suite currently has 700 behavior tests: 324 pass, 376 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 384 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 385 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 375 deliberate Rust failures have
+The red-test map validator confirms that all 376 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -370,6 +370,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_boxed_number_given_computed_enum_member_when_checking_types` | `conformance/enums/enumErrors.ts` | Report TS18033 when a boxed `Number` initializes a computed enum member. |
 | `should_fold_string_enum_initializer_given_constant_concatenation_when_emitting_javascript` | `conformance/enums/enumConstantMemberWithString.ts` | Fold a constant string concatenation in a string-valued enum member. |
 | `should_omit_reverse_mapping_given_computed_string_enum_member_when_emitting_javascript` | `conformance/enums/enumConstantMemberWithString.ts` | Emit a computed string-valued enum member without a numeric reverse mapping. |
+| `should_preserve_folded_string_enum_value_given_constant_initializer_when_emitting_declarations` | `conformance/enums/enumConstantMemberWithStringEmitDeclaration.ts` | Preserve the folded string constant in the emitted enum declaration. |
 | `should_report_reserved_enum_name_given_keyword_enum_declaration_when_checking_types` | `conformance/enums/enumErrors.ts` | Report TS2431 when an enum uses the predefined type name `any`. |
 | `should_parse_await_using_declaration_given_null_initializer_when_building_tree` | `conformance/statements/VariableStatements/usingDeclarations/awaitUsingDeclarations.1.ts` | Parse `await using` as a variable declaration under ESNext module syntax. |
 | `should_report_invalid_variable_decorator_given_decorated_variable_when_compiling` | `conformance/decorators/invalid/decoratorOnVar.ts` | Report TS1206 when a decorator is applied to a variable declaration. |
