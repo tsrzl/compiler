@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 655 behavior tests: 324 pass, 331 deliberately
+The Rust suite currently has 656 behavior tests: 324 pass, 332 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,19 +246,19 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 340 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 341 behavior entries, touching
 105 of the 110 source-suite/area groups in the inventory; 5 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 331 deliberate Rust failures have
+The red-test map validator confirms that all 332 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
-adds one row for every source fixture. It currently records 295 fixtures
-referenced by exact path, 511 with only an area sample, and 11,835 with no
+adds one row for every source fixture. It currently records 296 fixtures
+referenced by exact path, 511 with only an area sample, and 11,834 with no
 mapped behavior-test reference. Each row also carries its recorded option
 directives/configurations, reference-artifact names and kinds, and oracle
 status. Project/transpile rows also carry the runner configuration and oracle
@@ -489,6 +489,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_missing_member_given_jsdoc_this_type_when_checking_javascript` | `conformance/jsdoc/thisTag3.ts` | Report TS2339 when a function accesses a member absent from its JSDoc `@this` type. |
 | `should_report_template_constraint_mismatch_given_jsdoc_typedef_when_checking_javascript` | `conformance/jsdoc/checkJsdocTypeTag4.ts` | Report TS2344 when a JSDoc typedef supplies a type argument outside its `@template` constraint. |
 | `should_report_imported_jsdoc_type_mismatch_given_adjacent_declaration_when_compiling_sources` | `conformance/jsdoc/importTag19.ts` | Resolve a JSDoc `@import` type and report TS2322 for an incompatible property. |
+| `should_report_missing_boolean_member_given_jsdoc_type_predicate_when_checking_javascript` | `conformance/jsdoc/returnTagTypeGuard.ts` | Narrow to boolean from a JSDoc type predicate, then report TS2339 for a missing boolean member. |
 | `should_report_jsdoc_template_return_mismatch_given_number_argument_when_checking_javascript` | `conformance/jsdoc/jsdocTemplateTag.ts` | Infer a JSDoc template return as number and report TS2322 when assigning it to string. |
 | `should_report_jsdoc_typedef_property_mismatch_given_annotated_object_when_checking_javascript` | `conformance/jsdoc/typedefTagNested.ts` | Report TS2322 when a JavaScript object property does not match its JSDoc `@typedef` type. |
 | `should_report_required_parameter_after_optional_jsdoc_parameter_given_checked_javascript_when_checking_types` | `conformance/jsdoc/checkJsdocOptionalParamOrder.ts` | Report TS1016 when a required parameter follows an optional JSDoc parameter in checked JavaScript. |
