@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 646 behavior tests: 324 pass, 322 deliberately
+The Rust suite currently has 647 behavior tests: 324 pass, 323 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,19 +246,19 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 331 behavior entries, touching
-103 of the 110 source-suite/area groups in the inventory; 7 project groups
+At this checkpoint, the compiler/oracle map has 332 behavior entries, touching
+104 of the 110 source-suite/area groups in the inventory; 6 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 322 deliberate Rust failures have
+The red-test map validator confirms that all 323 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
-adds one row for every source fixture. It currently records 286 fixtures
-referenced by exact path, 511 with only an area sample, and 11,844 with no
+adds one row for every source fixture. It currently records 287 fixtures
+referenced by exact path, 511 with only an area sample, and 11,843 with no
 mapped behavior-test reference. Each row also carries its recorded option
 directives/configurations, reference-artifact names and kinds, and oracle
 status. Project/transpile rows also carry the runner configuration and oracle
@@ -563,6 +563,7 @@ test executed that fixture or covered every output/configuration.
 | `should_reject_removed_project_target_given_es5_configuration_when_running_compiler_cli` | `projects/decoratorMetadata/emitDecoratorMetadataCommonJSIsolatedModule/main.ts` | Report TS5108 for the TypeScript 7 project configuration's removed ES5 target. |
 | `should_parse_import_equals_given_namespace_declaration_when_building_syntax_tree` | `projects/NestedLocalModule-SimpleCase/test1.ts` | Parse import-equals syntax nested inside a namespace without syntax diagnostics; TypeScript 7 later reports TS1147 semantically. |
 | `should_report_invalid_module_reference_given_import_equals_inside_namespace_when_compiling` | `projects/NestedLocalModule-WithRecursiveTypecheck/test1.ts` | Report TS1147 for an import-equals module reference inside a namespace. |
+| `should_report_import_assignment_given_ecmascript_module_when_compiling_sources` | `projects/VisibilityOfCrosssModuleTypeUsage/commands.ts` | Report TS1202 for an import assignment when the output module kind is ECMAScript. |
 | `should_parse_template_literal_type_given_string_substitution_when_building_syntax_tree` | `conformance/types/literal/templateLiteralTypes8.ts` | Parse a template literal type containing a string substitution without syntax diagnostics. |
 | `should_parse_indexed_access_type_given_property_key_when_building_syntax_tree` | `conformance/types/keyof/keyofAndIndexedAccess.ts` | Parse an indexed access type using a string literal property key without syntax diagnostics. |
 | `should_reject_unknown_key_given_keyof_type_when_checking_types` | `conformance/types/keyof/keyofAndIndexedAccess.ts` | Report TS2322 when a string is not a member of a `keyof` property-name union. |
