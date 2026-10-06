@@ -93,15 +93,6 @@ impl Parser<'_> {
         self.parse_conditional_expression_rest(expression, pos, allow_return_type_in_arrow_function)
     }
 
-    /// Reports and skips an expression whose syntax has not been ported from TypeScript-Go yet,
-    /// producing a missing identifier. It is removed when expression parsing is complete.
-    pub(super) fn parse_unported_expression(&mut self, pos: usize) -> NodeId {
-        self.parse_error_at_current_token(diagnostics::EXPRESSION_EXPECTED, &[]);
-        self.next_token();
-        let _ = pos;
-        self.create_missing_identifier()
-    }
-
     fn is_yield_expression(&mut self) -> bool {
         if self.token != SyntaxKind::YieldKeyword {
             return false;
@@ -358,9 +349,16 @@ impl Parser<'_> {
                 NodeData::PrefixUnaryExpression(PrefixUnaryExpression { operator, operand }),
             );
         }
-        if self.language_variant == LanguageVariant::Jsx && self.token == SyntaxKind::LessThanToken
+        if self.language_variant == LanguageVariant::Jsx
+            && self.token == SyntaxKind::LessThanToken
+            && self.look_ahead(|parser| {
+                let next = parser.next_token();
+                next == SyntaxKind::GreaterThanToken || next.is_identifier_or_keyword()
+            })
         {
-            return self.parse_unported_expression(pos);
+            // A JSX element is a primary expression.
+            return self
+                .parse_jsx_element_or_self_closing_element_or_fragment(true, None, None, false);
         }
         let operand = self.parse_left_hand_side_expression_or_higher();
         if matches!(
@@ -423,9 +421,9 @@ impl Parser<'_> {
                     NodeData::VoidExpression(VoidExpression { expression }),
                 )
             }
-            // JSX elements are not ported yet; elsewhere `<T>expr` is a type assertion.
+            // In JSX, `<` starts an element rather than a type assertion, even in `+ <foo> bar`.
             SyntaxKind::LessThanToken if self.language_variant == LanguageVariant::Jsx => {
-                self.parse_unported_expression(pos)
+                self.parse_jsx_element_or_self_closing_element_or_fragment(true, None, None, true)
             }
             SyntaxKind::LessThanToken => self.parse_type_assertion(),
             SyntaxKind::AwaitKeyword if self.is_await_expression() => {

@@ -14,8 +14,6 @@ mod enum_values;
 pub mod generator;
 pub mod jsnum;
 pub mod module_resolver;
-// Helpers ported ahead of their callers; remove once statement and expression parsing land.
-#[allow(dead_code)]
 pub mod parser;
 pub mod scanner;
 pub mod source_file;

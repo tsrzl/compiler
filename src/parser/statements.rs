@@ -1,8 +1,6 @@
 //! Statement parsing.
 
-use crate::ast::{
-    Block, ExpressionStatement, LabeledStatement, MissingDeclaration, NodeData, NodeId, SyntaxKind,
-};
+use crate::ast::{Block, ExpressionStatement, LabeledStatement, NodeData, NodeId, SyntaxKind};
 use crate::diagnostics::{self, Message};
 
 use crate::scanner::all_keywords;
@@ -254,21 +252,6 @@ impl Parser<'_> {
             let value = self.scanner.token_value().to_owned();
             self.parse_error_at_current_token(name_message, &[&value]);
         }
-    }
-
-    /// Reports and skips a statement whose syntax has not been ported from TypeScript-Go yet.
-    ///
-    /// This keeps unported syntax visible as TS1128 instead of producing a plausible tree; it is
-    /// removed when statement parsing is complete.
-    pub(super) fn parse_unported_statement(&mut self) -> NodeId {
-        let pos = self.node_pos();
-        self.parse_error_at_current_token(diagnostics::DECLARATION_OR_STATEMENT_EXPECTED, &[]);
-        self.next_token();
-        self.finish_node(
-            SyntaxKind::MissingDeclaration,
-            pos,
-            NodeData::MissingDeclaration(MissingDeclaration { modifiers: None }),
-        )
     }
 
     fn parse_empty_statement(&mut self) -> NodeId {

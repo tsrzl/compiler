@@ -93,7 +93,7 @@ impl ParsingContext {
         Self::JsdocComment,
     ];
 
-    const fn bit(self) -> u32 {
+    pub(super) const fn bit(self) -> u32 {
         1 << self as u32
     }
 }

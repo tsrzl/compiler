@@ -7,7 +7,8 @@ macro_rules! flags_type {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
         pub struct $name(u32);
 
-        #[allow(missing_docs)]
+        // Crate-private flag sets need not use every generated operation.
+        #[allow(missing_docs, dead_code)]
         impl $name {
             $($(#[$flag_meta])* pub const $flag: Self = Self($value);)*
 

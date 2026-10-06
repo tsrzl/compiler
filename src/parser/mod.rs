@@ -11,6 +11,7 @@ mod control_flow;
 mod declarations;
 mod expressions;
 mod identifiers;
+mod jsx;
 mod lists;
 mod lookahead;
 mod modifiers;
@@ -58,10 +59,6 @@ impl ScriptKind {
             Self::Tsx | Self::Jsx | Self::Js | Self::Json => LanguageVariant::Jsx,
             Self::Ts | Self::External | Self::Deferred => LanguageVariant::Standard,
         }
-    }
-
-    const fn is_java_script(self) -> bool {
-        matches!(self, Self::Js | Self::Jsx)
     }
 }
 
@@ -234,7 +231,6 @@ struct ParserState {
 struct Parser<'text> {
     scanner: Scanner<'text>,
     builder: AstBuilder,
-    script_kind: ScriptKind,
     language_variant: LanguageVariant,
     diagnostics: Vec<ParseDiagnostic>,
     token: SyntaxKind,
@@ -259,7 +255,6 @@ impl<'text> Parser<'text> {
         Self {
             scanner: Scanner::new(text).with_language_variant(language_variant),
             builder: AstBuilder::new(),
-            script_kind,
             language_variant,
             diagnostics: Vec::new(),
             token: SyntaxKind::Unknown,
@@ -311,10 +306,6 @@ impl<'text> Parser<'text> {
     fn parse_toplevel_statement(&mut self) -> NodeId {
         self.statement_has_await_identifier = false;
         self.parse_statement()
-    }
-
-    const fn is_java_script(&self) -> bool {
-        self.script_kind.is_java_script()
     }
 
     // Diagnostics
