@@ -6,6 +6,7 @@ use super::program::{CheckDiagnostic, NodeRef};
 use super::symbol_store::{SymbolRef, SymbolStore};
 use super::type_table::TypeTable;
 use super::types::TypeId;
+use super::unresolved::PRIMITIVE_TYPE_ALIASES;
 use crate::ast::{CheckFlags, SymbolFlags};
 use crate::program::ProgramFile;
 use crate::symbols::SymbolTable;
@@ -15,12 +16,15 @@ use crate::symbols::SymbolTable;
 pub struct CheckerOptions {
     /// Whether `null` and `undefined` are distinct types rather than members of every type.
     pub strict_null_checks: bool,
+    /// Whether the `types` option includes `"*"`, which changes the advice for missing names.
+    pub uses_wildcard_types: bool,
 }
 
 impl Default for CheckerOptions {
     fn default() -> Self {
         Self {
             strict_null_checks: true,
+            uses_wildcard_types: false,
         }
     }
 }
@@ -34,12 +38,15 @@ pub(super) struct SpecialSymbols {
     pub(super) require: SymbolRef,
     pub(super) unknown: SymbolRef,
     pub(super) global_this: SymbolRef,
+    /// Suggestions of each primitive type for near misses of its built-in object type's name.
+    pub(super) primitive_aliases: [SymbolRef; 6],
 }
 
 /// Checks a program, owning every type and transient symbol it creates.
 #[derive(Debug)]
 pub struct Checker<'program> {
     pub(super) files: &'program [ProgramFile],
+    pub(super) options: CheckerOptions,
     pub(super) types: TypeTable,
     pub(super) symbols: SymbolStore,
     pub(super) special: SpecialSymbols,
@@ -60,11 +67,15 @@ impl<'program> Checker<'program> {
             require: symbols.create(SymbolFlags::PROPERTY, "require", CheckFlags::NONE),
             unknown: symbols.create(SymbolFlags::PROPERTY, "unknown", CheckFlags::NONE),
             global_this: symbols.create(SymbolFlags::MODULE, "globalThis", CheckFlags::READONLY),
+            primitive_aliases: PRIMITIVE_TYPE_ALIASES.map(|(primitive, _)| {
+                symbols.create(SymbolFlags::TYPE_ALIAS, primitive, CheckFlags::NONE)
+            }),
         };
         let mut globals = SymbolTable::default();
         globals.insert("globalThis", special.global_this);
         let mut checker = Self {
             files,
+            options,
             types: TypeTable::new(options.strict_null_checks),
             symbols,
             special,

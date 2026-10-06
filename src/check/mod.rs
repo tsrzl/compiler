@@ -5,6 +5,7 @@
 
 mod checker;
 mod compare;
+mod feature_map;
 mod flags;
 mod globals;
 mod name_resolution;
@@ -13,6 +14,7 @@ mod symbol_store;
 mod type_nodes;
 mod type_table;
 mod types;
+mod unresolved;
 
 pub use checker::{Checker, CheckerOptions};
 pub use compare::{compare_type_lists, compare_types};

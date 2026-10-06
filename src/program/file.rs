@@ -45,6 +45,15 @@ impl ProgramFile {
         self.bound.external_module_indicator().is_some()
     }
 
+    /// Returns a node's source text without leading trivia, as written, escapes included.
+    #[must_use]
+    pub fn source_text_of(&self, node: NodeId) -> &str {
+        let parsed = &self.parsed;
+        let range =
+            error_range_for_node(parsed.ast(), parsed.text(), parsed.language_variant(), node);
+        &parsed.text()[range]
+    }
+
     /// Returns a diagnostic covering `node`'s error range.
     pub(crate) fn diagnostic_for_node(
         &self,

@@ -18,6 +18,8 @@ use crate::symbols::{INTERNAL_SYMBOL_NAME_DEFAULT, SymbolTable};
 struct Resolution {
     symbol: Option<SymbolRef>,
     errors: Vec<CheckDiagnostic>,
+    /// Whether the walk stopped early, so a missing symbol is not reported as unresolved.
+    stopped: bool,
 }
 
 impl Checker<'_> {
@@ -30,7 +32,7 @@ impl Checker<'_> {
         meaning: SymbolFlags,
         _: Option<Message>,
     ) -> Option<SymbolRef> {
-        self.resolve_name_worker(location, name, meaning, false)
+        self.resolve_name_worker(location, name, meaning, false, LookupMode::Exact)
             .symbol
     }
 
@@ -43,12 +45,27 @@ impl Checker<'_> {
         meaning: SymbolFlags,
         name_not_found_message: Message,
     ) -> Option<SymbolRef> {
-        let _ = name_not_found_message;
-        let resolution = self.resolve_name_worker(location, name, meaning, true);
+        let resolution = self.resolve_name_worker(location, name, meaning, true, LookupMode::Exact);
+        let failed = resolution.symbol.is_none() && !resolution.stopped;
         for error in resolution.errors {
             self.add_diagnostic(error);
         }
+        if failed {
+            self.on_failed_to_resolve_symbol(location, name, meaning, name_not_found_message);
+        }
         resolution.symbol
+    }
+
+    /// Resolves `name` with the given lookup mode, without reporting errors.
+    pub(super) fn resolve_name_with_mode(
+        &self,
+        location: NodeRef,
+        name: &str,
+        meaning: SymbolFlags,
+        mode: LookupMode,
+    ) -> Option<SymbolRef> {
+        self.resolve_name_worker(location, name, meaning, false, mode)
+            .symbol
     }
 
     fn resolve_name_worker(
@@ -57,6 +74,7 @@ impl Checker<'_> {
         name: &str,
         meaning: SymbolFlags,
         report: bool,
+        mode: LookupMode,
     ) -> Resolution {
         let file = original.file;
         let ast = self.files[file].parsed().ast();
@@ -75,6 +93,7 @@ impl Checker<'_> {
                 return Resolution {
                     symbol: None,
                     errors,
+                    stopped: true,
                 };
             }
             if matches!(
@@ -90,11 +109,13 @@ impl Checker<'_> {
                     None => break,
                 }
             }
-            if let Some(symbol) = self.lookup_in_locals(file, current, name, meaning, last_location)
+            if let Some(symbol) =
+                self.lookup_in_locals(file, current, name, meaning, last_location, mode)
             {
                 return Resolution {
                     symbol: Some(symbol),
                     errors,
+                    stopped: false,
                 };
             }
             match self.lookup_in_container(
@@ -104,6 +125,7 @@ impl Checker<'_> {
                     name,
                     meaning,
                     last_location,
+                    mode,
                 },
                 &mut error,
             ) {
@@ -111,12 +133,14 @@ impl Checker<'_> {
                     return Resolution {
                         symbol: Some(symbol),
                         errors,
+                        stopped: false,
                     };
                 }
                 ContainerLookup::Stop => {
                     return Resolution {
                         symbol: None,
                         errors,
+                        stopped: true,
                     };
                 }
                 ContainerLookup::Continue(next) => current = next,
@@ -124,8 +148,17 @@ impl Checker<'_> {
             last_location = Some(current);
             location = ast.node(current).parent();
         }
-        let symbol = self.lookup(&self.globals, name, meaning | SymbolFlags::GLOBAL_LOOKUP);
-        Resolution { symbol, errors }
+        let symbol = self.lookup_mode(
+            mode,
+            &self.globals,
+            name,
+            meaning | SymbolFlags::GLOBAL_LOOKUP,
+        );
+        Resolution {
+            symbol,
+            errors,
+            stopped: false,
+        }
     }
 
     /// Looks `name` up in a scope's own locals, applying the visibility rules of function
@@ -137,6 +170,7 @@ impl Checker<'_> {
         name: &str,
         meaning: SymbolFlags,
         last_location: Option<NodeId>,
+        mode: LookupMode,
     ) -> Option<SymbolRef> {
         let program_file = &self.files[file];
         let ast = program_file.parsed().ast();
@@ -146,7 +180,7 @@ impl Checker<'_> {
             return None;
         }
         let locals = program_file.bound().locals(location)?;
-        let symbol = self.lookup_bound(file, locals, name, meaning)?;
+        let symbol = self.lookup_bound(mode, file, locals, name, meaning)?;
         let flags = self.symbol_flags(symbol);
         let kind = ast.node(location).kind();
         let use_result = if is_function_like_kind(kind)
@@ -255,7 +289,12 @@ impl Checker<'_> {
                 .symbol_of_declaration(scope.file, location)
                 .and_then(|symbol| {
                     let exports = self.symbols.view(self.files, symbol).exports;
-                    self.lookup(&exports, scope.name, meaning & SymbolFlags::ENUM_MEMBER)
+                    self.lookup_mode(
+                        scope.mode,
+                        &exports,
+                        scope.name,
+                        meaning & SymbolFlags::ENUM_MEMBER,
+                    )
                 })
                 .map_or(ContainerLookup::Continue(location), ContainerLookup::Found),
             SyntaxKind::ClassDeclaration
@@ -314,9 +353,13 @@ impl Checker<'_> {
     ) -> ContainerLookup {
         let ast = self.files[scope.file].parsed().ast();
         let location = scope.location;
-        if let Some(symbol) =
-            self.lookup_type_parameter_of(scope.file, location, scope.name, scope.meaning)
-        {
+        if let Some(symbol) = self.lookup_type_parameter_of(
+            scope.file,
+            location,
+            scope.name,
+            scope.meaning,
+            scope.mode,
+        ) {
             if scope.last_location.is_some_and(|last| is_static(ast, last)) {
                 error(diagnostics::STATIC_MEMBERS_CANNOT_REFERENCE_CLASS_TYPE_PARAMETERS);
                 return ContainerLookup::Stop;
@@ -349,7 +392,13 @@ impl Checker<'_> {
         });
         if let Some(container) = extends_class
             && self
-                .lookup_type_parameter_of(scope.file, container, scope.name, scope.meaning)
+                .lookup_type_parameter_of(
+                    scope.file,
+                    container,
+                    scope.name,
+                    scope.meaning,
+                    scope.mode,
+                )
                 .is_some()
         {
             error(diagnostics::BASE_CLASS_EXPRESSIONS_CANNOT_REFERENCE_CLASS_TYPE_PARAMETERS);
@@ -376,7 +425,13 @@ impl Checker<'_> {
             });
         if let Some(container) = container
             && self
-                .lookup_type_parameter_of(scope.file, container, scope.name, scope.meaning)
+                .lookup_type_parameter_of(
+                    scope.file,
+                    container,
+                    scope.name,
+                    scope.meaning,
+                    scope.mode,
+                )
                 .is_some()
         {
             error(diagnostics::A_COMPUTED_PROPERTY_NAME_CANNOT_REFERENCE_A_TYPE_PARAMETER_FROM_ITS_CONTAINING_TYPE);
@@ -440,7 +495,12 @@ impl Checker<'_> {
             }
         }
         if name != INTERNAL_SYMBOL_NAME_DEFAULT
-            && let Some(symbol) = self.lookup(&exports, name, meaning & SymbolFlags::MODULE_MEMBER)
+            && let Some(symbol) = self.lookup_mode(
+                scope.mode,
+                &exports,
+                name,
+                meaning & SymbolFlags::MODULE_MEMBER,
+            )
         {
             return ContainerLookup::Found(symbol);
         }
@@ -454,10 +514,11 @@ impl Checker<'_> {
         container: NodeId,
         name: &str,
         meaning: SymbolFlags,
+        mode: LookupMode,
     ) -> Option<SymbolRef> {
         let symbol = self.symbol_of_declaration(file, container)?;
         let members = self.symbols.view(self.files, symbol).members;
-        let result = self.lookup(&members, name, meaning & SymbolFlags::TYPE)?;
+        let result = self.lookup_mode(mode, &members, name, meaning & SymbolFlags::TYPE)?;
         self.symbol_declarations(result)
             .iter()
             .any(|declaration| {
@@ -514,28 +575,68 @@ impl Checker<'_> {
             .then_some(symbol)
     }
 
+    /// Looks a bound locals table up by converting it to program-wide references.
     fn lookup_bound(
         &self,
+        mode: LookupMode,
         file: usize,
         table: &SymbolTable,
         name: &str,
         meaning: SymbolFlags,
     ) -> Option<SymbolRef> {
-        if meaning.bits() == 0 {
-            return None;
+        let mut converted = SymbolTable::default();
+        if mode == LookupMode::Exact {
+            converted.insert(
+                name,
+                SymbolRef::Bound {
+                    file,
+                    symbol: table.get(name)?,
+                },
+            );
+        } else {
+            for (entry, symbol) in table.iter() {
+                converted.insert(entry, SymbolRef::Bound { file, symbol });
+            }
         }
-        let symbol = self.merged_symbol(SymbolRef::Bound {
-            file,
-            symbol: table.get(name)?,
-        });
-        self.symbol_flags(symbol)
-            .intersects(meaning)
-            .then_some(symbol)
+        self.lookup_mode(mode, &converted, name, meaning)
     }
+
+    /// Looks `name` up exactly or, while finding a suggestion, falls back to the closest
+    /// spelling in the table, as TypeScript-Go's `getSuggestionForSymbolNameLookup` does.
+    fn lookup_mode(
+        &self,
+        mode: LookupMode,
+        table: &SymbolTable<SymbolRef>,
+        name: &str,
+        meaning: SymbolFlags,
+    ) -> Option<SymbolRef> {
+        let exact = self.lookup(table, name, meaning);
+        if mode == LookupMode::Exact || exact.is_some() {
+            return exact;
+        }
+        let extras = if meaning.intersects(SymbolFlags::GLOBAL_LOOKUP) {
+            self.primitive_type_alias_suggestions(table)
+        } else {
+            Vec::new()
+        };
+        let candidates = table
+            .iter()
+            .map(|(_, symbol)| self.merged_symbol(symbol))
+            .chain(extras);
+        self.spelling_suggestion_for_name(name, candidates, meaning)
+    }
+}
+
+/// Whether a lookup must match exactly or may suggest a close spelling.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum LookupMode {
+    Exact,
+    Suggestion,
 }
 
 /// One step of a resolution walk.
 struct Scope<'name> {
+    mode: LookupMode,
     file: usize,
     location: NodeId,
     name: &'name str,

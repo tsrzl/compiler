@@ -255,3 +255,102 @@ fn should_report_at_reference_given_class_type_parameter_in_static_member_when_r
     // Assert
     assert_eq!(checker.diagnostics()[0].diagnostic().range(), 29..30);
 }
+
+fn report_unresolved(
+    text: &str,
+    name: &str,
+    occurrence: usize,
+    meaning: SymbolFlags,
+) -> Vec<String> {
+    let files = [file("a.ts", text)];
+    let mut checker = Checker::new(&files, CheckerOptions::default());
+    let reference = identifier(&files, name, occurrence);
+    let message = checker.cannot_find_name_message(reference);
+    checker.resolve_name_reporting(reference, name, meaning, message);
+    checker
+        .diagnostics()
+        .iter()
+        .map(|d| d.diagnostic().text())
+        .collect()
+}
+
+#[test]
+fn should_report_ts2304_given_unknown_name_when_resolving_name() {
+    // Arrange
+    let text = "missing;";
+
+    // Act
+    let texts = report_unresolved(text, "missing", 0, SymbolFlags::VALUE);
+
+    // Assert
+    assert_eq!(texts, ["Cannot find name 'missing'."]);
+}
+
+#[test]
+fn should_report_ts2552_given_misspelled_local_when_resolving_name() {
+    // Arrange
+    let text = "function run() { let counter = 1; countr; }";
+
+    // Act
+    let texts = report_unresolved(text, "countr", 0, SymbolFlags::VALUE);
+
+    // Assert
+    assert_eq!(
+        texts,
+        ["Cannot find name 'countr'. Did you mean 'counter'?"]
+    );
+}
+
+#[test]
+fn should_relate_declaration_given_spelling_suggestion_when_resolving_name() {
+    // Arrange
+    let files = [file("a.ts", "function run() { let counter = 1; countr; }")];
+    let mut checker = Checker::new(&files, CheckerOptions::default());
+    let reference = identifier(&files, "countr", 0);
+    let message = checker.cannot_find_name_message(reference);
+
+    // Act
+    checker.resolve_name_reporting(reference, "countr", SymbolFlags::VALUE, message);
+
+    // Assert
+    let related: Vec<_> = checker.diagnostics()[0]
+        .related()
+        .iter()
+        .map(|d| d.diagnostic().text())
+        .collect();
+    assert_eq!(related, ["'counter' is declared here."]);
+}
+
+#[test]
+fn should_suggest_dom_lib_given_unresolved_document_when_resolving_name() {
+    // Arrange
+    let text = "document;";
+
+    // Act
+    let texts = report_unresolved(text, "document", 0, SymbolFlags::VALUE);
+
+    // Assert
+    assert_eq!(
+        texts,
+        [
+            "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+        ]
+    );
+}
+
+#[test]
+fn should_suggest_lib_given_unresolved_es2015_global_when_resolving_name() {
+    // Arrange
+    let text = "Promise;";
+
+    // Act
+    let texts = report_unresolved(text, "Promise", 0, SymbolFlags::VALUE);
+
+    // Assert
+    assert_eq!(
+        texts,
+        [
+            "Cannot find name 'Promise'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2015' or later."
+        ]
+    );
+}
