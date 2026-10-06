@@ -2,8 +2,8 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::BoundFile;
 use super::container_flags::{ContainerFlags, container_flags};
+use super::{BoundFile, PatternAmbientModule};
 use crate::ast::{Ast, ModifierFlags, NodeData, NodeFlags, NodeId, SymbolFlags, SyntaxKind};
 use crate::diagnostics::{self, Diagnostic, Message};
 use crate::parser::ParsedSourceFile;
@@ -24,6 +24,8 @@ pub(super) enum Table {
     Members(SymbolId),
     /// The exports of a module, class, or enum symbol.
     Exports(SymbolId),
+    /// The UMD globals of the file, declared by `export as namespace`.
+    GlobalExports,
 }
 
 /// The mutable state of one binding walk.
@@ -43,6 +45,9 @@ pub(super) struct Binder<'file> {
     pub(super) export_contexts: HashSet<NodeId>,
     pub(super) not_const_enum_only_modules: HashSet<SymbolId>,
     pub(super) classifiable_names: HashSet<String>,
+    pub(super) global_exports: SymbolTable,
+    pub(super) pattern_ambient_modules: Vec<PatternAmbientModule>,
+    is_declaration_file: bool,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -68,6 +73,9 @@ impl<'file> Binder<'file> {
             export_contexts: HashSet::new(),
             not_const_enum_only_modules: HashSet::new(),
             classifiable_names: HashSet::new(),
+            global_exports: SymbolTable::default(),
+            pattern_ambient_modules: Vec::new(),
+            is_declaration_file: file.is_declaration_file(),
             diagnostics: Vec::new(),
         }
     }
@@ -82,6 +90,8 @@ impl<'file> Binder<'file> {
             diagnostics: self.diagnostics,
             external_module_indicator: self.external_module_indicator,
             classifiable_names: self.classifiable_names,
+            global_exports: self.global_exports,
+            pattern_ambient_modules: self.pattern_ambient_modules,
         }
     }
 
@@ -259,6 +269,8 @@ impl<'file> Binder<'file> {
                     );
                 }
             }
+            SyntaxKind::ModuleDeclaration => self.bind_module_declaration(node),
+            SyntaxKind::NamespaceExportDeclaration => self.bind_namespace_export_declaration(node),
             SyntaxKind::ExportDeclaration => self.bind_export_declaration(node),
             SyntaxKind::ExportAssignment => self.bind_export_assignment(node),
             SyntaxKind::SourceFile => self.bind_source_file_if_external_module(),
@@ -740,6 +752,10 @@ impl<'file> Binder<'file> {
         );
         self.diagnostics
             .push(Diagnostic::new(message, range, arguments));
+    }
+
+    pub(super) const fn is_declaration_file(&self) -> bool {
+        self.is_declaration_file
     }
 
     pub(super) fn add_diagnostic(&mut self, diagnostic: Diagnostic) {

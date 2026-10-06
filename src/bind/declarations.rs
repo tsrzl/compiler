@@ -605,6 +605,7 @@ impl Binder<'_> {
             Table::Locals(container) => self.locals.get(&container),
             Table::Members(symbol) => Some(&self.symbols.symbol(symbol).members),
             Table::Exports(symbol) => Some(&self.symbols.symbol(symbol).exports),
+            Table::GlobalExports => Some(&self.global_exports),
         }
     }
 
@@ -613,6 +614,7 @@ impl Binder<'_> {
             Table::Locals(container) => self.locals.entry(container).or_default(),
             Table::Members(symbol) => &mut self.symbols.symbol_mut(symbol).members,
             Table::Exports(symbol) => &mut self.symbols.symbol_mut(symbol).exports,
+            Table::GlobalExports => &mut self.global_exports,
         }
     }
 }

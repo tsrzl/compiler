@@ -6,13 +6,14 @@
 //! fact is a side table keyed by [`NodeId`].
 //!
 //! Ported so far: declarations, containers and locals, class, interface, enum, and literal
-//! members, module exports, imports, JSX attributes, and the external-module symbol. Namespace
-//! declarations, control flow, strict-mode checks, and JavaScript assignment declarations are
-//! ported in later increments.
+//! members, namespaces and ambient modules, module exports, imports, JSX attributes, and the
+//! external-module symbol. Control flow, strict-mode checks, and JavaScript assignment
+//! declarations are ported in later increments.
 
 mod binder;
 mod container_flags;
 mod declarations;
+mod modules;
 
 use std::collections::{HashMap, HashSet};
 
@@ -31,6 +32,19 @@ pub struct BoundFile {
     diagnostics: Vec<Diagnostic>,
     external_module_indicator: Option<NodeId>,
     classifiable_names: HashSet<String>,
+    global_exports: SymbolTable,
+    pattern_ambient_modules: Vec<PatternAmbientModule>,
+}
+
+/// An ambient module whose name contains one `*` wildcard, such as `declare module "*.css"`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PatternAmbientModule {
+    /// The module name pattern.
+    pub pattern: String,
+    /// The byte index of the `*` wildcard in the pattern.
+    pub star_index: usize,
+    /// The ambient module's symbol.
+    pub symbol: SymbolId,
 }
 
 impl BoundFile {
@@ -68,6 +82,18 @@ impl BoundFile {
     #[must_use]
     pub const fn external_module_indicator(&self) -> Option<NodeId> {
         self.external_module_indicator
+    }
+
+    /// Returns the UMD globals declared by `export as namespace` in a declaration file.
+    #[must_use]
+    pub const fn global_exports(&self) -> &SymbolTable {
+        &self.global_exports
+    }
+
+    /// Returns the wildcard ambient modules declared in the file.
+    #[must_use]
+    pub fn pattern_ambient_modules(&self) -> &[PatternAmbientModule] {
+        &self.pattern_ambient_modules
     }
 
     /// Returns the names of classifiable declarations, such as classes, enums, and aliases.
