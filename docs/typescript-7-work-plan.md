@@ -143,8 +143,11 @@ decides cross-area or oracle classifications.
 
 Cross-file internal namespace merging now has an emit contract pinned to
 `conformance/internalModules/DeclarationMerging/TwoInternalModulesWithTheSameNameAndSameCommonRoot.ts`.
-TypeScript-Go emits exported assignments for both namespace declarations;
-TSRZL currently emits the `namespace` and member tokens as ordinary statements.
+Class and namespace merging has a separate assignment contract pinned to
+`conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRoot.ts`.
+TypeScript-Go emits exported assignments for both namespace declarations and
+for namespace values augmenting a class; TSRZL currently emits the `namespace`
+and member tokens as ordinary statements.
 
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration

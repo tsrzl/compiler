@@ -46,3 +46,30 @@ fn should_emit_members_from_merged_namespaces_given_multiple_source_files_when_c
         "{second_output:?}"
     );
 }
+
+// Pinned TypeScript fixture: conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRoot.ts.
+#[test]
+fn should_emit_class_namespace_member_given_exported_namespace_value_when_compiling() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("widget.ts"),
+        "class Widget {}\nnamespace Widget { export const label = \"widget\"; }\nconst value: string = Widget.label;\n",
+    )
+    .expect("the class and namespace source path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    let javascript = result
+        .emitted_files()
+        .iter()
+        .find(|file| file.path().file_name().and_then(|name| name.to_str()) == Some("widget.js"))
+        .expect("the class and namespace source emits JavaScript")
+        .text();
+    assert!(
+        javascript.contains("Widget.label = \"widget\";"),
+        "the namespace member should augment the class value; got {javascript:?}"
+    );
+}
