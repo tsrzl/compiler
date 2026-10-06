@@ -284,6 +284,57 @@ fn should_remove_outputs_given_clean_build_of_referenced_projects_when_running_c
 
 // Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
 #[test]
+fn should_allow_repeated_project_clean_given_existing_clean_state_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("repeated-clean-build");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const value = 1;\n");
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "app/index.ts",
+        "import { value } from \"../core\";\nexport const result = value;\n",
+    );
+    let initial_build = project.build_application();
+    assert!(
+        initial_build.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&initial_build.stdout),
+        String::from_utf8_lossy(&initial_build.stderr)
+    );
+    let first_clean = project.clean_application();
+    assert!(
+        first_clean.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&first_clean.stdout),
+        String::from_utf8_lossy(&first_clean.stderr)
+    );
+
+    // Act
+    let output = project.clean_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    for output_directory in ["core/dist", "app/dist"] {
+        assert!(
+            !project.path.join(output_directory).exists(),
+            "repeated clean unexpectedly recreated {output_directory}"
+        );
+    }
+}
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
 fn should_rebuild_all_referenced_projects_given_force_option_when_running_compiler_cli() {
     // Arrange
     let project = TemporaryProject::new("force-build");

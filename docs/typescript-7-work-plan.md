@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 726 tests: 324 pass and 402 deliberately fail;
-none are ignored. The compiler/oracle map links 411 behaviors to upstream cases
+The Rust suite currently has 727 tests: 324 pass and 403 deliberately fail;
+none are ignored. The compiler/oracle map links 412 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 106
 of 110 source-suite/area groups; 4 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 402 failures mapped by
+full test run has all 403 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -161,6 +161,10 @@ builds and writes no output directories; TSRZL rejects the `--build` option.
 Project-reference cleanup now has a two-project contract requiring `--clean`
 to remove each project's JavaScript, declaration, and build-info outputs.
 TypeScript-Go removes them all; TSRZL rejects the `--build` option.
+
+A second clean build has a separate idempotence contract: after the first clean
+removes project outputs, TypeScript-Go accepts another clean without recreating
+outputs or reporting an error. TSRZL rejects the `--build` option.
 
 Forced rebuild mode has a three-project contract: `--force --dry` schedules all
 three projects again after an initial successful build, even when they are up

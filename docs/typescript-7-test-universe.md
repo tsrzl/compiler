@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 726 behavior tests: 324 pass, 402 deliberately
+The Rust suite currently has 727 behavior tests: 324 pass, 403 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 411 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 412 behavior entries, touching
 106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 402 deliberate Rust failures have
+The red-test map validator confirms that all 403 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -282,6 +282,7 @@ test executed that fixture or covered every output/configuration.
 | `should_rebuild_dependent_declarations_given_dependency_type_changes_when_running_compiler_cli` | `typescript-go/internal/project/projectreferencesprogram_test.go` | Rebuild the dependent projects so an app declaration reflects a changed core export type. |
 | `should_skip_project_outputs_given_dry_build_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | List pending project builds without writing any project outputs. |
 | `should_remove_outputs_given_clean_build_of_referenced_projects_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Remove JavaScript, declaration, and build-info outputs from every referenced project. |
+| `should_allow_repeated_project_clean_given_existing_clean_state_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Allow a second clean build to succeed after the first clean removed project outputs. |
 | `should_rebuild_all_referenced_projects_given_force_option_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Rebuild every project in a reference graph even when all projects are up to date. |
 | `should_skip_up_to_date_projects_given_dry_build_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Report all projects as up to date during a dry build after a successful build. |
 | `should_report_unbuilt_project_reference_given_composite_import_when_running_cli` | `typescript-go/internal/checker/checker.go` | Report TS6305 when an imported composite project reference has no emitted declaration output. |
