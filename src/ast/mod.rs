@@ -15,7 +15,7 @@ mod utilities;
 mod visitor;
 
 pub use arena::{Ast, AstBuilder, AstBuilderMark, ModifierList, Node, NodeId, NodeList};
-pub use flags::{FlowFlags, ModifierFlags, NodeFlags, SymbolFlags, TokenFlags};
+pub use flags::{CheckFlags, FlowFlags, ModifierFlags, NodeFlags, SymbolFlags, TokenFlags};
 pub use kind::SyntaxKind;
 pub use module_instance_state::ModuleInstanceState;
 pub use nodes::*;

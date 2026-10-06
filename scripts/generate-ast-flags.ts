@@ -23,6 +23,7 @@ const FLAG_SETS: FlagSet[] = [
   { goType: "ModifierFlags", module: "ast", file: "modifierflags.go", doc: "Flags summarizing a declaration's modifiers." },
   { goType: "SymbolFlags", module: "ast", file: "symbolflags.go", doc: "Flags classifying the declarations merged into a symbol." },
   { goType: "FlowFlags", module: "ast", file: "flow.go", doc: "Flags classifying a control flow graph node." },
+  { goType: "CheckFlags", module: "ast", file: "checkflags.go", doc: "Flags describing a symbol the checker created." },
   { goType: "TypeFlags", module: "check", file: "types.go", doc: "Flags classifying a type; their numeric order also orders union constituents." },
   { goType: "ObjectFlags", module: "check", file: "types.go", doc: "Flags classifying object, union, and intersection types; some bits depend on the type kind." },
 ];

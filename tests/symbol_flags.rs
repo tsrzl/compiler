@@ -1,4 +1,4 @@
-use tsrzl::ast::{FlowFlags, SymbolFlags};
+use tsrzl::ast::{CheckFlags, FlowFlags, SymbolFlags};
 
 #[test]
 fn should_match_typescript_go_bits_given_class_excludes_when_reading_symbol_flags() {
@@ -44,6 +44,18 @@ fn should_include_both_junction_kinds_given_label_when_reading_flow_flags() {
 
     // Act
     let actual = FlowFlags::LABEL;
+
+    // Assert
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn should_include_both_synthetic_kinds_given_synthetic_when_reading_check_flags() {
+    // Arrange
+    let expected = CheckFlags::SYNTHETIC_PROPERTY | CheckFlags::SYNTHETIC_METHOD;
+
+    // Act
+    let actual = CheckFlags::SYNTHETIC;
 
     // Assert
     assert_eq!(actual, expected);
