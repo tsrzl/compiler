@@ -858,3 +858,49 @@ fn should_skip_dependents_given_upstream_error_when_stop_build_on_errors_is_enab
     assert!(!project.path.join("middle/dist/index.js").exists());
     assert!(!project.path.join("app/dist/main.js").exists());
 }
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_build_dependents_given_upstream_error_when_stop_build_on_errors_is_disabled() {
+    // Arrange
+    let project = TemporaryProject::new("continue-downstream-builds-on-error");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write(
+        "core/index.ts",
+        "export function multiply(a: number, b: number) { return a * b; }\nmultiply();\n",
+    );
+    project.write(
+        "middle/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "middle/index.ts",
+        "import { multiply } from \"../core\";\nexport const value = multiply(2, 3);\n",
+    );
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../middle"}],"include":["main.ts"]}"#,
+    );
+    project.write(
+        "app/main.ts",
+        "import { value } from \"../middle\";\nexport const result = value;\n",
+    );
+
+    // Act
+    let output = project.build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(!output.status.success(), "{diagnostics}");
+    assert!(diagnostics.contains("TS2554:"), "{diagnostics}");
+    assert!(project.path.join("core/dist/index.js").is_file());
+    assert!(project.path.join("middle/dist/index.js").is_file());
+    assert!(project.path.join("app/dist/main.js").is_file());
+}

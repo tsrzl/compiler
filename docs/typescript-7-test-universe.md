@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 734 behavior tests: 324 pass, 410 deliberately
+The Rust suite currently has 735 behavior tests: 324 pass, 411 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 419 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 420 behavior entries, touching
 106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 410 deliberate Rust failures have
+The red-test map validator confirms that all 411 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -286,6 +286,7 @@ test executed that fixture or covered every output/configuration.
 | `should_schedule_project_given_extended_tsconfig_change_when_running_dry_build_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Rebuild a project when a compiler option changes in its extended config while dependencies remain up to date. |
 | `should_rebuild_incremental_project_given_corrupt_build_info_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Recover from malformed build information, emit the source, and rewrite valid versioned metadata. |
 | `should_skip_dependents_given_upstream_error_when_stop_build_on_errors_is_enabled` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Build the failing upstream project and skip the middle and app projects when stop-build-on-errors is enabled. |
+| `should_build_dependents_given_upstream_error_when_stop_build_on_errors_is_disabled` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Continue building the middle and app projects by default despite a core diagnostic. |
 | `should_rebuild_dependent_declarations_given_dependency_type_changes_when_running_compiler_cli` | `typescript-go/internal/project/projectreferencesprogram_test.go` | Rebuild the dependent projects so an app declaration reflects a changed core export type. |
 | `should_skip_project_outputs_given_dry_build_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | List pending project builds without writing any project outputs. |
 | `should_remove_outputs_given_clean_build_of_referenced_projects_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Remove JavaScript, declaration, and build-info outputs from every referenced project. |
