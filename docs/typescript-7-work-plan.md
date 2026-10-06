@@ -205,6 +205,11 @@ The default build-error policy has a paired contract: without
 `--stopBuildOnErrors`, TypeScript-Go reports the core diagnostic but emits
 middle and app outputs; TSRZL rejects `--build`.
 
+Project-reference cycle handling now has paired contracts. TypeScript-Go
+reports TS6202 and stops a solution build for an unmarked cycle; it builds
+both projects when the cyclic reference is explicitly marked `circular`.
+TSRZL currently rejects both tests at the unsupported `--build` option.
+
 Array-based `tsconfig` inheritance now has a precedence contract: TypeScript-Go
 reports TS7006 when the later config enables `noImplicitAny` after the earlier
 config disables it. TSRZL currently emits no diagnostic for that project.

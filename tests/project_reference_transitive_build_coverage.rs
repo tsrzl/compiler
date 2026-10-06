@@ -904,3 +904,87 @@ fn should_build_dependents_given_upstream_error_when_stop_build_on_errors_is_dis
     assert!(project.path.join("middle/dist/index.js").is_file());
     assert!(project.path.join("app/dist/main.js").is_file());
 }
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go,
+// "in circular branch reports the error about it by stopping build".
+#[test]
+fn should_report_project_reference_cycle_given_cyclic_solution_build_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("reference-cycle");
+    project.write(
+        "tsconfig.json",
+        r#"{"files":[],"references":[{"path":"./a"},{"path":"./b"}]}"#,
+    );
+    project.write(
+        "a/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"outDir":"dist"},"files":["index.ts"],"references":[{"path":"../b"}]}"#,
+    );
+    project.write("a/index.ts", "export const a = 1;\n");
+    project.write(
+        "b/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"outDir":"dist"},"files":["index.ts"],"references":[{"path":"../a"}]}"#,
+    );
+    project.write("b/index.ts", "export const b = 2;\n");
+
+    // Act
+    let output = Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+        .current_dir(&project.path)
+        .arg("--build")
+        .arg("--verbose")
+        .arg(project.path.join("tsconfig.json"))
+        .output()
+        .expect("the compiler CLI can be started");
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(
+        diagnostics.contains("TS6202"),
+        "the build should report the project-reference cycle; got {diagnostics:?}"
+    );
+}
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go,
+// "in circular is set in the reference".
+#[test]
+fn should_build_explicitly_circular_project_reference_given_solution_build_when_running_compiler_cli()
+ {
+    // Arrange
+    let project = TemporaryProject::new("allowed-reference-cycle");
+    project.write(
+        "tsconfig.json",
+        r#"{"files":[],"references":[{"path":"./a"},{"path":"./b"}]}"#,
+    );
+    project.write(
+        "a/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"outDir":"../lib/a"},"files":["index.ts"],"references":[{"path":"../b","circular":true}]}"#,
+    );
+    project.write("a/index.ts", "export const a = 1;\n");
+    project.write(
+        "b/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"outDir":"../lib/b"},"files":["index.ts"],"references":[{"path":"../a"}]}"#,
+    );
+    project.write("b/index.ts", "export const b = 2;\n");
+
+    // Act
+    let output = Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+        .current_dir(&project.path)
+        .arg("--build")
+        .arg("--verbose")
+        .arg(project.path.join("tsconfig.json"))
+        .output()
+        .expect("the compiler CLI can be started");
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert!(project.path.join("lib/a/index.js").is_file());
+    assert!(project.path.join("lib/b/index.js").is_file());
+}
