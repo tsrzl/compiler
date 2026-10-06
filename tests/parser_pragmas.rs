@@ -1,5 +1,5 @@
 use tsrzl::parser::{
-    ParseOptions, ParsedSourceFile, ResolutionMode, ScriptKind, parse_source_file,
+    ParseDiagnostic, ParseOptions, ParsedSourceFile, ResolutionMode, ScriptKind, parse_source_file,
 };
 
 fn parse(text: &str) -> ParsedSourceFile {
@@ -75,7 +75,7 @@ fn should_report_ts1084_given_reference_without_known_attribute_when_parsing() {
     let texts: Vec<_> = parsed
         .diagnostics()
         .iter()
-        .map(|diagnostic| diagnostic.text())
+        .map(ParseDiagnostic::text)
         .collect();
     assert_eq!(texts, ["Invalid 'reference' directive syntax."]);
 }
@@ -106,5 +106,5 @@ fn should_ignore_references_given_directive_after_first_statement_when_parsing()
     let parsed = parse(text);
 
     // Assert
-    assert!(parsed.lib_reference_directives().is_empty());
+    assert_eq!(parsed.lib_reference_directives(), []);
 }
