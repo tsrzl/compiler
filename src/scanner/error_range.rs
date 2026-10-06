@@ -13,7 +13,7 @@ pub fn range_of_token_at_position(
     language_variant: LanguageVariant,
     pos: usize,
 ) -> Range<usize> {
-    let mut scanner = scanner_at(text, language_variant, pos);
+    let scanner = scanner_at(text, language_variant, pos);
     scanner.token_start()..scanner.token_end()
 }
 
@@ -38,10 +38,10 @@ pub fn error_range_for_node(
             }
             return range_of_token_at_position(text, language_variant, pos);
         }
-        SyntaxKind::FunctionDeclaration | SyntaxKind::MethodDeclaration if reparsed => Some(node),
-        SyntaxKind::FunctionDeclaration
-        | SyntaxKind::MethodDeclaration
-        | SyntaxKind::VariableDeclaration
+        SyntaxKind::FunctionDeclaration | SyntaxKind::MethodDeclaration if !reparsed => {
+            ast.name_of_declaration(node)
+        }
+        SyntaxKind::VariableDeclaration
         | SyntaxKind::BindingElement
         | SyntaxKind::ClassDeclaration
         | SyntaxKind::InterfaceDeclaration
@@ -78,8 +78,9 @@ pub fn error_range_for_node(
             let pos = skip_trivia(text, ast.node(satisfies.expression).end() as usize);
             return range_of_token_at_position(text, language_variant, pos);
         }
-        SyntaxKind::Constructor if reparsed => Some(node),
-        SyntaxKind::Constructor => return constructor_range(text, language_variant, current.pos()),
+        SyntaxKind::Constructor if !reparsed => {
+            return constructor_range(text, language_variant, current.pos());
+        }
         _ => Some(node),
     };
     let Some(error_node) = error_node else {
