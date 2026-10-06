@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 777 behavior tests: 346 pass, 431 deliberately
+The Rust suite currently has 778 behavior tests: 346 pass, 432 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -361,6 +361,7 @@ test executed that fixture or covered every output/configuration.
 | `should_narrow_discriminated_union_given_switch_case_when_checking_types` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Narrow the union to the member matching each switch case and accept its member-specific property access. |
 | `should_parse_bigint_literal_union_given_type_alias_when_building_syntax_tree` | `compiler/bigintPropertyName.ts` | Parse BigInt literal types in a type alias without syntax diagnostics. |
 | `should_report_ts1539_given_bigint_literal_object_property_when_checking_types` | `compiler/bigintPropertyName.ts` | Report TS1539 when a BigInt literal is used as an object property name. |
+| `should_report_ts2790_given_delete_on_required_property_when_checking_types` | `compiler/deleteExpressionMustBeOptional_exactOptionalPropertyTypes.ts` | Report TS2790 when deleting a required property with strict null checking enabled. |
 | `should_parse_boolean_literal_union_given_type_alias_when_building_syntax_tree` | `conformance/types/literal/booleanLiteralTypes1.ts` | Parse a type alias whose members are boolean literal types. |
 | `should_parse_union_of_object_types_given_type_alias_when_building_syntax_tree` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Parse a union of object type literals in a type alias without syntax diagnostics. |
 | `should_parse_string_literal_property_type_given_interface_when_building_syntax_tree` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Parse a string literal type on an interface property without syntax diagnostics. |
