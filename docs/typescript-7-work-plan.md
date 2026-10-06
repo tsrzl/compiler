@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 783 tests: 346 pass and 437 deliberately fail;
-none are ignored. The compiler/oracle map links 468 behaviors to upstream cases
+The Rust suite currently has 784 tests: 346 pass and 438 deliberately fail;
+none are ignored. The compiler/oracle map links 469 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
 which is a sample rather than exhaustive coverage. The latest full test run has
-all 437 failures mapped by
+all 438 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -27,7 +27,10 @@ expression is a `get` accessor; TSRZL currently returns no diagnostic. New
 cases also cover TS2427 for an interface named `string` and separate
 construct-signature diagnostics TS2369, TS7013, and TS7006 from
 `compiler/ParameterList13.ts`; TSRZL currently emits parser TS1005 diagnostics
-instead of those construct-signature results.
+instead of those construct-signature results. The
+`compiler/abstractClassUnionInstantiation.ts` case requires TS2511 when a
+constructor union includes an abstract class; TSRZL currently reports parser
+errors for `abstract`, `declare`, and `typeof` instead.
 
 Recent coverage adds parse and emit contracts for async arrow functions,
 including parenthesized and single-parameter forms and await bodies. TSRZL
