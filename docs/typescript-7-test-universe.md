@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 749 behavior tests: 326 pass, 423 deliberately
+The Rust suite currently has 761 behavior tests: 346 pass, 415 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -389,6 +389,7 @@ test executed that fixture or covered every output/configuration.
 | `should_parse_import_type_given_module_specifier_when_building_syntax_tree` | `conformance/types/import/importTypeAmbient.ts` | Parse an import type with a module specifier and qualified exported type. |
 | `should_resolve_imported_interface_given_import_type_reference_when_compiling_sources` | `conformance/types/import/importTypeLocal.ts` | Resolve an imported interface through a relative import type in a sibling source. |
 | `should_parse_typeof_import_given_module_specifier_when_building_syntax_tree` | `conformance/types/import/importTypeAmbient.ts` | Parse `typeof import("foo")` as an imported module type query. |
+| `should_parse_qualified_typeof_import_given_module_specifier_when_building_syntax_tree` | `conformance/types/import/importTypeAmbient.ts` | Parse `typeof import("foo2").Bar` as a qualified imported module type query. |
 | `should_resolve_scoped_package_types_given_package_json_types_field_when_running_compiler_cli` | `compiler/moduleResolution_packageJson_scopedPackage.ts` | Follow a scoped package's `types` field and resolve the imported declaration. |
 | `should_report_uninitialized_property_given_strict_project_option_when_compiling_project` | `conformance/classes/propertyMemberDeclarations/strictPropertyInitialization.ts` | Report TS2564 for an uninitialized required class property under strict mode. |
 | `should_emit_type_predicate_given_exported_function_when_emitting_declarations` | `conformance/declarationEmit/typePredicates/declarationEmitIdentifierPredicates01.ts` | Emit the exported function's `x is number` type predicate in its declaration. |
@@ -642,6 +643,12 @@ test executed that fixture or covered every output/configuration.
 | `should_parse_parameter_decorator_given_class_method_parameter_when_building_syntax_tree` | `conformance/decorators/class/method/parameter/decoratorOnClassMethodParameter1.ts` | Parse a legacy decorator on a class method parameter. |
 | `should_emit_literal_return_type_given_local_type_query_when_emitting_declarations` | `transpile/declarationNotInScopeTypes.ts` | Emit `export declare function two(): "";` for a local `typeof` query. |
 | `should_preserve_value_type_query_given_type_alias_when_emitting_declarations` | `conformance/types/specifyingTypes/typeQueries/circularTypeofWithVarOrFunc.ts` | Preserve `typeof value` in a type alias declaration. |
+| `should_accept_class_type_query_given_class_name_when_checking_types` | `conformance/types/specifyingTypes/typeQueries/typeQueryOnClass.ts` | Accept a query for the static side of a class. |
+| `should_accept_instance_type_query_given_instance_name_when_checking_types` | `conformance/types/specifyingTypes/typeQueries/typeQueryOnClass.ts` | Accept a query for the instance type of a class value. |
+| `should_accept_qualified_type_query_given_class_member_when_checking_types` | `conformance/types/specifyingTypes/typeQueries/typeQueryWithReservedWords.ts` | Accept a qualified query for a class prototype method. |
+| `should_parse_this_member_type_query_given_class_property_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeQueries/typeofThis.ts` | Parse `typeof this.member` in a class property annotation. |
+| `should_report_circular_type_query_given_self_referential_variable_annotation_when_checking_types` | `conformance/types/specifyingTypes/typeQueries/recursiveTypesWithTypeof.ts` | Report TS2502 for a circular variable type query. |
+| `should_accept_enum_member_type_query_given_enum_member_when_checking_types` | `conformance/types/specifyingTypes/typeQueries/typeofANonExportedType.ts` | Accept a query for an enum member value. |
 | `should_parse_function_type_alias_given_typed_parameter_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeLiterals/functionLiteral.ts` | Parse a function type alias with a typed parameter and return type without syntax diagnostics. |
 | `should_parse_call_signature_type_literal_given_typed_parameter_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeLiterals/functionLiteral.ts` | Parse an object type literal containing a typed call signature without syntax diagnostics. |
 | `should_parse_construct_signature_given_typed_parameter_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeLiterals/functionLiteral.ts` | Parse a construct signature with a typed parameter and return type without syntax diagnostics. |
