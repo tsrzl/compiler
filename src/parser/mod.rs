@@ -17,6 +17,7 @@ mod lists;
 mod lookahead;
 mod modifiers;
 mod modules;
+mod pragmas;
 mod signatures;
 mod statements;
 mod type_declarations;
@@ -35,6 +36,7 @@ use crate::tspath::is_declaration_file_name;
 
 pub use external_module::ExternalModuleIndicatorOptions;
 pub use lists::ParsingContext;
+pub use pragmas::{CheckJsDirective, FileReference, ResolutionMode};
 
 /// The kind of script a file contains, matching TypeScript-Go's `core.ScriptKind`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -162,6 +164,7 @@ pub struct ParsedSourceFile {
     ast: Ast,
     diagnostics: Vec<ParseDiagnostic>,
     comment_directives: Vec<CommentDirective>,
+    directives: pragmas::FileDirectives,
     language_variant: LanguageVariant,
     is_declaration_file: bool,
 }
@@ -195,6 +198,30 @@ impl ParsedSourceFile {
     #[must_use]
     pub fn comment_directives(&self) -> &[CommentDirective] {
         &self.comment_directives
+    }
+
+    /// Returns the files named by `/// <reference path="..." />` directives.
+    #[must_use]
+    pub fn referenced_files(&self) -> &[FileReference] {
+        &self.directives.referenced_files
+    }
+
+    /// Returns the packages named by `/// <reference types="..." />` directives.
+    #[must_use]
+    pub fn type_reference_directives(&self) -> &[FileReference] {
+        &self.directives.type_reference_directives
+    }
+
+    /// Returns the libs named by `/// <reference lib="..." />` directives.
+    #[must_use]
+    pub fn lib_reference_directives(&self) -> &[FileReference] {
+        &self.directives.lib_reference_directives
+    }
+
+    /// Returns the last `@ts-check` or `@ts-nocheck` comment, if any.
+    #[must_use]
+    pub const fn check_js_directive(&self) -> Option<CheckJsDirective> {
+        self.directives.check_js_directive
     }
 
     /// Returns whether JSX syntax was recognized.
@@ -302,12 +329,15 @@ impl<'text> Parser<'text> {
         let root = self.finish_node(SyntaxKind::SourceFile, pos, data);
         self.builder.add_flags(root, self.source_flags);
         let comment_directives = self.scanner.comment_directives().to_vec();
+        let mut directives = pragmas::file_directives(self.scanner.text());
+        self.diagnostics.append(&mut directives.diagnostics);
         ParsedSourceFile {
             options: options.clone(),
             text: self.scanner.text().into(),
             ast: self.builder.finish(root),
             diagnostics: self.diagnostics,
             comment_directives,
+            directives,
             language_variant: self.language_variant,
             is_declaration_file,
         }
