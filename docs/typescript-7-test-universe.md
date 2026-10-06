@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 779 behavior tests: 346 pass, 433 deliberately
+The Rust suite currently has 783 behavior tests: 346 pass, 437 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,19 +246,19 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 464 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 468 behavior entries, touching
 all 110 source-suite/area groups in the inventory. Each mapped test samples its
 group rather than exhaustively covering it. The largest remaining backlogs
 include compiler regressions, JSDoc, external modules, statements,
 Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 433 deliberate Rust failures have
+The red-test map validator confirms that all 437 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
-adds one row for every source fixture. It currently records 344 fixtures
-referenced by exact path, 504 with only an area sample, and 11,793 with no
+adds one row for every source fixture. It currently records 346 fixtures
+referenced by exact path, 504 with only an area sample, and 11,791 with no
 mapped behavior-test reference. Each row also carries its recorded option
 directives/configurations, reference-artifact names and kinds, and oracle
 status. Project/transpile rows also carry the runner configuration and oracle
@@ -363,6 +363,10 @@ test executed that fixture or covered every output/configuration.
 | `should_report_ts1539_given_bigint_literal_object_property_when_checking_types` | `compiler/bigintPropertyName.ts` | Report TS1539 when a BigInt literal is used as an object property name. |
 | `should_report_ts2790_given_delete_on_required_property_when_checking_types` | `compiler/deleteExpressionMustBeOptional_exactOptionalPropertyTypes.ts` | Report TS2790 when deleting a required property with strict null checking enabled. |
 | `should_report_ts6234_given_call_to_get_accessor_when_checking_types` | `compiler/accessorAccidentalCallDiagnostic.ts` | Report TS6234 with an accessor-specific diagnostic when calling a getter. |
+| `should_report_ts2427_given_interface_named_string_when_checking_types` | `compiler/InterfaceDeclaration8.ts` | Report TS2427 when an interface uses the predefined type name `string`. |
+| `should_report_ts2369_given_constructor_signature_parameter_property_when_checking_types` | `compiler/ParameterList13.ts` | Report TS2369 when a construct signature parameter uses a parameter-property modifier. |
+| `should_report_ts7013_given_construct_signature_without_return_type_when_checking_types` | `compiler/ParameterList13.ts` | Report TS7013 when a construct signature omits its return type. |
+| `should_report_ts7006_given_untyped_construct_signature_parameter_when_checking_types` | `compiler/ParameterList13.ts` | Report TS7006 for an untyped parameter in a construct signature. |
 | `should_parse_boolean_literal_union_given_type_alias_when_building_syntax_tree` | `conformance/types/literal/booleanLiteralTypes1.ts` | Parse a type alias whose members are boolean literal types. |
 | `should_parse_union_of_object_types_given_type_alias_when_building_syntax_tree` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Parse a union of object type literals in a type alias without syntax diagnostics. |
 | `should_parse_string_literal_property_type_given_interface_when_building_syntax_tree` | `conformance/controlFlow/exhaustiveSwitchStatements1.ts` | Parse a string literal type on an interface property without syntax diagnostics. |
