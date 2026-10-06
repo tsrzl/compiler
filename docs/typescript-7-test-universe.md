@@ -612,6 +612,15 @@ test executed that fixture or covered every output/configuration.
 | `should_report_return_type_mismatch_given_jsdoc_returns_tag_when_checking_types` | `conformance/jsdoc/checkJsdocReturnTag2.ts` | Report TS2322 when a JavaScript function returns a number against `@returns {string}`. |
 | `should_emit_jsdoc_parameter_type_given_annotated_javascript_function_when_emitting_declarations` | `conformance/jsdoc/declarations/jsDeclarationsFunctionJSDoc.ts` | Preserve the JSDoc parameter type in declaration output. |
 | `should_report_comma_operator_in_jsx_expression_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxParsingError1.tsx` | Report TS18007 for a comma operator in a JSX expression container. |
+| `should_parse_jsx_string_attribute_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxReactTestSuite.tsx` | Parse a JSX element with a string-literal attribute. |
+| `should_parse_jsx_expression_attribute_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxReactTestSuite.tsx` | Parse a JSX element with an expression-container attribute value. |
+| `should_parse_jsx_boolean_attribute_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxReactTestSuite.tsx` | Parse a JSX attribute without an initializer. |
+| `should_parse_jsx_spread_attribute_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxReactTestSuite.tsx` | Parse a JSX spread attribute. |
+| `should_parse_jsx_text_child_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxReactTestSuite.tsx` | Parse JSX text between opening and closing tags. |
+| `should_parse_nested_jsx_element_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxReactTestSuite.tsx` | Parse a JSX element nested as a child. |
+| `should_parse_jsx_expression_child_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/jsxReactTestSuite.tsx` | Parse a JSX expression container as a child. |
+| `should_parse_jsx_fragment_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/tsxFragmentPreserveEmit.tsx` | Parse a JSX fragment with text content. |
+| `should_report_ts17002_given_mismatched_jsx_closing_tag_when_building_syntax_tree` | `conformance/jsx/jsxInvalidEsprimaTestSuite.tsx` | Report TS17002 when a JSX closing tag does not match its opening tag. |
 | `should_merge_interface_members_given_duplicate_declarations_when_checking_types` | `conformance/interfaces/declarationMerging/mergeTwoInterfaces.ts` | Combine the members of merged interface declarations. |
 | `should_reject_legacy_out_file_given_allow_js_project_when_running_compiler_cli` | `projects/jsFileCompilation/DifferentNamesNotSpecifiedWithAllowJs/a.ts` | Report TS5102 for the removed `outFile` option. |
 | `should_write_declarations_to_declaration_dir_given_declaration_dir_project_option_when_running_compiler_cli` | `projects/declarationDir` | Write declaration files under the configured declaration directory. |
