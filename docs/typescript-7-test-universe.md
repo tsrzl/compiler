@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 735 behavior tests: 324 pass, 411 deliberately
+The Rust suite currently has 749 behavior tests: 326 pass, 423 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 420 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 434 behavior entries, touching
 106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 411 deliberate Rust failures have
+The red-test map validator confirms that all 423 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -306,13 +306,19 @@ test executed that fixture or covered every output/configuration.
 | `should_report_implicit_any_yield_given_unannotated_generator_when_checking_types` | `conformance/generators/generatorImplicitAny.ts` | Report TS7057 when an unannotated generator's `yield` result is used. |
 | `should_accept_contextually_typed_yield_given_annotated_variable_when_checking_types` | `conformance/generators/generatorImplicitAny.ts` | Contextually type a `yield` result from its annotated variable. |
 | `should_preserve_object_destructuring_given_object_initializer_when_emitting_javascript` | `conformance/es6/destructuring` | Preserve object binding patterns. |
-| `should_emit_namespace_given_exported_namespace_value_when_compiling` | `conformance/internalModules` | Bind and emit a namespace value. |
+| `should_emit_namespace_given_exported_namespace_value_when_compiling` | `conformance/internalModules` | Emit the exported value assignment inside a namespace IIFE. |
 | `should_emit_members_from_merged_namespaces_given_multiple_source_files_when_compiling` | `conformance/internalModules/DeclarationMerging/TwoInternalModulesWithTheSameNameAndSameCommonRoot.ts` | Emit exported members from separate declarations of the same namespace across source files. |
 | `should_emit_class_namespace_member_given_exported_namespace_value_when_compiling` | `conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRoot.ts` | Emit a namespace value that augments a same-named class. |
 | `should_report_namespace_before_class_given_instantiated_namespace_when_checking_types` | `compiler/augmentedTypesModules.ts` | Report TS2434 when a runtime namespace declaration precedes its merged class. |
 | `should_report_cross_file_namespace_merge_given_class_in_another_source_file_when_checking_types` | `conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRootES6.ts` | Report TS2433 when a class and its merging namespace occur in separate source files. |
 | `should_emit_function_namespace_member_given_exported_namespace_value_when_compiling` | `conformance/internalModules/DeclarationMerging/FunctionAndModuleWithSameNameAndCommonRoot.ts` | Emit a namespace value that augments a same-named function. |
 | `should_emit_enum_namespace_member_given_exported_namespace_value_when_compiling` | `conformance/internalModules/DeclarationMerging/EnumAndModuleWithSameNameAndCommonRoot.ts` | Emit a namespace value that augments a same-named enum. |
+| `should_emit_namespace_function_assignment_given_merged_interface_when_emitting_javascript` | `compiler/declarationEmitNamespaceMergedWithInterfaceNestedFunction.ts` | Emit the assignment that publishes an exported function from a namespace merged with an interface. |
+| `should_emit_namespace_function_declaration_given_merged_interface_when_emitting_declarations` | `compiler/declarationEmitNamespaceMergedWithInterfaceNestedFunction.ts` | Emit the exported namespace function signature in declaration output. |
+| `should_publish_exported_class_from_namespace_given_commonjs_module_when_emitting_javascript` | `conformance/externalModules/typeOnly/nestedNamespace.ts` | Emit an exported class assignment inside a namespace exported from a CommonJS module. |
+| `should_keep_unexported_namespace_value_local_given_namespace_member_when_emitting_javascript` | `conformance/internalModules/moduleBody/moduleWithStatementsOfEveryKind.ts` | Keep a private namespace variable inside the emitted namespace closure. |
+| `should_emit_nested_namespace_given_exported_namespace_member_when_emitting_javascript` | `conformance/internalModules/moduleBody/moduleWithStatementsOfEveryKind.ts` | Emit a nested namespace through its exported parent member. |
+| `should_emit_enum_member_from_namespace_given_exported_enum_when_emitting_javascript` | `conformance/internalModules/moduleBody/moduleWithStatementsOfEveryKind.ts` | Emit an exported enum through its containing namespace. |
 | `should_accept_conditional_type_given_generic_type_parameter_when_checking_types` | `conformance/types/conditional/conditionalTypes1.ts` | Accept and represent a conditional type. |
 | `should_accept_mapped_type_given_keyof_type_parameter_when_checking_types` | `conformance/types/mapped/mappedTypeModifiers.ts` | Accept a mapped type over `keyof`. |
 | `should_accept_template_literal_type_given_string_type_interpolation_when_checking_types` | `conformance/types/literal/templateLiteralTypes1.ts` | Accept a template literal type. |

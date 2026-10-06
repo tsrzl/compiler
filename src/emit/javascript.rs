@@ -416,6 +416,7 @@ impl JavaScriptEmitter {
             Statement::ClassDeclaration(declaration) => {
                 classes::emit_class_declaration(self, declaration, exported, output);
             }
+            Statement::NamespaceDeclaration(_) => {}
             Statement::EnumDeclaration(declaration) => enums::emit_enum_declaration(
                 declaration,
                 exported,

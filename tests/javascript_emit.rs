@@ -240,6 +240,13 @@ fn should_emit_namespace_given_exported_namespace_value_when_compiling() {
 
     // Assert
     assert_eq!(result.diagnostics(), []);
+    assert!(
+        result.emitted_files()[0]
+            .text()
+            .contains("Utilities.answer = 42;"),
+        "the namespace should publish its exported value, got {}",
+        result.emitted_files()[0].text()
+    );
 }
 
 #[test]

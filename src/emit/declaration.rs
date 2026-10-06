@@ -104,6 +104,7 @@ fn emit_statement(
         }
         Statement::VariableDeclaration(_)
         | Statement::EnumDeclaration(_)
+        | Statement::NamespaceDeclaration(_)
         | Statement::InterfaceDeclaration(_)
         | Statement::TypeAliasDeclaration(_)
         | Statement::FunctionDeclaration(_)

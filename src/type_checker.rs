@@ -133,6 +133,7 @@ pub(crate) fn check(
                 diagnostics.extend(check_type_reference(declaration.type_annotation(), symbols));
             }
             Statement::ImportDeclaration(_)
+            | Statement::NamespaceDeclaration(_)
             | Statement::ExportNamedFrom(_)
             | Statement::ExportAll(_)
             | Statement::ExportedDeclaration(_) => {}

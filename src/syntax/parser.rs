@@ -9,9 +9,9 @@ use crate::syntax::{
     ClassMember, Diagnostic, EnumDeclaration, EnumMember, ExportAllDeclaration,
     ExportNamedFromDeclaration, ExportSpecifier, Expression, ForInitializer, FunctionBodyStatement,
     FunctionDeclaration, FunctionParameter, ImportDeclaration, ImportSpecifier,
-    InterfaceDeclaration, ObjectProperty, Program, PropertyDeclaration, PropertySignature,
-    ReturnStatement, Statement, SwitchClause, TextSpan, TypeAliasDeclaration, TypeReference,
-    UnaryOperator, VariableDeclaration, VariableDeclarationKind,
+    InterfaceDeclaration, NamespaceDeclaration, ObjectProperty, Program, PropertyDeclaration,
+    PropertySignature, ReturnStatement, Statement, SwitchClause, TextSpan, TypeAliasDeclaration,
+    TypeReference, UnaryOperator, VariableDeclaration, VariableDeclarationKind,
 };
 
 pub(super) struct Parser {
@@ -92,6 +92,9 @@ impl Parser {
             TokenKind::Enum => self
                 .parse_enum_declaration(false)
                 .map(Statement::EnumDeclaration),
+            TokenKind::Namespace => self
+                .parse_namespace_declaration()
+                .map(Statement::NamespaceDeclaration),
             TokenKind::Type => self
                 .parse_type_alias_declaration()
                 .map(Statement::TypeAliasDeclaration),
@@ -933,6 +936,46 @@ impl Parser {
         }
 
         Ok(InterfaceDeclaration { name, members })
+    }
+
+    fn parse_namespace_declaration(&mut self) -> Result<NamespaceDeclaration, Diagnostic> {
+        let start = self.advance().span.start().get();
+        let (name, name_span) = self.parse_identifier_with_span("expected a namespace name")?;
+        if !self.matches(&TokenKind::LeftBrace) {
+            return Err(self.error("expected '{' after namespace name"));
+        }
+
+        let mut members = Vec::new();
+        while !self.at_end() && !matches!(self.peek().kind, TokenKind::RightBrace) {
+            let statement = self.parse_statement()?;
+            let declaration_kind = variable_declaration_kind(&statement);
+            members.push(statement);
+            if let Some((declaration_kind, exported)) = declaration_kind {
+                while self.matches(&TokenKind::Comma) {
+                    let declaration = self.parse_variable_declarator(declaration_kind)?;
+                    let statement = Statement::VariableDeclaration(declaration);
+                    members.push(if exported {
+                        Statement::ExportedDeclaration(Box::new(statement))
+                    } else {
+                        statement
+                    });
+                }
+                self.matches(&TokenKind::Semicolon);
+            }
+        }
+
+        let closing_span = self.peek().span;
+        if !self.matches(&TokenKind::RightBrace) {
+            return Err(self.error("expected '}' after namespace members"));
+        }
+        self.matches(&TokenKind::Semicolon);
+        let end = closing_span.start().get() + closing_span.length();
+        Ok(NamespaceDeclaration {
+            name,
+            name_span,
+            members,
+            span: TextSpan::new(Utf16Offset::new(start), end - start),
+        })
     }
 
     fn parse_enum_declaration(&mut self, is_const: bool) -> Result<EnumDeclaration, Diagnostic> {

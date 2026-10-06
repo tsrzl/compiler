@@ -11,10 +11,10 @@ pub use ast::{
     ArrowFunctionBody, AssignmentOperator, BinaryOperator, CatchClause, ClassDeclaration,
     ClassMember, EnumDeclaration, EnumMember, ExportAllDeclaration, ExportNamedFromDeclaration,
     ExportSpecifier, Expression, ForInitializer, FunctionBodyStatement, FunctionDeclaration,
-    FunctionParameter, ImportDeclaration, ImportSpecifier, InterfaceDeclaration, ObjectProperty,
-    Program, PropertyDeclaration, PropertySignature, ReturnStatement, Statement, SwitchClause,
-    TypeAliasDeclaration, TypeReference, UnaryOperator, VariableDeclaration,
-    VariableDeclarationKind,
+    FunctionParameter, ImportDeclaration, ImportSpecifier, InterfaceDeclaration,
+    NamespaceDeclaration, ObjectProperty, Program, PropertyDeclaration, PropertySignature,
+    ReturnStatement, Statement, SwitchClause, TypeAliasDeclaration, TypeReference, UnaryOperator,
+    VariableDeclaration, VariableDeclarationKind,
 };
 
 /// A source range measured in UTF-16 code units.

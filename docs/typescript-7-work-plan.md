@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 735 tests: 324 pass and 411 deliberately fail;
-none are ignored. The compiler/oracle map links 420 behaviors to upstream cases
+The Rust suite currently has 749 tests: 326 pass and 423 deliberately fail;
+none are ignored. The compiler/oracle map links 434 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch 106
 of 110 source-suite/area groups; 4 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 411 failures mapped by
+full test run has all 423 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -155,6 +155,10 @@ declarations are split across files; TSRZL currently reports no such diagnostic.
 Function and enum augmentation now also have separate emit contracts, each
 requiring the namespace IIFE to attach its exported member to the merged value.
 TSRZL currently omits the required merged-value assignments in both cases.
+The expanded emission slice now separately maps namespace private-value scoping,
+nested namespace output, exported enum assignment, function JavaScript output,
+and namespace declarations. These focused namespace emission tests currently
+fail because the parser stores namespace members but the emitters ignore them.
 
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration

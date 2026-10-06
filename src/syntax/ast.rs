@@ -23,6 +23,8 @@ pub enum Statement {
     VariableDeclaration(VariableDeclaration),
     /// An enum declaration.
     EnumDeclaration(EnumDeclaration),
+    /// A namespace declaration and its nested statements.
+    NamespaceDeclaration(NamespaceDeclaration),
     /// An interface declaration.
     InterfaceDeclaration(InterfaceDeclaration),
     /// A named type alias declaration.
@@ -63,6 +65,7 @@ impl Statement {
             Self::VariableDeclaration(declaration) => Some(declaration),
             Self::ExportedDeclaration(statement) => statement.as_variable_declaration(),
             Self::EnumDeclaration(_)
+            | Self::NamespaceDeclaration(_)
             | Self::InterfaceDeclaration(_)
             | Self::TypeAliasDeclaration(_)
             | Self::FunctionDeclaration(_)
@@ -88,6 +91,7 @@ impl Statement {
             Self::ExportedDeclaration(statement) => statement.as_interface_declaration(),
             Self::VariableDeclaration(_)
             | Self::EnumDeclaration(_)
+            | Self::NamespaceDeclaration(_)
             | Self::TypeAliasDeclaration(_)
             | Self::FunctionDeclaration(_)
             | Self::ClassDeclaration(_)
@@ -112,6 +116,7 @@ impl Statement {
             Self::ExportedDeclaration(statement) => statement.as_type_alias_declaration(),
             Self::VariableDeclaration(_)
             | Self::EnumDeclaration(_)
+            | Self::NamespaceDeclaration(_)
             | Self::InterfaceDeclaration(_)
             | Self::FunctionDeclaration(_)
             | Self::ClassDeclaration(_)
@@ -136,6 +141,7 @@ impl Statement {
             Self::ExportedDeclaration(statement) => statement.as_function_declaration(),
             Self::VariableDeclaration(_)
             | Self::EnumDeclaration(_)
+            | Self::NamespaceDeclaration(_)
             | Self::InterfaceDeclaration(_)
             | Self::TypeAliasDeclaration(_)
             | Self::ClassDeclaration(_)
@@ -160,6 +166,7 @@ impl Statement {
             Self::ExportedDeclaration(statement) => statement.as_class_declaration(),
             Self::VariableDeclaration(_)
             | Self::EnumDeclaration(_)
+            | Self::NamespaceDeclaration(_)
             | Self::InterfaceDeclaration(_)
             | Self::TypeAliasDeclaration(_)
             | Self::FunctionDeclaration(_)
@@ -183,6 +190,32 @@ impl Statement {
             Self::EnumDeclaration(declaration) => Some(declaration),
             Self::ExportedDeclaration(statement) => statement.as_enum_declaration(),
             Self::VariableDeclaration(_)
+            | Self::NamespaceDeclaration(_)
+            | Self::InterfaceDeclaration(_)
+            | Self::TypeAliasDeclaration(_)
+            | Self::FunctionDeclaration(_)
+            | Self::ClassDeclaration(_)
+            | Self::ExpressionStatement(_)
+            | Self::ControlFlowStatement(_)
+            | Self::Break { .. }
+            | Self::Continue { .. }
+            | Self::ImportDeclaration(_)
+            | Self::ExportDefault(_)
+            | Self::ExportNamed(_)
+            | Self::ExportTypeNamed(_)
+            | Self::ExportNamedFrom(_)
+            | Self::ExportAll(_) => None,
+        }
+    }
+
+    /// Returns the namespace declaration when this statement is one.
+    #[must_use]
+    pub const fn as_namespace_declaration(&self) -> Option<&NamespaceDeclaration> {
+        match self {
+            Self::NamespaceDeclaration(declaration) => Some(declaration),
+            Self::ExportedDeclaration(statement) => statement.as_namespace_declaration(),
+            Self::VariableDeclaration(_)
+            | Self::EnumDeclaration(_)
             | Self::InterfaceDeclaration(_)
             | Self::TypeAliasDeclaration(_)
             | Self::FunctionDeclaration(_)
@@ -552,6 +585,41 @@ impl EnumDeclaration {
     #[must_use]
     pub const fn is_const(&self) -> bool {
         self.is_const
+    }
+}
+
+/// A namespace declaration containing its owned nested statements.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NamespaceDeclaration {
+    pub(super) name: String,
+    pub(super) name_span: TextSpan,
+    pub(super) members: Vec<Statement>,
+    pub(super) span: TextSpan,
+}
+
+impl NamespaceDeclaration {
+    /// Returns the namespace name.
+    #[must_use]
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Returns the source span of the namespace name.
+    #[must_use]
+    pub const fn name_span(&self) -> TextSpan {
+        self.name_span
+    }
+
+    /// Returns nested statements in source order.
+    #[must_use]
+    pub fn members(&self) -> &[Statement] {
+        &self.members
+    }
+
+    /// Returns the full source span of this declaration.
+    #[must_use]
+    pub const fn span(&self) -> TextSpan {
+        self.span
     }
 }
 
