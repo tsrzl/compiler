@@ -940,7 +940,10 @@ impl Parser {
 
     fn parse_namespace_declaration(&mut self) -> Result<NamespaceDeclaration, Diagnostic> {
         let start = self.advance().span.start().get();
-        let (name, name_span) = self.parse_identifier_with_span("expected a namespace name")?;
+        let mut names = vec![self.parse_identifier_with_span("expected a namespace name")?];
+        while self.matches(&TokenKind::Dot) {
+            names.push(self.parse_identifier_with_span("expected a namespace name after '.'")?);
+        }
         if !self.matches(&TokenKind::LeftBrace) {
             return Err(self.error("expected '{' after namespace name"));
         }
@@ -970,12 +973,34 @@ impl Parser {
         }
         self.matches(&TokenKind::Semicolon);
         let end = closing_span.start().get() + closing_span.length();
-        Ok(NamespaceDeclaration {
+        let (name, name_span) = names
+            .pop()
+            .expect("a namespace declaration has at least one name segment");
+        let mut declaration = NamespaceDeclaration {
             name,
             name_span,
             members,
-            span: TextSpan::new(Utf16Offset::new(start), end - start),
-        })
+            span: TextSpan::new(
+                Utf16Offset::new(name_span.start().get()),
+                end - name_span.start().get(),
+            ),
+        };
+        while let Some((name, name_span)) = names.pop() {
+            let nested = Statement::ExportedDeclaration(Box::new(Statement::NamespaceDeclaration(
+                declaration,
+            )));
+            declaration = NamespaceDeclaration {
+                name,
+                name_span,
+                members: vec![nested],
+                span: TextSpan::new(
+                    Utf16Offset::new(name_span.start().get()),
+                    end - name_span.start().get(),
+                ),
+            };
+        }
+        declaration.span = TextSpan::new(Utf16Offset::new(start), end - start);
+        Ok(declaration)
     }
 
     fn parse_enum_declaration(&mut self, is_const: bool) -> Result<EnumDeclaration, Diagnostic> {

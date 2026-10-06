@@ -434,7 +434,7 @@ impl JavaScriptEmitter {
                 classes::emit_class_declaration(self, declaration, exported, output);
             }
             Statement::NamespaceDeclaration(declaration) => {
-                self.emit_namespace_declaration(declaration, output);
+                self.emit_namespace_declaration(declaration, exported, output);
             }
             Statement::EnumDeclaration(declaration) => enums::emit_enum_declaration(
                 declaration,
@@ -473,7 +473,12 @@ impl JavaScriptEmitter {
         }
     }
 
-    fn emit_namespace_declaration(&self, declaration: &NamespaceDeclaration, output: &mut String) {
+    fn emit_namespace_declaration(
+        &self,
+        declaration: &NamespaceDeclaration,
+        exported: bool,
+        output: &mut String,
+    ) {
         let name = declaration.name();
         if !self.namespace_merge_bases.contains(name) {
             output.push_str("var ");
@@ -486,9 +491,17 @@ impl JavaScriptEmitter {
         self.emit_namespace_members(declaration, name, 2, output);
         output.push_str("})(");
         output.push_str(name);
-        output.push_str(" || (");
-        output.push_str(name);
-        output.push_str(" = {}));\n");
+        if exported && self.module == ModuleKind::CommonJs {
+            output.push_str(" || (exports.");
+            output.push_str(name);
+            output.push_str(" = ");
+            output.push_str(name);
+            output.push_str(" = {}));\n");
+        } else {
+            output.push_str(" || (");
+            output.push_str(name);
+            output.push_str(" = {}));\n");
+        }
     }
 
     fn emit_namespace_members(

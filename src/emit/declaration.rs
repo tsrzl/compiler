@@ -250,6 +250,7 @@ fn emit_namespace(declaration: &NamespaceDeclaration, exported: bool, output: &m
             Statement::FunctionDeclaration(function) => {
                 emit_namespace_function(function, output);
             }
+            Statement::ClassDeclaration(class) => emit_namespace_class(class, output),
             _ => {}
         }
     }
@@ -287,10 +288,25 @@ fn emit_namespace_function(function: &FunctionDeclaration, output: &mut String) 
 }
 
 fn emit_class(declaration: &ClassDeclaration, exported: bool, output: &mut String) {
+    emit_class_with_indentation(declaration, exported, 0, "declare class ", output);
+}
+
+fn emit_namespace_class(declaration: &ClassDeclaration, output: &mut String) {
+    emit_class_with_indentation(declaration, false, 1, "class ", output);
+}
+
+fn emit_class_with_indentation(
+    declaration: &ClassDeclaration,
+    exported: bool,
+    indentation: usize,
+    class_keyword: &str,
+    output: &mut String,
+) {
+    write_declaration_indentation(output, indentation);
     if exported {
         output.push_str("export ");
     }
-    output.push_str("declare class ");
+    output.push_str(class_keyword);
     output.push_str(declaration.name());
     if let Some(base_class) = declaration.base_class() {
         output.push_str(" extends ");
@@ -307,10 +323,10 @@ fn emit_class(declaration: &ClassDeclaration, exported: bool, output: &mut Strin
                         .iter()
                         .filter(|parameter| parameter.is_parameter_property())
                     {
-                        emit_parameter_property(parameter, output);
+                        emit_parameter_property(parameter, indentation + 1, output);
                     }
                 }
-                output.push_str("    ");
+                write_declaration_indentation(output, indentation + 1);
                 if is_private_method {
                     output.push_str("private ");
                 } else if method.is_protected() {
@@ -332,14 +348,17 @@ fn emit_class(declaration: &ClassDeclaration, exported: bool, output: &mut Strin
                 }
                 output.push_str(";\n");
             }
-            ClassMember::Property(property) => emit_class_property(property, output),
+            ClassMember::Property(property) => {
+                emit_class_property(property, indentation + 1, output);
+            }
         }
     }
+    write_declaration_indentation(output, indentation);
     output.push_str("}\n");
 }
 
-fn emit_parameter_property(parameter: &FunctionParameter, output: &mut String) {
-    output.push_str("    ");
+fn emit_parameter_property(parameter: &FunctionParameter, indentation: usize, output: &mut String) {
+    write_declaration_indentation(output, indentation);
     if parameter.is_private_parameter_property() {
         output.push_str("private ");
     } else if parameter.is_protected_parameter_property() {
@@ -367,8 +386,8 @@ fn emit_parameter_property(parameter: &FunctionParameter, output: &mut String) {
     output.push_str(";\n");
 }
 
-fn emit_class_property(property: &PropertyDeclaration, output: &mut String) {
-    output.push_str("    ");
+fn emit_class_property(property: &PropertyDeclaration, indentation: usize, output: &mut String) {
+    write_declaration_indentation(output, indentation);
     if property.is_private() {
         output.push_str("private ");
     } else if property.is_protected() {
@@ -394,6 +413,12 @@ fn emit_class_property(property: &PropertyDeclaration, output: &mut String) {
         output.push_str("any");
     }
     output.push_str(";\n");
+}
+
+fn write_declaration_indentation(output: &mut String, indentation: usize) {
+    for _ in 0..indentation {
+        output.push_str("    ");
+    }
 }
 
 fn emit_function_parameters(

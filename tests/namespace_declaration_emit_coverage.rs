@@ -129,6 +129,27 @@ fn should_emit_nested_namespace_given_exported_namespace_member_when_emitting_ja
     );
 }
 
+// Pinned TypeScript fixture: conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRootES6.ts.
+#[test]
+fn should_emit_dotted_namespace_member_given_qualified_namespace_when_emitting_javascript() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("class.ts"),
+        "namespace X.Y { export class Point {} }\n",
+    )
+    .expect("the dotted namespace source path has a supported source kind");
+
+    // Act
+    let result = Compiler::new().compile(source);
+
+    // Assert
+    let javascript = result.emitted_files()[0].text();
+    assert!(
+        javascript.contains("X.Y = {}") && javascript.contains("Y.Point = Point;"),
+        "the dotted namespace should create the qualified object and export its class; got {javascript:?}"
+    );
+}
+
 #[test]
 fn should_emit_enum_member_from_namespace_given_exported_enum_when_emitting_javascript() {
     // Arrange
