@@ -38,7 +38,7 @@ fn should_complement_supported_default_modifiers_given_unsupported_set_when_read
 }
 
 #[test]
-fn should_combine_branch_and_loop_given_label_when_reading_flow_flags() {
+fn should_include_both_junction_kinds_given_label_when_reading_flow_flags() {
     // Arrange
     let expected = FlowFlags::BRANCH_LABEL | FlowFlags::LOOP_LABEL;
 
