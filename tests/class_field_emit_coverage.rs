@@ -26,6 +26,29 @@ fn should_lower_instance_field_given_es2015_target_when_emitting_javascript() {
 }
 
 #[test]
+fn should_lower_typed_array_instance_field_given_es2015_target_when_emitting_javascript() {
+    // Pinned fixture: compiler/2dArrays.ts.
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("array-field.ts"),
+        "class Ship {}\nclass Board { ships: Ship[] = []; }",
+    )
+    .expect("a TypeScript path has a supported source kind");
+    let compiler = Compiler::with_options(CompilerOptions::new(ScriptTarget::Es2015));
+
+    // Act
+    let result = compiler.compile(source);
+
+    // Assert
+    assert_eq!(result.diagnostics(), []);
+    let javascript = result.emitted_files()[0].text();
+    assert!(
+        javascript.contains("this.ships = [];") && !javascript.contains("ships: Ship[] = []"),
+        "the array field should be emitted as a constructor assignment, got {javascript:?}"
+    );
+}
+
+#[test]
 fn should_lower_static_field_given_es2015_target_when_emitting_javascript() {
     // Pinned fixture: conformance/classes/propertyMemberDeclarations/staticMemberInitialization.ts.
     // Arrange

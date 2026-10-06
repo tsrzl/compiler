@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 769 behavior tests: 346 pass, 423 deliberately
+The Rust suite currently has 772 behavior tests: 346 pass, 426 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -652,6 +652,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_type_only_query_given_type_alias_when_checking_types` | `conformance/types/specifyingTypes/typeQueries/typeofTypeParameter.ts` | Report TS2693 when a type-only symbol is used as a value query. |
 | `should_reject_numeric_type_query_target_given_numeric_operand_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeQueries/invalidTypeOfTarget.ts` | Report TS1003 when a numeric literal is used as a type-query target. |
 | `should_lower_instance_field_given_es2015_target_when_emitting_javascript` | `conformance/classes/propertyMemberDeclarations/instanceMemberInitialization.ts` | Emit an instance field initializer inside the generated constructor for ES2015. |
+| `should_lower_typed_array_instance_field_given_es2015_target_when_emitting_javascript` | `compiler/2dArrays.ts` | Lower an array-typed instance field into a constructor assignment for ES2015. |
 | `should_lower_static_field_given_es2015_target_when_emitting_javascript` | `conformance/classes/propertyMemberDeclarations/staticMemberInitialization.ts` | Emit a static field initializer after the class for ES2015. |
 | `should_parse_array_binding_pattern_given_for_of_statement_when_building_syntax_tree` | `conformance/es6/for-ofStatements/for-of38.ts` | Parse an array binding pattern as a for-of initializer. |
 | `should_preserve_array_binding_pattern_given_for_of_statement_when_emitting_javascript` | `conformance/es6/for-ofStatements/for-of38.ts` | Preserve the array binding pattern in ES2015 JavaScript output. |
@@ -683,6 +684,8 @@ test executed that fixture or covered every output/configuration.
 | `should_reject_removed_project_target_given_es5_configuration_when_running_compiler_cli` | `projects/decoratorMetadata/emitDecoratorMetadataCommonJSIsolatedModule/main.ts` | Report TS5108 for the TypeScript 7 project configuration's removed ES5 target. |
 | `should_parse_import_equals_given_namespace_declaration_when_building_syntax_tree` | `projects/NestedLocalModule-SimpleCase/test1.ts` | Parse import-equals syntax nested inside a namespace without syntax diagnostics; TypeScript 7 later reports TS1147 semantically. |
 | `should_report_invalid_module_reference_given_import_equals_inside_namespace_when_compiling` | `projects/NestedLocalModule-WithRecursiveTypecheck/test1.ts` | Report TS1147 for an import-equals module reference inside a namespace. |
+| `should_report_ts1147_given_import_equals_inside_exported_namespace_when_running_compiler_cli` | `projects/privacyCheck-ImportInParent/test.ts` | Report TS1147 for import-equals inside an exported namespace. |
+| `should_report_ts1147_given_import_equals_inside_global_namespace_when_running_compiler_cli` | `projects/privacyCheck-InsideModule/testGlo.ts` | Report TS1147 for import-equals inside a global namespace. |
 | `should_report_ts1147_given_namespace_import_equals_when_running_compiler_cli` | `projects/ext-int-ext/internal2.ts` | Report TS1147 for namespace-local import-equals in the mixed external/internal project. |
 | `should_report_import_assignment_given_ecmascript_module_when_compiling_sources` | `projects/VisibilityOfCrosssModuleTypeUsage/commands.ts` | Report TS1202 for an import assignment when the output module kind is ECMAScript. |
 | `should_report_implicit_any_return_given_unannotated_ambient_function_when_compiling` | `projects/relative-nested-ref/decl.d.ts` | Report TS7010 for an ambient function with no return annotation. |

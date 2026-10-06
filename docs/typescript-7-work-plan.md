@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 769 tests: 346 pass and 423 deliberately fail;
-none are ignored. The compiler/oracle map links 454 behaviors to upstream cases
-or areas. A separate map records 16 extension contracts. Corpus links touch 108
-of 110 source-suite/area groups; 2 project groups have no mapped Rust behavior
-test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 423 failures mapped by
+The Rust suite currently has 772 tests: 346 pass and 426 deliberately fail;
+none are ignored. The compiler/oracle map links 457 behaviors to upstream cases
+or areas. A separate map records 16 extension contracts. Corpus links touch all
+110 source-suite/area groups; each group now has at least one mapped Rust test,
+which is a sample rather than exhaustive coverage. The latest full test run has
+all 426 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -87,6 +87,12 @@ The indirect privacy-check project has a CLI emit contract for its transitive
 import-equals chain. With a TypeScript 7 `paths` wildcard, TS-Go emits
 `require("externalModule")`; TSRZL emits the file but drops that require after
 parsing the import-equals statement as TS1005.
+The final two unsampled project groups now have separate TS1147 contracts for
+import-equals inside exported and global namespaces. TS-Go reports TS1147 in
+both scopes; TSRZL reports TS1005 before semantic validation.
+The compiler root has 6,537 fixture cases. `compiler/2dArrays.ts` now has a
+focused ES2015 emit contract for lowering an array-typed instance field into a
+constructor assignment; TSRZL currently preserves it as a class field.
 
 JSDoc `@template` return inference has a focused mismatch contract. TS-Go
 infers `number` from the argument and reports TS2322 for a string assignment;
