@@ -1517,6 +1517,8 @@ pub enum BinaryOperator {
 /// A prefix arithmetic operator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UnaryOperator {
+    /// Runtime type inspection.
+    TypeOf,
     /// Unary plus.
     Plus,
     /// Unary negation.
@@ -1530,6 +1532,7 @@ impl UnaryOperator {
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
+            Self::TypeOf => "typeof",
             Self::Plus => "+",
             Self::Negate => "-",
             Self::LogicalNot => "!",

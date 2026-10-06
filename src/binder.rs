@@ -1282,6 +1282,10 @@ fn infer_expression_types(expression: &Expression) -> Vec<String> {
             operator: crate::syntax::UnaryOperator::Plus | crate::syntax::UnaryOperator::Negate,
             ..
         } => vec!["number".to_owned()],
+        Expression::UnaryExpression {
+            operator: crate::syntax::UnaryOperator::TypeOf,
+            ..
+        } => vec!["string".to_owned()],
         Expression::BooleanLiteral { .. }
         | Expression::UnaryExpression {
             operator: crate::syntax::UnaryOperator::LogicalNot,

@@ -344,6 +344,7 @@ test executed that fixture or covered every output/configuration.
 | `should_accept_indexed_access_type_given_interface_property_when_checking_types` | `conformance/types/keyof/keyofAndIndexedAccess.ts` | Resolve an indexed access to its property type. |
 | `should_resolve_overload_given_matching_string_argument_when_checking_types` | `conformance/expressions/functionCalls/overloadResolution.ts` | Select the string overload for a string argument. |
 | `should_narrow_union_given_typeof_guard_when_checking_types` | `conformance/controlFlow/controlFlowTypeofObject.ts` | Narrow a string-or-number parameter in a `typeof` guard. |
+| `should_emit_typeof_expression_given_identifier_operand_when_compiling` | `conformance/expressions/unaryOperators/typeofOperator/typeofOperatorWithStringType.ts` | Preserve the runtime `typeof` operator and its operand. |
 | `should_accept_tuple_type_given_matching_array_literal_when_checking_types` | `conformance/types/tuple/tupleElementTypes1.ts` | Accept a tuple with matching element types. |
 | `should_preserve_regular_expression_literal_given_variable_initializer_when_emitting_javascript` | `conformance/parser/ecmascript5/RegularExpressions/parserRegularExpression1.ts` | Preserve a regular expression literal in JavaScript. |
 | `should_emit_private_identifier_given_typed_class_field_when_emitting_javascript` | `conformance/classes/members/privateNames/privateNameField.ts` | Erase the field type while preserving the private field. |

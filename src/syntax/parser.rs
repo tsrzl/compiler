@@ -1404,17 +1404,15 @@ impl Parser {
     }
 
     fn parse_unary_expression(&mut self) -> Result<Expression, Diagnostic> {
-        if matches!(
-            self.peek().kind,
-            TokenKind::Plus | TokenKind::Minus | TokenKind::Bang
-        ) {
+        let operator = match &self.peek().kind {
+            TokenKind::Plus => Some(UnaryOperator::Plus),
+            TokenKind::Minus => Some(UnaryOperator::Negate),
+            TokenKind::Bang => Some(UnaryOperator::LogicalNot),
+            TokenKind::Identifier(name) if name == "typeof" => Some(UnaryOperator::TypeOf),
+            _ => None,
+        };
+        if let Some(operator) = operator {
             let operator_token = self.advance();
-            let operator = match operator_token.kind {
-                TokenKind::Plus => UnaryOperator::Plus,
-                TokenKind::Minus => UnaryOperator::Negate,
-                TokenKind::Bang => UnaryOperator::LogicalNot,
-                _ => unreachable!("the parser checks the unary operator before consuming it"),
-            };
             let operand = self.parse_unary_expression()?;
             let start = operator_token.span.start();
             let end = operand.span().start().get() + operand.span().length();

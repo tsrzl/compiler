@@ -1426,7 +1426,7 @@ fn emit_unary_expression(
     let needs_separator = matches!(
         (operator, operand.as_bytes().first()),
         (UnaryOperator::Plus, Some(b'+')) | (UnaryOperator::Negate, Some(b'-'))
-    );
+    ) || operator == UnaryOperator::TypeOf;
     format!(
         "{}{}{}",
         operator.as_str(),

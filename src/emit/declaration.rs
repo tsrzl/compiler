@@ -529,6 +529,10 @@ fn infer_expression_type_with_parameters(
             ..
         }
         | Expression::BooleanLiteral { .. } => "boolean".to_owned(),
+        Expression::UnaryExpression {
+            operator: crate::syntax::UnaryOperator::TypeOf,
+            ..
+        } => "string".to_owned(),
         Expression::NullLiteral { .. } => "null".to_owned(),
         Expression::StringLiteral { .. } => "string".to_owned(),
         Expression::TypeAssertionExpression {

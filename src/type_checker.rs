@@ -780,6 +780,10 @@ pub(super) fn infer_expression_types(
             operator: UnaryOperator::LogicalNot,
             ..
         } => Some(vec!["boolean".to_owned()]),
+        Expression::UnaryExpression {
+            operator: UnaryOperator::TypeOf,
+            ..
+        } => Some(vec!["string".to_owned()]),
         Expression::NullLiteral { .. } => Some(vec!["null".to_owned()]),
         Expression::StringLiteral { .. } => Some(vec!["string".to_owned()]),
         Expression::TypeAssertionExpression {

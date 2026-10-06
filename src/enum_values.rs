@@ -71,7 +71,7 @@ fn numeric_constant(
             match operator {
                 UnaryOperator::Plus => Some(value),
                 UnaryOperator::Negate => Some(-value),
-                UnaryOperator::LogicalNot => None,
+                UnaryOperator::LogicalNot | UnaryOperator::TypeOf => None,
             }
         }
         Expression::BinaryExpression {
