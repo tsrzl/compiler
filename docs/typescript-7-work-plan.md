@@ -148,6 +148,10 @@ Class and namespace merging has a separate assignment contract pinned to
 TypeScript-Go emits exported assignments for both namespace declarations and
 for namespace values augmenting a class; TSRZL currently emits the `namespace`
 and member tokens as ordinary statements.
+An invalid-order contract also expects TS2434 when a runtime namespace appears
+before its merged class; TSRZL currently reports no such diagnostic.
+The merge boundary contract also expects TS2433 when the class and namespace
+declarations are split across files; TSRZL currently reports no such diagnostic.
 
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration

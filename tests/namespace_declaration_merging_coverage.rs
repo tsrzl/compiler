@@ -73,3 +73,54 @@ fn should_emit_class_namespace_member_given_exported_namespace_value_when_compil
         "the namespace member should augment the class value; got {javascript:?}"
     );
 }
+
+// Pinned TypeScript input: compiler/augmentedTypesModules.ts (namespace-before-class case).
+#[test]
+fn should_report_namespace_before_class_given_instantiated_namespace_when_checking_types() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("merge-order.ts"),
+        "namespace Widget { export const label = \"widget\"; }\nclass Widget {}\n",
+    )
+    .expect("the namespace and class source path has a supported source kind");
+
+    // Act
+    let result = Compiler::new().compile(source);
+
+    // Assert
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 2434),
+        "the instantiated namespace before its merged class should report TS2434; got {:?}",
+        result.diagnostics()
+    );
+}
+
+// Pinned TypeScript fixture: conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRootES6.ts.
+#[test]
+fn should_report_cross_file_namespace_merge_given_class_in_another_source_file_when_checking_types()
+{
+    // Arrange
+    let class = SourceFile::from_path(Path::new("class.ts"), "class Widget {}\n")
+        .expect("the class source path has a supported source kind");
+    let namespace = SourceFile::from_path(
+        Path::new("namespace.ts"),
+        "namespace Widget { export const label = \"widget\"; }\n",
+    )
+    .expect("the namespace source path has a supported source kind");
+
+    // Act
+    let result = Compiler::new().compile_sources([class, namespace]);
+
+    // Assert
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 2433),
+        "a class and its merging namespace in separate files should report TS2433; got {:?}",
+        result.diagnostics()
+    );
+}

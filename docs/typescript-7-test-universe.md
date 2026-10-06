@@ -309,6 +309,8 @@ test executed that fixture or covered every output/configuration.
 | `should_emit_namespace_given_exported_namespace_value_when_compiling` | `conformance/internalModules` | Bind and emit a namespace value. |
 | `should_emit_members_from_merged_namespaces_given_multiple_source_files_when_compiling` | `conformance/internalModules/DeclarationMerging/TwoInternalModulesWithTheSameNameAndSameCommonRoot.ts` | Emit exported members from separate declarations of the same namespace across source files. |
 | `should_emit_class_namespace_member_given_exported_namespace_value_when_compiling` | `conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRoot.ts` | Emit a namespace value that augments a same-named class. |
+| `should_report_namespace_before_class_given_instantiated_namespace_when_checking_types` | `compiler/augmentedTypesModules.ts` | Report TS2434 when a runtime namespace declaration precedes its merged class. |
+| `should_report_cross_file_namespace_merge_given_class_in_another_source_file_when_checking_types` | `conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRootES6.ts` | Report TS2433 when a class and its merging namespace occur in separate source files. |
 | `should_accept_conditional_type_given_generic_type_parameter_when_checking_types` | `conformance/types/conditional/conditionalTypes1.ts` | Accept and represent a conditional type. |
 | `should_accept_mapped_type_given_keyof_type_parameter_when_checking_types` | `conformance/types/mapped/mappedTypeModifiers.ts` | Accept a mapped type over `keyof`. |
 | `should_accept_template_literal_type_given_string_type_interpolation_when_checking_types` | `conformance/types/literal/templateLiteralTypes1.ts` | Accept a template literal type. |
