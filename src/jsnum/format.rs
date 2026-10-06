@@ -1,6 +1,10 @@
 //! ECMAScript `Number::toString` formatting.
 
 /// Formats `value` as ECMAScript `Number.prototype.toString()` does for radix 10.
+///
+/// # Panics
+///
+/// Panics only if Rust's scientific float formatting violates its documented shape.
 #[must_use]
 pub fn number_to_string(value: f64) -> String {
     if value.is_nan() {

@@ -43,7 +43,7 @@ pub enum ParsingContext {
     ArrayLiteralMembers,
     /// Parameters in a parameter list.
     Parameters,
-    /// Parameters in a JSDoc function type.
+    /// Parameters in a `JSDoc` function type.
     JsdocParameters,
     /// Property names in a rest type list.
     RestProperties,
@@ -59,7 +59,7 @@ pub enum ParsingContext {
     ImportOrExportSpecifiers,
     /// Import attributes.
     ImportAttributes,
-    /// A JSDoc comment.
+    /// A `JSDoc` comment.
     JsdocComment,
 }
 
@@ -244,7 +244,6 @@ impl Parser<'_> {
             Context::ArgumentExpressions => diagnostics::ARGUMENT_EXPRESSION_EXPECTED,
             Context::ObjectLiteralMembers => diagnostics::PROPERTY_ASSIGNMENT_EXPECTED,
             Context::ArrayLiteralMembers => diagnostics::EXPRESSION_OR_COMMA_EXPECTED,
-            Context::JsdocParameters => diagnostics::PARAMETER_DECLARATION_EXPECTED,
             Context::Parameters if self.token.is_keyword_kind() => {
                 let token = token_to_string(self.token);
                 return self.parse_error_at_current_token(
@@ -252,7 +251,9 @@ impl Parser<'_> {
                     &[token],
                 );
             }
-            Context::Parameters => diagnostics::PARAMETER_DECLARATION_EXPECTED,
+            Context::Parameters | Context::JsdocParameters => {
+                diagnostics::PARAMETER_DECLARATION_EXPECTED
+            }
             Context::TypeParameters => diagnostics::TYPE_PARAMETER_DECLARATION_EXPECTED,
             Context::TypeArguments => diagnostics::TYPE_ARGUMENT_EXPECTED,
             Context::TupleElementTypes => diagnostics::TYPE_EXPECTED,

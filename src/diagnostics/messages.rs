@@ -10829,64 +10829,65 @@ pub const ADD_RESOLUTION_MODE_IMPORT_ATTRIBUTE_TO_ALL_TYPE_ONLY_IMPORTS_THAT_NEE
     );
 
 pub const DO_NOT_PRINT_DIAGNOSTICS: Message =
-    Message::new(100000, Category::Message, "Do not print diagnostics.");
+    Message::new(100_000, Category::Message, "Do not print diagnostics.");
 
 pub const RUN_IN_SINGLE_THREADED_MODE: Message =
-    Message::new(100001, Category::Message, "Run in single threaded mode.");
+    Message::new(100_001, Category::Message, "Run in single threaded mode.");
 
 pub const GENERATE_PPROF_CPU_SLASHMEMORY_PROFILES_TO_THE_GIVEN_DIRECTORY: Message = Message::new(
-    100002,
+    100_002,
     Category::Message,
     "Generate pprof CPU/memory profiles to the given directory.",
 );
 
 pub const SET_THE_NUMBER_OF_CHECKERS_PER_PROJECT: Message = Message::new(
-    100003,
+    100_003,
     Category::Message,
     "Set the number of checkers per project.",
 );
 
 pub const X_4_UNLESS_SINGLETHREADED_IS_PASSED: Message = Message::new(
-    100004,
+    100_004,
     Category::Message,
     "4, unless --singleThreaded is passed.",
 );
 
-pub const X_0_REFERENCES: Message = Message::new(100005, Category::Message, "{0} references");
+pub const X_0_REFERENCES: Message = Message::new(100_005, Category::Message, "{0} references");
 
-pub const X_1_REFERENCE: Message = Message::new(100006, Category::Message, "1 reference");
+pub const X_1_REFERENCE: Message = Message::new(100_006, Category::Message, "1 reference");
 
 pub const X_0_IMPLEMENTATIONS: Message =
-    Message::new(100007, Category::Message, "{0} implementations");
+    Message::new(100_007, Category::Message, "{0} implementations");
 
-pub const X_1_IMPLEMENTATION: Message = Message::new(100008, Category::Message, "1 implementation");
+pub const X_1_IMPLEMENTATION: Message =
+    Message::new(100_008, Category::Message, "1 implementation");
 
 pub const SET_THE_NUMBER_OF_PROJECTS_TO_BUILD_CONCURRENTLY: Message = Message::new(
-    100009,
+    100_009,
     Category::Message,
     "Set the number of projects to build concurrently.",
 );
 
 pub const DEDUPLICATE_PACKAGES_WITH_THE_SAME_NAME_AND_VERSION: Message = Message::new(
-    100011,
+    100_011,
     Category::Message,
     "Deduplicate packages with the same name and version.",
 );
 
-pub const LOADING: Message = Message::new(100012, Category::Message, "Loading");
+pub const LOADING: Message = Message::new(100_012, Category::Message, "Loading");
 
 pub const INSTALLING_TYPES_FOR_0: Message =
-    Message::new(100013, Category::Message, "Installing types for '{0}'");
+    Message::new(100_013, Category::Message, "Installing types for '{0}'");
 
-pub const PROJECT_0: Message = Message::new(100014, Category::Message, "Project '{0}'");
+pub const PROJECT_0: Message = Message::new(100_014, Category::Message, "Project '{0}'");
 
-pub const FIX_ALL: Message = Message::new(100015, Category::Message, "Fix All");
+pub const FIX_ALL: Message = Message::new(100_015, Category::Message, "Fix All");
 
-pub const ORGANIZE_IMPORTS: Message = Message::new(100016, Category::Message, "Organize Imports");
+pub const ORGANIZE_IMPORTS: Message = Message::new(100_016, Category::Message, "Organize Imports");
 
 pub const REMOVE_UNUSED_IMPORTS: Message =
-    Message::new(100017, Category::Message, "Remove Unused Imports");
+    Message::new(100_017, Category::Message, "Remove Unused Imports");
 
-pub const SORT_IMPORTS: Message = Message::new(100018, Category::Message, "Sort Imports");
+pub const SORT_IMPORTS: Message = Message::new(100_018, Category::Message, "Sort Imports");
 
-pub const JSDOC_COMMENT: Message = Message::new(100019, Category::Message, "JSDoc comment");
+pub const JSDOC_COMMENT: Message = Message::new(100_019, Category::Message, "JSDoc comment");

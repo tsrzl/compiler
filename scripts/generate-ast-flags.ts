@@ -60,7 +60,10 @@ function constantName(name: string): string {
 function render(sets: [FlagSet, [string, number][]][]): string {
   const blocks = sets.map(([set, flags]) => {
     const constants = flags
-      .map(([name, value]) => `        ${constantName(name)} = 0x${value.toString(16).padStart(8, "0")};`)
+      .map(([name, value]) => {
+        const hex = value.toString(16).padStart(8, "0");
+        return `        ${constantName(name)} = 0x${hex.slice(0, 4)}_${hex.slice(4)};`;
+      })
       .join("\n");
     return `flags_type! {\n    /// ${set.doc}\n    ${set.goType} {\n${constants}\n    }\n}`;
   });

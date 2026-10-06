@@ -22,6 +22,7 @@ use crate::diagnostics::{self, Message};
 
 pub use keywords::{all_keywords, identifier_token, keyword, token_to_string};
 pub use state::ScannerState;
+use trivia::TriviaScan;
 pub use trivia::{
     CommentDirective, CommentDirectiveKind, SkipTriviaOptions, skip_trivia, skip_trivia_with,
 };
@@ -251,8 +252,9 @@ impl<'text> Scanner<'text> {
                 (!self.skip_trivia).then_some(SyntaxKind::MultiLineCommentTrivia)
             }
             b'<' | b'=' | b'>' | b'|' => match self.scan_conflict_marker() {
-                Some(trivia) => trivia,
-                None => self.scan_punctuation(byte),
+                TriviaScan::NotTrivia => self.scan_punctuation(byte),
+                TriviaScan::Skipped => None,
+                TriviaScan::Token(token) => Some(token),
             },
             b'"' | b'\'' => {
                 let value = self.scan_string(false);
@@ -291,11 +293,12 @@ impl<'text> Scanner<'text> {
             return Some(SyntaxKind::NonTextFileMarkerTrivia);
         }
         match self.scan_non_ascii_trivia() {
-            Some(trivia) => trivia,
-            None => {
+            TriviaScan::NotTrivia => {
                 self.scan_invalid_character();
                 Some(SyntaxKind::Unknown)
             }
+            TriviaScan::Skipped => None,
+            TriviaScan::Token(token) => Some(token),
         }
     }
 

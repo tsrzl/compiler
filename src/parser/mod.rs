@@ -198,7 +198,7 @@ pub fn parse_source_file(options: &ParseOptions, text: &str) -> ParsedSourceFile
     parser.parse_source_file_worker(options)
 }
 
-/// Facts about the JSDoc comment preceding the current token.
+/// Facts about the `JSDoc` comment preceding the current token.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 struct JsdocScannerInfo {
     has_jsdoc: bool,
@@ -543,7 +543,7 @@ impl<'text> Parser<'text> {
         self.builder.add_list(to_u32(pos), to_u32(end), nodes)
     }
 
-    /// Records the JSDoc facts for `node`. TypeScript files parse JSDoc lazily.
+    /// Records the `JSDoc` facts for `node`. TypeScript files parse `JSDoc` lazily.
     fn with_jsdoc(&mut self, node: NodeId, info: JsdocScannerInfo) {
         if !info.has_jsdoc {
             return;

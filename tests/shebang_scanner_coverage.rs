@@ -21,7 +21,7 @@ fn should_ignore_first_line_hashbang_given_typescript_source_when_parsing() {
     assert_eq!(
         syntax_tree.program().statements()[0]
             .as_variable_declaration()
-            .map(|declaration| declaration.name()),
+            .map(tsrzl::syntax::VariableDeclaration::name),
         Some("foo")
     );
 }

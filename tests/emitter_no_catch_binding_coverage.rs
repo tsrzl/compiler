@@ -19,7 +19,7 @@ fn should_preserve_omitted_catch_binding_given_es2019_target_when_emitting_javas
     let result = Compiler::with_options(options).compile(source);
 
     // Assert
-    assert!(result.diagnostics().is_empty());
+    assert_eq!(result.diagnostics(), []);
     assert!(
         result.emitted_files()[0].text().contains("catch {"),
         "ES2019 emit should preserve an omitted catch binding: {}",

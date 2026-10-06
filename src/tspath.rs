@@ -19,6 +19,8 @@ pub fn declaration_file_extension(file_name: &str) -> Option<&str> {
     {
         return Some(&base[base.len() - extension.len()..]);
     }
+    // TypeScript-Go compares extensions case-sensitively; matching it is the intent here.
+    #[allow(clippy::case_sensitive_file_extension_comparisons)]
     if base.ends_with(".ts") {
         return base.find(".d.").map(|index| &base[index..]);
     }

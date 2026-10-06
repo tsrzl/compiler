@@ -9,11 +9,11 @@ fn should_narrow_unknown_given_assertion_type_predicate_call_when_checking_types
     // Pinned fixture: conformance/controlFlow/assertionTypePredicates1.ts.
     let source = SourceFile::from_path(
         Path::new("assertion.ts"),
-        r#"function assertString(value: unknown): asserts value is string {}
+        r"function assertString(value: unknown): asserts value is string {}
 function getLength(value: unknown) {
     assertString(value);
     return value.length;
-}"#,
+}",
     )
     .expect("a TypeScript path has a supported source kind");
 

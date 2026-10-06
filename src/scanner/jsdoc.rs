@@ -1,4 +1,4 @@
-//! JSDoc comment text and tag token scanning.
+//! `JSDoc` comment text and tag token scanning.
 
 use crate::ast::{SyntaxKind, TokenFlags};
 
@@ -9,7 +9,7 @@ use super::chars::{
 use super::keywords::identifier_token;
 
 impl Scanner<'_> {
-    /// Scans JSDoc comment text up to a line break, backtick, `{`, or tag start; falls back to
+    /// Scans `JSDoc` comment text up to a line break, backtick, `{`, or tag start; falls back to
     /// [`Self::scan_jsdoc_token`] when no text is present.
     pub fn scan_jsdoc_comment_text_token(&mut self, in_backticks: bool) -> SyntaxKind {
         self.state.begin_token();
@@ -36,7 +36,7 @@ impl Scanner<'_> {
         SyntaxKind::JSDocCommentTextToken
     }
 
-    /// Returns whether a JSDoc tag name can follow an `@` at the current position.
+    /// Returns whether a `JSDoc` tag name can follow an `@` at the current position.
     #[must_use]
     pub fn can_follow_jsdoc_at(&self) -> bool {
         self.char_at_pos().is_none_or(|character| {
@@ -46,7 +46,7 @@ impl Scanner<'_> {
         })
     }
 
-    /// Scans one token inside a JSDoc comment.
+    /// Scans one token inside a `JSDoc` comment.
     pub fn scan_jsdoc_token(&mut self) -> SyntaxKind {
         self.state.begin_token();
         let Some(character) = self.char_at_pos() else {

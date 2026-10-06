@@ -7,6 +7,14 @@ use crate::jsnum::{from_string, number_to_string, parse_pseudo_big_int};
 use super::Scanner;
 use super::chars::is_identifier_start;
 
+/// The integer part scanned after a leading `0`.
+enum LeadingZero {
+    /// Digits that continue as a decimal literal.
+    FixedPart(String),
+    /// A complete legacy octal literal, already reported.
+    LegacyOctal,
+}
+
 impl Scanner<'_> {
     /// Scans a `0x`, `0b`, or `0o` prefixed literal at the current position, if present.
     pub(super) fn scan_prefixed_number(&mut self) -> Option<SyntaxKind> {
@@ -36,7 +44,7 @@ impl Scanner<'_> {
         };
         if digits.is_empty() {
             self.error(missing_digits);
-            digits = "0".to_owned();
+            "0".clone_into(&mut digits);
         }
         let prefix = match radix {
             16 => "0x",
@@ -50,47 +58,11 @@ impl Scanner<'_> {
 
     /// Scans a decimal numeric literal, including a leading-dot fraction.
     pub(super) fn scan_number(&mut self) -> SyntaxKind {
-        let mut start = self.state.pos();
+        let start = self.state.pos();
         let fixed_part = if self.byte_at(0) == Some(b'0') {
-            self.state.advance(1);
-            if self.byte_at(0) == Some(b'_') {
-                self.state.add_flags(
-                    TokenFlags::CONTAINS_SEPARATOR | TokenFlags::CONTAINS_INVALID_SEPARATOR,
-                );
-                self.error_at(
-                    diagnostics::NUMERIC_SEPARATORS_ARE_NOT_ALLOWED_HERE,
-                    self.state.pos(),
-                    1,
-                    &[],
-                );
-                self.state.set_pos(start);
-                self.scan_number_fragment()
-            } else {
-                let (digits, is_octal) = self.scan_digits();
-                if digits.is_empty() {
-                    "0".to_owned()
-                } else if !is_octal {
-                    self.state.add_flags(TokenFlags::CONTAINS_LEADING_ZERO);
-                    digits
-                } else {
-                    let value = u64::from_str_radix(&digits, 8).unwrap_or(u64::MAX);
-                    #[allow(clippy::cast_precision_loss)]
-                    let number = value as f64;
-                    self.state.set_token_value(number_to_string(number));
-                    self.state.add_flags(TokenFlags::OCTAL);
-                    let with_minus = self.state.token() == SyntaxKind::MinusToken;
-                    let literal = format!("{}0o{value:o}", if with_minus { "-" } else { "" });
-                    if with_minus {
-                        start -= 1;
-                    }
-                    self.error_at(
-                        diagnostics::OCTAL_LITERALS_ARE_NOT_ALLOWED_USE_THE_SYNTAX_0,
-                        start,
-                        self.state.pos() - start,
-                        &[&literal],
-                    );
-                    return SyntaxKind::NumericLiteral;
-                }
+            match self.scan_leading_zero_fixed_part(start) {
+                LeadingZero::FixedPart(fixed_part) => fixed_part,
+                LeadingZero::LegacyOctal => return SyntaxKind::NumericLiteral,
             }
         } else {
             self.scan_number_fragment()
@@ -161,6 +133,47 @@ impl Scanner<'_> {
             SyntaxKind::NumericLiteral
         };
         self.check_identifier_after_number(start, fixed_part_end, result)
+    }
+
+    /// Scans the integer part of a decimal literal that starts with `0`. A legacy octal literal
+    /// such as `017` is reported and completed here.
+    fn scan_leading_zero_fixed_part(&mut self, start: usize) -> LeadingZero {
+        self.state.advance(1);
+        if self.byte_at(0) == Some(b'_') {
+            self.state
+                .add_flags(TokenFlags::CONTAINS_SEPARATOR | TokenFlags::CONTAINS_INVALID_SEPARATOR);
+            self.error_at(
+                diagnostics::NUMERIC_SEPARATORS_ARE_NOT_ALLOWED_HERE,
+                self.state.pos(),
+                1,
+                &[],
+            );
+            self.state.set_pos(start);
+            return LeadingZero::FixedPart(self.scan_number_fragment());
+        }
+        let (digits, is_octal) = self.scan_digits();
+        if digits.is_empty() {
+            return LeadingZero::FixedPart("0".to_owned());
+        }
+        if !is_octal {
+            self.state.add_flags(TokenFlags::CONTAINS_LEADING_ZERO);
+            return LeadingZero::FixedPart(digits);
+        }
+        let value = u64::from_str_radix(&digits, 8).unwrap_or(u64::MAX);
+        #[allow(clippy::cast_precision_loss)]
+        let number = value as f64;
+        self.state.set_token_value(number_to_string(number));
+        self.state.add_flags(TokenFlags::OCTAL);
+        let with_minus = self.state.token() == SyntaxKind::MinusToken;
+        let literal = format!("{}0o{value:o}", if with_minus { "-" } else { "" });
+        let start = if with_minus { start - 1 } else { start };
+        self.error_at(
+            diagnostics::OCTAL_LITERALS_ARE_NOT_ALLOWED_USE_THE_SYNTAX_0,
+            start,
+            self.state.pos() - start,
+            &[&literal],
+        );
+        LeadingZero::LegacyOctal
     }
 
     fn check_identifier_after_number(

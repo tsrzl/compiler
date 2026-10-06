@@ -9,11 +9,11 @@ fn should_narrow_nullable_string_given_assertion_function_call_when_checking_typ
     // Pinned fixture: conformance/controlFlow/assertionTypePredicates1.ts.
     let source = SourceFile::from_path(
         Path::new("assertion.ts"),
-        r#"function assert(value: unknown): asserts value {}
+        r"function assert(value: unknown): asserts value {}
 function getLength(value: string | undefined) {
     assert(value);
     return value.length;
-}"#,
+}",
     )
     .expect("a TypeScript path has a supported source kind");
 

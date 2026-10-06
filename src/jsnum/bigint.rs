@@ -1,5 +1,7 @@
 //! Arbitrary-precision helpers for integer literals wider than native integers.
 
+use std::fmt::Write;
+
 /// Converts a bigint literal, with an optional `0b`, `0o`, or `0x` prefix and `n` suffix, to
 /// decimal digits without leading zeros.
 #[must_use]
@@ -55,7 +57,7 @@ impl BigUint {
         };
         let mut decimal = most_significant.to_string();
         for limb in rest.iter().rev() {
-            decimal.push_str(&format!("{limb:09}"));
+            write!(decimal, "{limb:09}").expect("writing to a string cannot fail");
         }
         decimal
     }

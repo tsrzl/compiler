@@ -201,7 +201,7 @@ impl Scanner<'_> {
             return Some(value);
         }
         let mut invalid = false;
-        if value > 0x10FFFF {
+        if value > 0x0010_FFFF {
             if report_errors {
                 self.error_at(
                     diagnostics::AN_EXTENDED_UNICODE_ESCAPE_VALUE_MUST_BE_BETWEEN_0X0_AND_0X10FFFF_INCLUSIVE,

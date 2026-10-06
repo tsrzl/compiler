@@ -116,13 +116,9 @@ impl Parser<'_> {
             | SyntaxKind::TryKeyword
             | SyntaxKind::DebuggerKeyword
             | SyntaxKind::CatchKeyword
-            | SyntaxKind::FinallyKeyword => true,
-            SyntaxKind::ImportKeyword => {
-                self.is_start_of_declaration()
-                    || self.is_next_token_open_paren_or_less_than_or_dot()
-            }
-            SyntaxKind::ConstKeyword | SyntaxKind::ExportKeyword => self.is_start_of_declaration(),
-            SyntaxKind::AsyncKeyword
+            | SyntaxKind::FinallyKeyword
+            // When these do not start a declaration, they are identifiers in an expression.
+            | SyntaxKind::AsyncKeyword
             | SyntaxKind::DeclareKeyword
             | SyntaxKind::InterfaceKeyword
             | SyntaxKind::ModuleKeyword
@@ -130,6 +126,11 @@ impl Parser<'_> {
             | SyntaxKind::TypeKeyword
             | SyntaxKind::GlobalKeyword
             | SyntaxKind::DeferKeyword => true,
+            SyntaxKind::ImportKeyword => {
+                self.is_start_of_declaration()
+                    || self.is_next_token_open_paren_or_less_than_or_dot()
+            }
+            SyntaxKind::ConstKeyword | SyntaxKind::ExportKeyword => self.is_start_of_declaration(),
             SyntaxKind::AccessorKeyword
             | SyntaxKind::PublicKeyword
             | SyntaxKind::PrivateKeyword

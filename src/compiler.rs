@@ -220,6 +220,10 @@ impl Compiler {
     }
 
     /// Parses and emits source files in input order as one compilation.
+    ///
+    /// # Panics
+    ///
+    /// Panics when more than `u32::MAX` files are compiled together.
     #[must_use]
     pub fn compile_sources(
         &self,

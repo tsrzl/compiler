@@ -121,7 +121,7 @@ fn should_attribute_diagnostic_to_second_file_given_error_in_second_source_when_
     let files = result
         .diagnostics()
         .iter()
-        .map(|diagnostic| diagnostic.file().map(|file| file.index()))
+        .map(|diagnostic| diagnostic.file().map(tsrzl::source_file::FileId::index))
         .collect::<Vec<_>>();
     assert_eq!(files, [Some(1)]);
 }
@@ -147,7 +147,7 @@ fn should_order_diagnostics_by_input_file_given_earlier_offset_in_later_file_whe
     let files = result
         .diagnostics()
         .iter()
-        .map(|diagnostic| diagnostic.file().map(|file| file.index()))
+        .map(|diagnostic| diagnostic.file().map(tsrzl::source_file::FileId::index))
         .collect::<Vec<_>>();
     assert_eq!(files, [Some(0), Some(1)]);
 }

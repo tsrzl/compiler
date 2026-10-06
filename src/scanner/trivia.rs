@@ -8,6 +8,17 @@ use super::chars::{is_line_break, is_white_space_single_line};
 
 const MERGE_CONFLICT_MARKER_LENGTH: usize = 7;
 
+/// The outcome of scanning a possible trivia sequence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum TriviaScan {
+    /// The current character does not start this kind of trivia.
+    NotTrivia,
+    /// Trivia was consumed and should not be reported as a token.
+    Skipped,
+    /// Trivia was consumed and is reported as a token.
+    Token(SyntaxKind),
+}
+
 /// The suppression requested by a `@ts-expect-error` or `@ts-ignore` comment.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CommentDirectiveKind {
@@ -96,34 +107,38 @@ impl Scanner<'_> {
         }
     }
 
-    /// Scans non-ASCII whitespace and line breaks. Returns `Some(None)` when trivia was skipped.
-    pub(super) fn scan_non_ascii_trivia(&mut self) -> Option<Option<SyntaxKind>> {
-        let character = self.char_at_pos()?;
+    /// Scans non-ASCII whitespace and line breaks.
+    pub(super) fn scan_non_ascii_trivia(&mut self) -> TriviaScan {
+        let Some(character) = self.char_at_pos() else {
+            return TriviaScan::NotTrivia;
+        };
         if is_white_space_single_line(character) {
             self.state.advance(character.len_utf8());
             if character == '\u{85}' || self.skip_trivia {
-                return Some(None);
+                return TriviaScan::Skipped;
             }
             self.skip_single_line_white_space();
-            return Some(Some(SyntaxKind::WhitespaceTrivia));
+            return TriviaScan::Token(SyntaxKind::WhitespaceTrivia);
         }
         if is_line_break(character) {
             self.state.add_flags(TokenFlags::PRECEDING_LINE_BREAK);
             self.state.advance(character.len_utf8());
-            return Some(None);
+            return TriviaScan::Skipped;
         }
-        None
+        TriviaScan::NotTrivia
     }
 
     /// Scans a merge conflict marker at the current position, if one starts here.
-    ///
-    /// Returns `Some(None)` when the marker was skipped as trivia.
-    pub(super) fn scan_conflict_marker(&mut self) -> Option<Option<SyntaxKind>> {
+    pub(super) fn scan_conflict_marker(&mut self) -> TriviaScan {
         if !is_conflict_marker_trivia(self.text, self.state.pos()) {
-            return None;
+            return TriviaScan::NotTrivia;
         }
         self.skip_conflict_marker();
-        Some((!self.skip_trivia).then_some(SyntaxKind::ConflictMarkerTrivia))
+        if self.skip_trivia {
+            TriviaScan::Skipped
+        } else {
+            TriviaScan::Token(SyntaxKind::ConflictMarkerTrivia)
+        }
     }
 
     /// Reports and skips the merge conflict marker at the current position.
@@ -275,7 +290,7 @@ pub struct SkipTriviaOptions {
     pub stop_after_line_break: bool,
     /// Stop at the start of a comment instead of skipping it.
     pub stop_at_comments: bool,
-    /// Skip a leading `*` after each line break, as at the start of JSDoc lines.
+    /// Skip a leading `*` after each line break, as at the start of `JSDoc` lines.
     pub in_jsdoc: bool,
 }
 

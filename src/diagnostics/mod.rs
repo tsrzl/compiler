@@ -103,15 +103,12 @@ impl Message {
                 let index = after_open[..close].parse::<usize>().ok()?;
                 Some((arguments.get(index)?, close))
             });
-            match argument {
-                Some((argument, close)) => {
-                    formatted.push_str(argument);
-                    rest = &after_open[close + 1..];
-                }
-                None => {
-                    formatted.push('{');
-                    rest = after_open;
-                }
+            if let Some((argument, close)) = argument {
+                formatted.push_str(argument);
+                rest = &after_open[close + 1..];
+            } else {
+                formatted.push('{');
+                rest = after_open;
             }
         }
         formatted.push_str(rest);

@@ -18,7 +18,7 @@ fn should_retain_following_class_given_unexpected_top_level_brace_when_parsing()
         .statements()
         .iter()
         .filter_map(|statement| statement.as_class_declaration())
-        .map(|declaration| declaration.name())
+        .map(tsrzl::syntax::ClassDeclaration::name)
         .collect();
 
     // Assert
