@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 774 behavior tests: 346 pass, 428 deliberately
+The Rust suite currently has 775 behavior tests: 346 pass, 429 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -342,6 +342,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_ts2389_given_mismatched_string_method_overload_when_checking_types` | `compiler/ClassDeclaration22.ts` | Report TS2389 when the implementation name does not match a string-literal overload name. |
 | `should_report_ts2369_given_parameter_property_in_arrow_function_when_checking_types` | `compiler/ArrowFunctionExpression1.ts` | Report TS2369 when an arrow-function parameter uses a parameter-property modifier. |
 | `should_reject_reserved_type_keyword_given_class_name_when_checking_types` | `compiler/ClassDeclaration24.ts` | Report TS2414 when a class is named with the reserved type keyword `any`. |
+| `should_report_ts1248_given_const_modifier_on_class_field_when_checking_types` | `compiler/ClassDeclarationWithInvalidConstOnPropertyDeclaration.ts` | Report TS1248 when a class field uses the `const` modifier. |
 | `should_parse_intrinsic_jsx_element_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/tsxElementResolution.tsx` | Parse an intrinsic JSX element in a TSX source. |
 | `should_accept_indexed_access_type_given_interface_property_when_checking_types` | `conformance/types/keyof/keyofAndIndexedAccess.ts` | Resolve an indexed access to its property type. |
 | `should_resolve_overload_given_matching_string_argument_when_checking_types` | `conformance/expressions/functionCalls/overloadResolution.ts` | Select the string overload for a string argument. |
