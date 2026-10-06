@@ -39,6 +39,12 @@ impl TokenFlags {
             | Self::CONTAINS_INVALID_ESCAPE.0,
     );
 
+    /// Returns the flags as TypeScript-Go's `ast.TokenFlags` bit values.
+    #[must_use]
+    pub const fn bits(self) -> u32 {
+        self.0
+    }
+
     /// Returns whether any flag in `other` is set.
     #[must_use]
     pub const fn intersects(self, other: Self) -> bool {
