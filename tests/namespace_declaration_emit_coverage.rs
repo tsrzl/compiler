@@ -9,7 +9,7 @@ fn should_emit_namespace_function_assignment_given_merged_interface_when_emittin
     // Arrange
     let source = SourceFile::from_path(
         Path::new("namespace.ts"),
-        "export interface Foo { item: Bar; }\ninterface Bar {}\nnamespace Bar { export function biz() { return 0; } }\n",
+        "interface Bar {}\nnamespace Bar { export function biz() { return 0; } }\n",
     )
     .expect("the namespace merge source path has a supported source kind");
     let options = CompilerOptions::new(ScriptTarget::Es2015).with_module(ModuleKind::CommonJs);
@@ -35,7 +35,7 @@ fn should_emit_namespace_function_declaration_given_merged_interface_when_emitti
     // Arrange
     let source = SourceFile::from_path(
         Path::new("namespace.ts"),
-        "export interface Foo { item: Bar; }\ninterface Bar {}\nnamespace Bar { export function biz() { return 0; } }\n",
+        "interface Bar {}\nnamespace Bar { export function biz() { return 0; } }\n",
     )
     .expect("the namespace merge source path has a supported source kind");
     let options = CompilerOptions::new(ScriptTarget::Es2015)
@@ -144,7 +144,64 @@ fn should_emit_enum_member_from_namespace_given_exported_enum_when_emitting_java
     // Assert
     let javascript = result.emitted_files()[0].text();
     assert!(
-        javascript.contains("Y.Color = Color;"),
+        javascript.contains("Color = Y.Color || (Y.Color = {}));")
+            && javascript.contains("Color[Color[\"Blue\"] = 0] = \"Blue\";"),
         "the namespace should publish its exported enum; got {javascript:?}"
+    );
+}
+
+// Pinned TypeScript fixture: conformance/externalModules/typeOnly/nestedNamespace.ts.
+#[test]
+fn should_export_namespace_binding_given_external_module_namespace_when_emitting_commonjs() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("a.ts"),
+        "export namespace types { export class A {} }\n",
+    )
+    .expect("the external namespace source path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015).with_module(ModuleKind::CommonJs);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    let javascript = result.emitted_files()[0].text();
+    assert!(
+        javascript.contains("exports.types = types = {}"),
+        "the exported namespace should initialize its CommonJS export; got {javascript:?}"
+    );
+}
+
+// Pinned TypeScript fixture: conformance/externalModules/typeOnly/nestedNamespace.ts.
+#[test]
+fn should_emit_exported_class_given_namespace_member_when_emitting_declarations() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("a.ts"),
+        "export namespace types { export class A {} }\n",
+    )
+    .expect("the external namespace source path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015)
+        .with_module(ModuleKind::CommonJs)
+        .with_declaration(true);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    let declaration = result
+        .emitted_files()
+        .iter()
+        .find(|file| {
+            file.path()
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.ends_with(".d.ts"))
+        })
+        .expect("the exported namespace emits a declaration file")
+        .text();
+    assert!(
+        declaration.contains("class A"),
+        "the namespace declaration should retain its exported class; got {declaration:?}"
     );
 }

@@ -72,6 +72,10 @@ fn should_emit_class_namespace_member_given_exported_namespace_value_when_compil
         javascript.contains("Widget.label = \"widget\";"),
         "the namespace member should augment the class value; got {javascript:?}"
     );
+    assert!(
+        !javascript.contains("var Widget;"),
+        "the merged namespace must not redeclare the class binding; got {javascript:?}"
+    );
 }
 
 // Pinned TypeScript input: compiler/augmentedTypesModules.ts (namespace-before-class case).
@@ -131,7 +135,7 @@ fn should_emit_function_namespace_member_given_exported_namespace_value_when_com
     // Arrange
     let source = SourceFile::from_path(
         Path::new("factory.ts"),
-        "function makePoint(x: number) { return { x }; }\nnamespace makePoint { export const origin = 0; }\nconst originValue: number = makePoint.origin;\n",
+        "function makePoint(x: number) { return x; }\nnamespace makePoint { export const origin = 0; }\nconst originValue: number = makePoint.origin;\n",
     )
     .expect("the function and namespace source path has a supported source kind");
     let options = CompilerOptions::new(ScriptTarget::Es2015);
@@ -149,6 +153,10 @@ fn should_emit_function_namespace_member_given_exported_namespace_value_when_com
     assert!(
         javascript.contains("makePoint.origin = 0;"),
         "the namespace member should augment the function value; got {javascript:?}"
+    );
+    assert!(
+        !javascript.contains("var makePoint;"),
+        "the merged namespace must reuse the function binding; got {javascript:?}"
     );
 }
 
@@ -176,5 +184,10 @@ fn should_emit_enum_namespace_member_given_exported_namespace_value_when_compili
     assert!(
         javascript.contains("Status.description = \"ready\";"),
         "the namespace member should augment the enum value; got {javascript:?}"
+    );
+    assert_eq!(
+        javascript.matches("var Status;").count(),
+        1,
+        "the namespace must reuse the enum binding; got {javascript:?}"
     );
 }

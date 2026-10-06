@@ -7,8 +7,8 @@ use crate::compiler::{ModuleKind, ScriptTarget};
 use crate::enum_values::{EnumValue, format_enum_number, values_for_enum};
 use crate::syntax::{
     ArrowFunctionBody, ExportAllDeclaration, ExportNamedFromDeclaration, Expression,
-    FunctionBodyStatement, FunctionDeclaration, Program, Statement, UnaryOperator,
-    VariableDeclaration, VariableDeclarationKind,
+    FunctionBodyStatement, FunctionDeclaration, NamespaceDeclaration, Program, Statement,
+    UnaryOperator, VariableDeclaration, VariableDeclarationKind,
 };
 
 mod classes;
@@ -120,12 +120,14 @@ pub(crate) fn emit(program: &Program, target: ScriptTarget, module: ModuleKind) 
         CommonJsImportBindings::default()
     };
     let emit_context = EmitContext::new(program, &import_bindings.local_references);
+    let namespace_merge_bases = namespace_merge_bases(program);
     let mut emitter = JavaScriptEmitter {
         target,
         module,
         preinitialized_functions,
         import_bindings,
         emit_context,
+        namespace_merge_bases,
         emitted_module_imports: HashSet::new(),
         emitted_reexport_modules: HashSet::new(),
     };
@@ -135,6 +137,20 @@ pub(crate) fn emit(program: &Program, target: ScriptTarget, module: ModuleKind) 
     }
 
     output
+}
+
+fn namespace_merge_bases(program: &Program) -> HashSet<String> {
+    let mut names = HashSet::new();
+    for statement in program.statements() {
+        if let Some(declaration) = statement.as_class_declaration() {
+            names.insert(declaration.name().to_owned());
+        } else if let Some(declaration) = statement.as_function_declaration() {
+            names.insert(declaration.name().to_owned());
+        } else if let Some(declaration) = statement.as_enum_declaration() {
+            names.insert(declaration.name().to_owned());
+        }
+    }
+    names
 }
 
 fn emit_commonjs_default_import_helper(output: &mut String) {
@@ -397,6 +413,7 @@ struct JavaScriptEmitter {
     preinitialized_functions: Vec<String>,
     import_bindings: CommonJsImportBindings,
     emit_context: EmitContext,
+    namespace_merge_bases: HashSet<String>,
     emitted_module_imports: HashSet<String>,
     emitted_reexport_modules: HashSet<String>,
 }
@@ -416,7 +433,9 @@ impl JavaScriptEmitter {
             Statement::ClassDeclaration(declaration) => {
                 classes::emit_class_declaration(self, declaration, exported, output);
             }
-            Statement::NamespaceDeclaration(_) => {}
+            Statement::NamespaceDeclaration(declaration) => {
+                self.emit_namespace_declaration(declaration, output);
+            }
             Statement::EnumDeclaration(declaration) => enums::emit_enum_declaration(
                 declaration,
                 exported,
@@ -451,6 +470,158 @@ impl JavaScriptEmitter {
             | Statement::TypeAliasDeclaration(_) => {}
             Statement::ExportNamedFrom(export) => self.emit_named_reexport(export, output),
             Statement::ExportAll(export) => self.emit_export_all(export, output),
+        }
+    }
+
+    fn emit_namespace_declaration(&self, declaration: &NamespaceDeclaration, output: &mut String) {
+        let name = declaration.name();
+        if !self.namespace_merge_bases.contains(name) {
+            output.push_str("var ");
+            output.push_str(name);
+            output.push_str(";\n");
+        }
+        output.push_str("(function (");
+        output.push_str(name);
+        output.push_str(") {\n");
+        self.emit_namespace_members(declaration, name, 2, output);
+        output.push_str("})(");
+        output.push_str(name);
+        output.push_str(" || (");
+        output.push_str(name);
+        output.push_str(" = {}));\n");
+    }
+
+    fn emit_namespace_members(
+        &self,
+        declaration: &NamespaceDeclaration,
+        namespace_name: &str,
+        indentation: usize,
+        output: &mut String,
+    ) {
+        for member in declaration.members() {
+            if let Some(variable) = member.as_variable_declaration() {
+                if member.is_exported() {
+                    write_indentation(output, indentation);
+                    output.push_str(namespace_name);
+                    output.push('.');
+                    output.push_str(variable.name());
+                    output.push_str(" = ");
+                    if let Some(initializer) = variable.initializer() {
+                        output.push_str(&emit_expression(
+                            initializer,
+                            &self.emit_context,
+                            self.target,
+                            indentation,
+                        ));
+                    } else {
+                        output.push_str("void 0");
+                    }
+                    output.push_str(";\n");
+                } else {
+                    write_indentation(output, indentation);
+                    emit_variable_declaration(variable, self.target, &self.emit_context, 2, output);
+                    output.push_str(";\n");
+                }
+                continue;
+            }
+            if let Some(function) = member.as_function_declaration() {
+                emit_function_at_indentation(
+                    function,
+                    self.target,
+                    &self.emit_context,
+                    indentation,
+                    2,
+                    output,
+                );
+                if member.is_exported() {
+                    write_indentation(output, indentation);
+                    output.push_str(namespace_name);
+                    output.push('.');
+                    output.push_str(function.name());
+                    output.push_str(" = ");
+                    output.push_str(function.name());
+                    output.push_str(";\n");
+                }
+                continue;
+            }
+            if let Some(class) = member.as_class_declaration() {
+                let mut class_output = String::new();
+                classes::emit_class(class, self.target, &self.emit_context, &mut class_output);
+                emit_indented_source(&class_output, indentation, output);
+                if member.is_exported() {
+                    write_indentation(output, indentation);
+                    output.push_str(namespace_name);
+                    output.push('.');
+                    output.push_str(class.name());
+                    output.push_str(" = ");
+                    output.push_str(class.name());
+                    output.push_str(";\n");
+                }
+                continue;
+            }
+            if let Some(enum_declaration) = member.as_enum_declaration() {
+                enums::emit_namespace_enum(
+                    enum_declaration,
+                    namespace_name,
+                    member.is_exported(),
+                    self.target,
+                    &self.emit_context,
+                    indentation,
+                    output,
+                );
+                continue;
+            }
+            if let Some(nested) = member.as_namespace_declaration() {
+                self.emit_nested_namespace(
+                    nested,
+                    namespace_name,
+                    member.is_exported(),
+                    indentation,
+                    output,
+                );
+            }
+        }
+    }
+
+    fn emit_nested_namespace(
+        &self,
+        declaration: &NamespaceDeclaration,
+        parent_name: &str,
+        exported: bool,
+        indentation: usize,
+        output: &mut String,
+    ) {
+        let name = declaration.name();
+        write_indentation(output, indentation);
+        output.push_str(declaration_keyword(
+            VariableDeclarationKind::Let,
+            self.target,
+        ));
+        output.push(' ');
+        output.push_str(name);
+        output.push_str(";\n");
+        write_indentation(output, indentation);
+        output.push_str("(function (");
+        output.push_str(name);
+        output.push_str(") {\n");
+        self.emit_namespace_members(declaration, name, indentation + 2, output);
+        write_indentation(output, indentation);
+        output.push_str("})(");
+        output.push_str(name);
+        if exported {
+            output.push_str(" = ");
+            output.push_str(parent_name);
+            output.push('.');
+            output.push_str(name);
+            output.push_str(" || (");
+            output.push_str(parent_name);
+            output.push('.');
+            output.push_str(name);
+            output.push_str(" = {}));\n");
+        } else {
+            output.push_str(" || (");
+            output.push_str(name);
+            output.push_str(" = {}));\n");
         }
     }
 
@@ -704,13 +875,39 @@ fn emit_function(
     context: &EmitContext,
     output: &mut String,
 ) {
+    emit_function_at_indentation(function, target, context, 0, 1, output);
+}
+
+fn emit_function_at_indentation(
+    function: &FunctionDeclaration,
+    target: ScriptTarget,
+    context: &EmitContext,
+    indentation: usize,
+    body_indentation_delta: usize,
+    output: &mut String,
+) {
+    write_indentation(output, indentation);
     output.push_str("function ");
     output.push_str(function.name());
-    parameters::emit_parameters(function.parameters(), true, context, target, 0, output);
+    parameters::emit_parameters(
+        function.parameters(),
+        true,
+        context,
+        target,
+        indentation,
+        output,
+    );
     output.push_str(" {\n");
     for statement in function.body() {
-        emit_function_body_statement(statement, 1, target, context, output);
+        emit_function_body_statement(
+            statement,
+            indentation + body_indentation_delta,
+            target,
+            context,
+            output,
+        );
     }
+    write_indentation(output, indentation);
     output.push_str("}\n");
 }
 
@@ -1099,6 +1296,14 @@ fn emit_try_statement(
         output.push('}');
     }
     output.push('\n');
+}
+
+fn emit_indented_source(source: &str, indentation: usize, output: &mut String) {
+    for line in source.lines() {
+        write_indentation(output, indentation);
+        output.push_str(line);
+        output.push('\n');
+    }
 }
 
 fn write_indentation(output: &mut String, indentation: usize) {

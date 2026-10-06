@@ -20,3 +20,20 @@ fn should_parse_namespace_declaration_given_namespace_block_when_building_syntax
     // Assert
     assert_eq!(syntax_tree.diagnostics(), []);
 }
+
+// Pinned TypeScript fixture: conformance/internalModules/DeclarationMerging/ClassAndModuleWithSameNameAndCommonRootES6.ts.
+#[test]
+fn should_parse_dotted_namespace_declaration_given_qualified_name_when_building_syntax_tree() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("qualified.ts"),
+        "namespace X.Y { export class A {} }\n",
+    )
+    .expect("a TypeScript path has a supported source kind");
+
+    // Act
+    let syntax_tree = SyntaxTree::parse(source);
+
+    // Assert
+    assert_eq!(syntax_tree.diagnostics(), []);
+}

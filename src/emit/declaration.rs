@@ -5,8 +5,9 @@ use std::collections::HashMap;
 use crate::enum_values::{EnumValue, format_enum_number, values_for_enum};
 use crate::syntax::{
     ArrowFunctionBody, BinaryOperator, ClassDeclaration, ClassMember, EnumDeclaration,
-    ExportSpecifier, Expression, FunctionDeclaration, FunctionParameter, Program,
-    PropertyDeclaration, Statement, TypeReference, VariableDeclaration, VariableDeclarationKind,
+    ExportSpecifier, Expression, FunctionDeclaration, FunctionParameter, NamespaceDeclaration,
+    Program, PropertyDeclaration, Statement, TypeReference, VariableDeclaration,
+    VariableDeclarationKind,
 };
 
 pub(crate) fn emit(program: &Program) -> String {
@@ -44,6 +45,9 @@ fn emit_statement(
         }
         Statement::EnumDeclaration(declaration) if exported || !external_module => {
             emit_enum(declaration, exported, output);
+        }
+        Statement::NamespaceDeclaration(declaration) => {
+            emit_namespace(declaration, exported, output);
         }
         Statement::InterfaceDeclaration(declaration) if exported || !external_module => {
             if exported {
@@ -104,7 +108,6 @@ fn emit_statement(
         }
         Statement::VariableDeclaration(_)
         | Statement::EnumDeclaration(_)
-        | Statement::NamespaceDeclaration(_)
         | Statement::InterfaceDeclaration(_)
         | Statement::TypeAliasDeclaration(_)
         | Statement::FunctionDeclaration(_)
@@ -222,6 +225,60 @@ fn emit_function(function: &FunctionDeclaration, exported: bool, output: &mut St
         output.push_str("export ");
     }
     output.push_str("declare function ");
+    output.push_str(function.name());
+    emit_function_parameters(function.parameters(), &parameter_types, output);
+    output.push_str(": ");
+    output.push_str(&infer_function_return_type(function, &parameter_types));
+    output.push_str(";\n");
+}
+
+fn emit_namespace(declaration: &NamespaceDeclaration, exported: bool, output: &mut String) {
+    if exported {
+        output.push_str("export ");
+    }
+    output.push_str("declare namespace ");
+    output.push_str(declaration.name());
+    output.push_str(" {\n");
+    for member in declaration.members() {
+        if !member.is_exported() {
+            continue;
+        }
+        match member.declaration() {
+            Statement::VariableDeclaration(variable) => {
+                emit_namespace_variable(variable, output);
+            }
+            Statement::FunctionDeclaration(function) => {
+                emit_namespace_function(function, output);
+            }
+            _ => {}
+        }
+    }
+    output.push_str("}\n");
+}
+
+fn emit_namespace_variable(declaration: &VariableDeclaration, output: &mut String) {
+    output.push_str("    ");
+    output.push_str(match declaration.declaration_kind() {
+        VariableDeclarationKind::Const => "const ",
+        VariableDeclarationKind::Let => "let ",
+        VariableDeclarationKind::Var => "var ",
+    });
+    output.push_str(declaration.name());
+    if let Some(annotation) = declaration.type_annotation() {
+        output.push_str(": ");
+        emit_type(annotation, output);
+    } else if let Some(initializer) = declaration.initializer() {
+        output.push_str(": ");
+        output.push_str(&infer_expression_type(initializer));
+    } else {
+        output.push_str(": any");
+    }
+    output.push_str(";\n");
+}
+
+fn emit_namespace_function(function: &FunctionDeclaration, output: &mut String) {
+    let parameter_types = infer_function_parameter_types(function.parameters());
+    output.push_str("    function ");
     output.push_str(function.name());
     emit_function_parameters(function.parameters(), &parameter_types, output);
     output.push_str(": ");
