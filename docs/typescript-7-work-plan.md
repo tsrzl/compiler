@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 767 tests: 346 pass and 421 deliberately fail;
-none are ignored. The compiler/oracle map links 452 behaviors to upstream cases
-or areas. A separate map records 16 extension contracts. Corpus links touch 106
-of 110 source-suite/area groups; 4 project groups have no mapped Rust behavior
+The Rust suite currently has 769 tests: 346 pass and 423 deliberately fail;
+none are ignored. The compiler/oracle map links 454 behaviors to upstream cases
+or areas. A separate map records 16 extension contracts. Corpus links touch 108
+of 110 source-suite/area groups; 2 project groups have no mapped Rust behavior
 test yet. A group with one linked example is sampled, not covered. The latest
-full test run has all 421 failures mapped by
+full test run has all 423 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -80,6 +80,13 @@ static fields to move after the class; TSRZL currently preserves both fields in
 class syntax. For-of destructuring has separate parser and emit tests from
 `for-of38.ts`; TSRZL reports TS1005 at the binding pattern and then fails to
 bind its second element.
+The `ext-int-ext` project now has a CLI contract for TS1147 on a namespace-local
+import-equals statement. TS-Go 7.0.2 reports TS1147 and TS2307 for the reduced
+project; TSRZL reports TS1005 before semantic validation.
+The indirect privacy-check project has a CLI emit contract for its transitive
+import-equals chain. With a TypeScript 7 `paths` wildcard, TS-Go emits
+`require("externalModule")`; TSRZL emits the file but drops that require after
+parsing the import-equals statement as TS1005.
 
 JSDoc `@template` return inference has a focused mismatch contract. TS-Go
 infers `number` from the argument and reports TS2322 for a string assignment;

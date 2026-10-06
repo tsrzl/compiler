@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 767 behavior tests: 346 pass, 421 deliberately
+The Rust suite currently has 769 behavior tests: 346 pass, 423 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -667,6 +667,7 @@ test executed that fixture or covered every output/configuration.
 | `should_parse_readonly_property_in_object_type_given_readonly_modifier_when_building_syntax_tree` | `conformance/controlFlow/controlFlowAliasing.ts` | Parse a readonly property in an object type literal without syntax diagnostics. |
 | `should_parse_ambient_module_given_quoted_module_declaration_when_building_syntax_tree` | `projects/NestedDeclare/consume.ts` | Parse a quoted ambient module declaration without syntax diagnostics. |
 | `should_emit_map_root_source_mapping_url_given_out_dir_and_source_map_when_running_compiler_cli` | `projects/outputdir_simple/test.ts` | Emit the configured relative `mapRoot` URL in JavaScript when source maps and `outDir` are enabled. |
+| `should_emit_javascript_given_transitive_import_equals_project_when_running_compiler_cli` | `projects/privacyCheck-IndirectReference/test.ts` | Emit the test module's `require("externalModule")` for a project with a transitive import-equals dependency. |
 | `should_parse_global_namespace_export_given_ambient_declaration_when_building_syntax_tree` | `projects/declarations_ExportNamespace/decl.d.ts` | Accept `export as namespace` in an ambient declaration file. |
 | `should_resolve_ambient_global_namespace_type_given_export_as_namespace_when_emitting_declarations` | `projects/declarations_ExportNamespace/decl.d.ts`, `projects/declarations_ExportNamespace/useModule.ts` | Resolve the ambient global namespace type and preserve it in declaration output. |
 | `should_report_removed_out_file_option_given_project_configuration_when_running_compiler_cli` | `projects/outputdir_singleFile/test.ts` | Report TS5102 when a project config uses TypeScript 7's removed `outFile` option. |
@@ -682,6 +683,7 @@ test executed that fixture or covered every output/configuration.
 | `should_reject_removed_project_target_given_es5_configuration_when_running_compiler_cli` | `projects/decoratorMetadata/emitDecoratorMetadataCommonJSIsolatedModule/main.ts` | Report TS5108 for the TypeScript 7 project configuration's removed ES5 target. |
 | `should_parse_import_equals_given_namespace_declaration_when_building_syntax_tree` | `projects/NestedLocalModule-SimpleCase/test1.ts` | Parse import-equals syntax nested inside a namespace without syntax diagnostics; TypeScript 7 later reports TS1147 semantically. |
 | `should_report_invalid_module_reference_given_import_equals_inside_namespace_when_compiling` | `projects/NestedLocalModule-WithRecursiveTypecheck/test1.ts` | Report TS1147 for an import-equals module reference inside a namespace. |
+| `should_report_ts1147_given_namespace_import_equals_when_running_compiler_cli` | `projects/ext-int-ext/internal2.ts` | Report TS1147 for namespace-local import-equals in the mixed external/internal project. |
 | `should_report_import_assignment_given_ecmascript_module_when_compiling_sources` | `projects/VisibilityOfCrosssModuleTypeUsage/commands.ts` | Report TS1202 for an import assignment when the output module kind is ECMAScript. |
 | `should_report_implicit_any_return_given_unannotated_ambient_function_when_compiling` | `projects/relative-nested-ref/decl.d.ts` | Report TS7010 for an ambient function with no return annotation. |
 | `should_parse_template_literal_type_given_string_substitution_when_building_syntax_tree` | `conformance/types/literal/templateLiteralTypes8.ts` | Parse a template literal type containing a string substitution without syntax diagnostics. |
