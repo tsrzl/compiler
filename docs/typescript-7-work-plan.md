@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 776 tests: 346 pass and 430 deliberately fail;
-none are ignored. The compiler/oracle map links 461 behaviors to upstream cases
+The Rust suite currently has 777 tests: 346 pass and 431 deliberately fail;
+none are ignored. The compiler/oracle map links 462 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
 which is a sample rather than exhaustive coverage. The latest full test run has
-all 430 failures mapped by
+all 431 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -105,6 +105,9 @@ before that semantic diagnostic.
 `compiler/bigintPropertyName.ts` adds TS1539 coverage for a BigInt literal used
 as an object property name; TSRZL currently reports TS1005 while parsing the
 property.
+`compiler/abstractPropertyInConstructor.ts` adds TS2715 coverage for reading an
+abstract property from its own class constructor; TSRZL currently reports
+TS2304 for the `abstract` modifier.
 
 JSDoc `@template` return inference has a focused mismatch contract. TS-Go
 infers `number` from the argument and reports TS2322 for a string assignment;

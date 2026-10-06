@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 776 behavior tests: 346 pass, 430 deliberately
+The Rust suite currently has 777 behavior tests: 346 pass, 431 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -702,6 +702,7 @@ test executed that fixture or covered every output/configuration.
 | `should_emit_static_initialization_block_given_es2022_target_when_emitting_javascript` | `conformance/classes/classStaticBlock/classStaticBlock1.ts` | Preserve a static initialization block in ES2022 JavaScript output. |
 | `should_parse_abstract_class_given_abstract_modifier_when_building_syntax_tree` | `conformance/classes/classDeclarations/classAbstractKeyword/classAbstractSingleLineDecl.ts` | Parse the `abstract` modifier on a class declaration without syntax diagnostics. |
 | `should_parse_abstract_method_signature_given_abstract_class_when_building_syntax_tree` | `conformance/classes/classDeclarations/classAbstractKeyword/classAbstractGeneric.ts` | Parse an abstract method signature into a class method node. |
+| `should_report_ts2715_given_abstract_property_access_in_constructor_when_checking_types` | `compiler/abstractPropertyInConstructor.ts` | Report TS2715 when a class constructor accesses one of its abstract properties. |
 | `should_erase_override_modifier_given_overriding_method_when_emitting_javascript` | `conformance/override/override1.ts` | Erase the `override` modifier while emitting the overriding method as JavaScript. |
 | `should_emit_source_root_in_source_map_given_out_dir_and_source_map_when_running_compiler_cli` | `projects/outputdir_simple/test.ts`, `projects/outputdir_subfolder/test.ts` | Write the normalized `sourceRoot` path into external source-map JSON. |
 | `should_preserve_referenced_source_subdirectory_given_out_dir_project_option_when_running_compiler_cli` | `projects/outputdir_subfolder/test.ts`, `projects/outputdir_subfolder/ref/m1.ts`, `projects/outputdir_mixed_subfolder/ref/m1.ts` | Emit a triple-slash referenced file below its matching `outDir` subdirectory. |
