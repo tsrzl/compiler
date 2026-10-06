@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 772 behavior tests: 346 pass, 426 deliberately
+The Rust suite currently has 773 behavior tests: 346 pass, 427 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -339,6 +339,7 @@ test executed that fixture or covered every output/configuration.
 | `should_report_missing_constructor_implementation_given_overload_only_when_checking_types` | `compiler/ClassDeclaration10.ts` | Report TS2390 for a constructor overload without an implementation. |
 | `should_report_missing_method_implementation_given_overload_only_when_checking_types` | `compiler/ClassDeclaration10.ts` | Report TS2391 for a method overload without an implementation. |
 | `should_report_mismatched_overload_implementation_given_different_method_name_when_checking_types` | `compiler/ClassDeclaration13.ts` | Report TS2389 when a method implementation does not match its overload name. |
+| `should_report_ts2369_given_parameter_property_in_arrow_function_when_checking_types` | `compiler/ArrowFunctionExpression1.ts` | Report TS2369 when an arrow-function parameter uses a parameter-property modifier. |
 | `should_reject_reserved_type_keyword_given_class_name_when_checking_types` | `compiler/ClassDeclaration24.ts` | Report TS2414 when a class is named with the reserved type keyword `any`. |
 | `should_parse_intrinsic_jsx_element_given_tsx_source_when_building_syntax_tree` | `conformance/jsx/tsxElementResolution.tsx` | Parse an intrinsic JSX element in a TSX source. |
 | `should_accept_indexed_access_type_given_interface_property_when_checking_types` | `conformance/types/keyof/keyofAndIndexedAccess.ts` | Resolve an indexed access to its property type. |

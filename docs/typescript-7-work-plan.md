@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 772 tests: 346 pass and 426 deliberately fail;
-none are ignored. The compiler/oracle map links 457 behaviors to upstream cases
+The Rust suite currently has 773 tests: 346 pass and 427 deliberately fail;
+none are ignored. The compiler/oracle map links 458 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
 which is a sample rather than exhaustive coverage. The latest full test run has
-all 426 failures mapped by
+all 427 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -93,6 +93,9 @@ both scopes; TSRZL reports TS1005 before semantic validation.
 The compiler root has 6,537 fixture cases. `compiler/2dArrays.ts` now has a
 focused ES2015 emit contract for lowering an array-typed instance field into a
 constructor assignment; TSRZL currently preserves it as a class field.
+`compiler/ArrowFunctionExpression1.ts` adds a TS2369 contract for parameter
+properties in arrow parameters; TSRZL currently reports TS1005 while parsing
+the parameter list.
 
 JSDoc `@template` return inference has a focused mismatch contract. TS-Go
 infers `number` from the argument and reports TS2322 for a string assignment;
