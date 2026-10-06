@@ -8,7 +8,7 @@ use crate::emit::declaration;
 use crate::emit::javascript;
 use crate::generator::{GenerationContext, Generator};
 use crate::module_resolver;
-use crate::source_file::{ScriptKind, SourceFile};
+use crate::source_file::{FileId, ScriptKind, SourceFile};
 use crate::source_text::Utf16Offset;
 use crate::syntax::{Diagnostic, SyntaxTree, TextSpan};
 use crate::type_checker;
@@ -227,7 +227,8 @@ impl Compiler {
     ) -> CompilationResult {
         let mut syntax_trees = source_files
             .into_iter()
-            .map(SyntaxTree::parse)
+            .zip(0..)
+            .map(|(source_file, index)| SyntaxTree::parse_file(FileId::new(index), source_file))
             .collect::<Vec<_>>();
         let authored_symbols = binder::bind(&syntax_trees);
         let authored_diagnostics = collect_diagnostics(
@@ -254,7 +255,13 @@ impl Compiler {
         for generated_source in generated_sources {
             match SourceFile::from_path(generated_source.path(), generated_source.text().to_owned())
             {
-                Ok(source_file) => generated_trees.push(SyntaxTree::parse(source_file)),
+                Ok(source_file) => {
+                    let index = syntax_trees.len() + generated_trees.len();
+                    let file_id = FileId::new(
+                        u32::try_from(index).expect("compilation inputs fit in a file id"),
+                    );
+                    generated_trees.push(SyntaxTree::parse_file(file_id, source_file));
+                }
                 Err(error) => generator_diagnostics.push(Diagnostic::new(
                     9002,
                     format!(

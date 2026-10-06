@@ -4,7 +4,7 @@ mod ast;
 mod parser;
 mod scanner;
 
-use crate::source_file::SourceFile;
+use crate::source_file::{FileId, SourceFile};
 use crate::source_text::Utf16Offset;
 
 pub use ast::{
@@ -85,24 +85,38 @@ impl Diagnostic {
 /// A parsed source file, its syntax tree, and parser diagnostics.
 #[derive(Debug, Clone)]
 pub struct SyntaxTree {
+    file_id: FileId,
     source_file: SourceFile,
     program: Program,
     diagnostics: Vec<Diagnostic>,
 }
 
 impl SyntaxTree {
-    /// Parses a source file and retains both its syntax tree and diagnostics.
+    /// Parses a standalone source file as the first file of its own compilation.
     #[must_use]
     pub fn parse(source_file: SourceFile) -> Self {
+        Self::parse_file(FileId::new(0), source_file)
+    }
+
+    /// Parses a source file with its compilation-scoped identity.
+    #[must_use]
+    pub fn parse_file(file_id: FileId, source_file: SourceFile) -> Self {
         let (tokens, mut diagnostics) = scanner::scan(source_file.text().as_str());
         let (program, parser_diagnostics) = parser::Parser::new(tokens).parse_program();
         diagnostics.extend(parser_diagnostics);
         diagnostics.sort_by_key(|diagnostic| diagnostic.span().start());
         Self {
+            file_id,
             source_file,
             program,
             diagnostics,
         }
+    }
+
+    /// Returns the compilation-scoped identity of the parsed file.
+    #[must_use]
+    pub const fn file_id(&self) -> FileId {
+        self.file_id
     }
 
     /// Returns the source file that produced this tree.

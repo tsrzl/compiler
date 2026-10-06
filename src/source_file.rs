@@ -21,6 +21,24 @@ pub enum ScriptKind {
     JavaScriptJsx,
 }
 
+/// A compilation-scoped identity for one source input, assigned in input order.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct FileId(u32);
+
+impl FileId {
+    /// Creates a file identity from its zero-based input index.
+    #[must_use]
+    pub const fn new(index: u32) -> Self {
+        Self(index)
+    }
+
+    /// Returns the zero-based input index.
+    #[must_use]
+    pub const fn index(self) -> u32 {
+        self.0
+    }
+}
+
 /// An immutable compiler input with an owned path and source text.
 #[derive(Debug, Clone)]
 pub struct SourceFile {
