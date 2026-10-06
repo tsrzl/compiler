@@ -97,6 +97,25 @@ impl SourceText {
         Some(LinePosition::new(line, column))
     }
 
+    /// Converts a UTF-16 source offset to a UTF-8 byte offset into [`Self::as_str`].
+    ///
+    /// Returns `None` when the offset is past the end of the source text or splits a
+    /// surrogate pair.
+    #[must_use]
+    pub fn utf8_offset(&self, offset: Utf16Offset) -> Option<usize> {
+        let mut utf16_offset = 0;
+        for (byte_offset, character) in self.text.char_indices() {
+            if utf16_offset == offset.get() {
+                return Some(byte_offset);
+            }
+            if utf16_offset > offset.get() {
+                return None;
+            }
+            utf16_offset += character.len_utf16();
+        }
+        (utf16_offset == offset.get()).then_some(self.text.len())
+    }
+
     fn build_line_map(text: &str) -> (Vec<Utf16Offset>, usize) {
         let mut line_starts = vec![Utf16Offset::new(0)];
         let mut utf16_offset = 0;

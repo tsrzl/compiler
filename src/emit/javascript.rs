@@ -936,7 +936,7 @@ fn emit_function_body_statement(
             emit_variable_body_statement(declaration, indentation, target, context, output);
         }
         FunctionBodyStatement::Expression(expression) => {
-            emit_expression_body_statement(expression, indentation, target, context, output)
+            emit_expression_body_statement(expression, indentation, target, context, output);
         }
         FunctionBodyStatement::Return(statement) => {
             emit_return_body_statement(statement, indentation, target, context, output);
@@ -948,25 +948,25 @@ fn emit_function_body_statement(
             emit_if_statement(if_statement, indentation, target, context, output);
         }
         FunctionBodyStatement::While { condition, body } => {
-            emit_while_statement(condition, body, indentation, target, context, output)
+            emit_while_statement(condition, body, indentation, target, context, output);
         }
         FunctionBodyStatement::DoWhile { body, condition } => {
-            emit_do_while_statement(body, condition, indentation, target, context, output)
+            emit_do_while_statement(body, condition, indentation, target, context, output);
         }
         for_statement @ FunctionBodyStatement::For { .. } => {
-            emit_for_loop_statement(for_statement, indentation, target, context, output)
+            emit_for_loop_statement(for_statement, indentation, target, context, output);
         }
         for_of_statement @ FunctionBodyStatement::ForOf { .. } => {
-            emit_for_of_loop_statement(for_of_statement, indentation, target, context, output)
+            emit_for_of_loop_statement(for_of_statement, indentation, target, context, output);
         }
         for_in_statement @ FunctionBodyStatement::ForIn { .. } => {
-            emit_for_in_loop_statement(for_in_statement, indentation, target, context, output)
+            emit_for_in_loop_statement(for_in_statement, indentation, target, context, output);
         }
         switch_statement @ FunctionBodyStatement::Switch { .. } => {
-            emit_switch_statement(switch_statement, indentation, target, context, output)
+            emit_switch_statement(switch_statement, indentation, target, context, output);
         }
         try_statement @ FunctionBodyStatement::Try { .. } => {
-            emit_try_statement(try_statement, indentation, target, context, output)
+            emit_try_statement(try_statement, indentation, target, context, output);
         }
         FunctionBodyStatement::Break { .. } => {
             write_indentation(output, indentation);
@@ -1511,17 +1511,17 @@ fn emit_arrow_function(
                 output.push_str("; }");
             }
             ArrowFunctionBody::Block(statements) => {
-                emit_arrow_block_body(statements, context, target, indentation, &mut output)
+                emit_arrow_block_body(statements, context, target, indentation, &mut output);
             }
         }
     } else {
         output.push_str(" => ");
         match body {
             ArrowFunctionBody::Expression(expression) => {
-                output.push_str(&emit_expression(expression, context, target, indentation))
+                output.push_str(&emit_expression(expression, context, target, indentation));
             }
             ArrowFunctionBody::Block(statements) => {
-                emit_arrow_block_body(statements, context, target, indentation, &mut output)
+                emit_arrow_block_body(statements, context, target, indentation, &mut output);
             }
         }
     }

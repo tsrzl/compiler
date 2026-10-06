@@ -19,3 +19,6 @@ cntryl-stress = "0.5.1"
 name = "compiler"
 path = "benches/compiler.rs"
 harness = false
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }

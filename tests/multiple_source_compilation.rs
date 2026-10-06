@@ -80,3 +80,74 @@ fn should_resolve_imported_enum_member_given_enum_type_when_compiling_sources() 
     // Assert
     assert_eq!(result.diagnostics(), []);
 }
+
+#[test]
+fn should_assign_file_ids_in_input_order_given_multiple_sources_when_compiling_sources() {
+    // Arrange
+    let sources = [
+        SourceFile::from_path(Path::new("first.ts"), "const first = 1;")
+            .expect("a TypeScript path has a supported source kind"),
+        SourceFile::from_path(Path::new("second.ts"), "const second = 2;")
+            .expect("a TypeScript path has a supported source kind"),
+    ];
+
+    // Act
+    let result = Compiler::new().compile_sources(sources);
+
+    // Assert
+    let file_ids = result
+        .syntax_trees()
+        .iter()
+        .map(|tree| tree.file_id().index())
+        .collect::<Vec<_>>();
+    assert_eq!(file_ids, [0, 1]);
+}
+
+#[test]
+fn should_attribute_diagnostic_to_second_file_given_error_in_second_source_when_compiling_sources()
+{
+    // Arrange
+    let sources = [
+        SourceFile::from_path(Path::new("first.ts"), "const first = 1;")
+            .expect("a TypeScript path has a supported source kind"),
+        SourceFile::from_path(Path::new("second.ts"), "const second: number = 'two';")
+            .expect("a TypeScript path has a supported source kind"),
+    ];
+
+    // Act
+    let result = Compiler::new().compile_sources(sources);
+
+    // Assert
+    let files = result
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.file().map(tsrzl::source_file::FileId::index))
+        .collect::<Vec<_>>();
+    assert_eq!(files, [Some(1)]);
+}
+
+#[test]
+fn should_order_diagnostics_by_input_file_given_earlier_offset_in_later_file_when_compiling_sources()
+ {
+    // Arrange
+    let sources = [
+        SourceFile::from_path(
+            Path::new("first.ts"),
+            "const padding = 0; const a: number = 'a';",
+        )
+        .expect("a TypeScript path has a supported source kind"),
+        SourceFile::from_path(Path::new("second.ts"), "const b: number = 'b';")
+            .expect("a TypeScript path has a supported source kind"),
+    ];
+
+    // Act
+    let result = Compiler::new().compile_sources(sources);
+
+    // Assert
+    let files = result
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.file().map(tsrzl::source_file::FileId::index))
+        .collect::<Vec<_>>();
+    assert_eq!(files, [Some(0), Some(1)]);
+}

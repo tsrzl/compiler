@@ -16,6 +16,7 @@ pub(crate) fn check(syntax_trees: &[SyntaxTree]) -> Vec<Diagnostic> {
                 .flat_map(|statement| {
                     check_statement(syntax_tree.source_file().path(), statement, syntax_trees)
                 })
+                .map(|diagnostic| diagnostic.in_file(syntax_tree.file_id()))
         })
         .collect()
 }

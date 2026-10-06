@@ -318,7 +318,7 @@ fn should_report_authored_generated_path_collision_given_generator_output_when_c
     let result = compiler.compile(source_file("input.ts", "const authored = 0;"));
 
     // Assert
-    assert!(!result.diagnostics().is_empty());
+    assert_ne!(result.diagnostics(), []);
 }
 
 // Project-owned extension contract; repeated generated paths must not collide silently.
@@ -335,7 +335,7 @@ fn should_report_duplicate_generated_path_given_multiple_sources_when_compiling(
     let result = compiler.compile(source_file("input.ts", "const input = 0;"));
 
     // Assert
-    assert!(!result.diagnostics().is_empty());
+    assert_ne!(result.diagnostics(), []);
 }
 
 // Project-owned extension contract; invalid generated paths must be rejected and reported.
@@ -349,7 +349,7 @@ fn should_report_invalid_generated_path_given_unsupported_extension_when_compili
     let result = compiler.compile(source_file("input.ts", "const input = 0;"));
 
     // Assert
-    assert!(!result.diagnostics().is_empty());
+    assert_ne!(result.diagnostics(), []);
 }
 
 // Project-owned extension contract; generated files must remain inside the compilation root.

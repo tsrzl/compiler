@@ -22,7 +22,7 @@ fn should_reject_number_assignment_given_resizable_flag_when_checking_types() {
     let diagnostic_codes: Vec<_> = result
         .diagnostics()
         .iter()
-        .map(|diagnostic| diagnostic.code())
+        .map(tsrzl::syntax::Diagnostic::code)
         .collect();
     assert!(
         diagnostic_codes.contains(&2322),

@@ -19,7 +19,7 @@ fn should_emit_null_type_annotation_given_default_null_expression_when_emitting_
     let result = Compiler::with_options(options).compile(source);
 
     // Assert
-    assert!(result.diagnostics().is_empty());
+    assert_eq!(result.diagnostics(), []);
     let declaration = result
         .emitted_files()
         .iter()

@@ -23,7 +23,7 @@ fn should_reject_boolean_assignment_given_es2023_resolved_use_grouping_result_wh
     let diagnostic_codes: Vec<_> = result
         .diagnostics()
         .iter()
-        .map(|diagnostic| diagnostic.code())
+        .map(tsrzl::syntax::Diagnostic::code)
         .collect();
     assert!(
         diagnostic_codes.contains(&2322),

@@ -22,7 +22,7 @@ fn should_accept_code_point_escape_given_identifier_when_scanning_typescript() {
     assert_eq!(
         syntax_tree.program().statements()[0]
             .as_variable_declaration()
-            .map(|declaration| declaration.name()),
+            .map(tsrzl::syntax::VariableDeclaration::name),
         Some(r"\u{0061}wait")
     );
 }

@@ -19,7 +19,7 @@ fn should_parse_async_generator_declaration_given_es2018_function_syntax_when_bu
     assert_eq!(
         syntax_tree.program().statements()[0]
             .as_function_declaration()
-            .map(|declaration| declaration.name()),
+            .map(tsrzl::syntax::FunctionDeclaration::name),
         Some("f1")
     );
 }

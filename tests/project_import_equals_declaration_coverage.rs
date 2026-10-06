@@ -32,7 +32,7 @@ fn should_preserve_import_equals_alias_given_exported_imported_type_when_emittin
         .emitted_files()
         .iter()
         .find(|file| file.path().file_name().and_then(|name| name.to_str()) == Some("use.d.ts"))
-        .map(|file| file.text())
+        .map(tsrzl::compiler::EmittedFile::text)
         .unwrap_or_default();
     assert_eq!(
         declaration,

@@ -36,7 +36,7 @@ fn should_report_implicit_any_yield_given_unannotated_generator_when_checking_ty
         result
             .diagnostics()
             .iter()
-            .map(|diagnostic| diagnostic.code())
+            .map(tsrzl::syntax::Diagnostic::code)
             .collect::<Vec<_>>(),
         [7057]
     );
