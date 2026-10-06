@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 811 tests: 347 pass and 464 deliberately fail;
-none are ignored. The compiler/oracle map links 496 behaviors to upstream cases
+The Rust suite currently has 812 tests: 347 pass and 465 deliberately fail;
+none are ignored. The compiler/oracle map links 497 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
 which is a sample rather than exhaustive coverage. The latest full test run has
-all 464 failures mapped by
+all 465 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -244,9 +244,11 @@ for checking a first nested JavaScript dependency at `maxNodeModuleJsDepth=1`
 and leaving a third-hop property untyped. TypeScript-Go 7.0.2 confirms both
 behaviors using the checked-in project configuration; TSRZL currently reports
 TS2304 for JavaScript `require` and `exports`, with parser errors in those
-files. The sibling `importHigher` runner case requests Node 10 module
-resolution, which TypeScript-Go 7.0.2 rejects with TS5108; its deeper-import
-behavior needs a modern-resolution equivalent before it can serve as an oracle.
+files. The sibling `importHigher` runner case requests removed Node 10 module
+resolution, so TypeScript-Go 7.0.2 reports TS5108 for its original options. A
+supported `bundler`/`esnext` project run reports TS2322 when directly importing
+the intermediate package loads its third-hop type; TSRZL currently fails first
+on `require`, bare-package resolution, and JavaScript export syntax.
 
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration
