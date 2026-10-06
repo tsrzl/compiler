@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 816 tests: 347 pass and 469 deliberately fail;
-none are ignored. The compiler/oracle map links 501 behaviors to upstream cases
+The Rust suite currently has 820 tests: 347 pass and 473 deliberately fail;
+none are ignored. The compiler/oracle map links 505 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
 which is a sample rather than exhaustive coverage. The latest full test run has
-all 469 failures mapped by
+all 473 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -56,6 +56,11 @@ property and expects implementation bodies for the accessors. The
 `compiler/abstractClassUnionInstantiation.ts` case requires TS2511 when a
 constructor union includes an abstract class; TSRZL currently reports parser
 errors for `abstract`, `declare`, and `typeof` instead.
+Separate red tests now require TS2511 for directly instantiating an abstract
+class, TS2513 for calling an abstract method through `super`, TS1244 for an
+abstract method in a concrete class, and TS1245 for an abstract method with a
+body; all four currently stop at TS2304 or TS1005 because `abstract` is not
+parsed as a modifier.
 `compiler/accessorBodyInTypeContext.ts` has separate TS1183 errors for getter
 and setter bodies in object types and interfaces; TSRZL currently reports
 TS1005 parser errors for each form.
