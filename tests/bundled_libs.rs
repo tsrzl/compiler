@@ -35,3 +35,39 @@ fn should_return_none_given_unknown_lib_name_when_reading_lib_text() {
     // Assert
     assert_eq!(text, None);
 }
+
+#[test]
+fn should_map_option_to_file_given_lib_option_name_when_reading_lib_file() {
+    // Arrange
+    let option = "es2015.promise";
+
+    // Act
+    let file = tsrzl::bundled::lib_file_for_option(option);
+
+    // Assert
+    assert_eq!(file, Some("lib.es2015.promise.d.ts"));
+}
+
+#[test]
+fn should_use_es6_lib_given_es2015_target_when_reading_default_lib() {
+    // Arrange
+    let target = "es2015";
+
+    // Act
+    let file = tsrzl::bundled::default_lib_file_name(target);
+
+    // Assert
+    assert_eq!(file, "lib.es6.d.ts");
+}
+
+#[test]
+fn should_use_plain_lib_given_es5_target_when_reading_default_lib() {
+    // Arrange
+    let target = "es5";
+
+    // Act
+    let file = tsrzl::bundled::default_lib_file_name(target);
+
+    // Assert
+    assert_eq!(file, "lib.d.ts");
+}
