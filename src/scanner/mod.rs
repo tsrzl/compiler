@@ -9,6 +9,7 @@ mod identifiers;
 mod keywords;
 mod numbers;
 mod punctuation;
+mod state;
 mod strings;
 mod templates;
 mod trivia;
@@ -17,6 +18,7 @@ use crate::ast::{SyntaxKind, TokenFlags};
 use crate::diagnostics::{self, Message};
 
 pub use keywords::{identifier_token, keyword};
+pub use state::ScannerState;
 pub use trivia::{CommentDirective, CommentDirectiveKind};
 
 /// Whether the scanner recognizes JSX-specific tokens.
@@ -69,18 +71,6 @@ impl ScanDiagnostic {
     }
 }
 
-/// The restorable position and current-token state of a [`Scanner`].
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScannerState {
-    pos: usize,
-    full_start_pos: usize,
-    token_start: usize,
-    token: SyntaxKind,
-    token_value: String,
-    token_flags: TokenFlags,
-    diagnostic_count: usize,
-}
-
 /// Produces TypeScript tokens from source text on demand.
 #[derive(Debug, Clone)]
 pub struct Scanner<'text> {
@@ -100,15 +90,7 @@ impl<'text> Scanner<'text> {
             text,
             skip_trivia: true,
             language_variant: LanguageVariant::Standard,
-            state: ScannerState {
-                pos: 0,
-                full_start_pos: 0,
-                token_start: 0,
-                token: SyntaxKind::Unknown,
-                token_value: String::new(),
-                token_flags: TokenFlags::NONE,
-                diagnostic_count: 0,
-            },
+            state: ScannerState::new(),
             diagnostics: Vec::new(),
             comment_directives: Vec::new(),
         }
@@ -131,50 +113,50 @@ impl<'text> Scanner<'text> {
     /// Returns the current token kind.
     #[must_use]
     pub const fn token(&self) -> SyntaxKind {
-        self.state.token
+        self.state.token()
     }
 
     /// Returns the flags of the current token.
     #[must_use]
     pub const fn token_flags(&self) -> TokenFlags {
-        self.state.token_flags
+        self.state.flags()
     }
 
     /// Returns the start of the current token including preceding trivia.
     #[must_use]
     pub const fn token_full_start(&self) -> usize {
-        self.state.full_start_pos
+        self.state.full_start()
     }
 
     /// Returns the start of the current token excluding preceding trivia.
     #[must_use]
     pub const fn token_start(&self) -> usize {
-        self.state.token_start
+        self.state.token_start()
     }
 
     /// Returns the end of the current token.
     #[must_use]
     pub const fn token_end(&self) -> usize {
-        self.state.pos
+        self.state.pos()
     }
 
     /// Returns the source text of the current token.
     #[must_use]
     pub fn token_text(&self) -> &'text str {
-        &self.text[self.state.token_start..self.state.pos]
+        &self.text[self.state.token_start()..self.state.pos()]
     }
 
     /// Returns the cooked value of the current identifier or literal token.
     #[must_use]
     pub fn token_value(&self) -> &str {
-        &self.state.token_value
+        self.state.token_value()
     }
 
     /// Returns whether a line break precedes the current token.
     #[must_use]
     pub const fn has_preceding_line_break(&self) -> bool {
         self.state
-            .token_flags
+            .flags()
             .intersects(TokenFlags::PRECEDING_LINE_BREAK)
     }
 
@@ -193,26 +175,22 @@ impl<'text> Scanner<'text> {
     /// Captures the scanner state so that speculative scanning can be undone.
     #[must_use]
     pub fn mark(&self) -> ScannerState {
-        ScannerState {
-            diagnostic_count: self.diagnostics.len(),
-            ..self.state.clone()
-        }
+        self.state.snapshot(self.diagnostics.len())
     }
 
     /// Restores a state captured by [`Self::mark`], discarding later diagnostics.
     pub fn rewind(&mut self, state: ScannerState) {
-        self.diagnostics.truncate(state.diagnostic_count);
+        self.diagnostics.truncate(state.diagnostic_count());
         self.state = state;
     }
 
     /// Scans the next token and returns its kind.
     pub fn scan(&mut self) -> SyntaxKind {
-        self.state.full_start_pos = self.state.pos;
-        self.state.token_flags = TokenFlags::NONE;
+        self.state.begin_token();
         loop {
-            self.state.token_start = self.state.pos;
+            self.state.begin_token_text();
             if let Some(token) = self.scan_step() {
-                self.state.token = token;
+                self.state.finish_token(token);
                 return token;
             }
         }
@@ -225,7 +203,7 @@ impl<'text> Scanner<'text> {
         };
         match byte {
             b'\t' | 0x0b | 0x0c | b' ' => {
-                self.state.pos += 1;
+                self.state.advance(1);
                 if self.skip_trivia {
                     return None;
                 }
@@ -233,13 +211,13 @@ impl<'text> Scanner<'text> {
                 Some(SyntaxKind::WhitespaceTrivia)
             }
             b'\n' | b'\r' => {
-                self.state.token_flags |= TokenFlags::PRECEDING_LINE_BREAK;
+                self.state.add_flags(TokenFlags::PRECEDING_LINE_BREAK);
                 let length = if byte == b'\r' && self.byte_at(1) == Some(b'\n') {
                     2
                 } else {
                     1
                 };
-                self.state.pos += length;
+                self.state.advance(length);
                 (!self.skip_trivia).then_some(SyntaxKind::NewLineTrivia)
             }
             b'/' if self.byte_at(1) == Some(b'/') => {
@@ -255,7 +233,8 @@ impl<'text> Scanner<'text> {
                 None => self.scan_punctuation(byte),
             },
             b'"' | b'\'' => {
-                self.state.token_value = self.scan_string(false);
+                let value = self.scan_string(false);
+                self.state.set_token_value(value);
                 Some(SyntaxKind::StringLiteral)
             }
             b'`' => Some(self.scan_template_and_set_token_value(false)),
@@ -281,12 +260,12 @@ impl<'text> Scanner<'text> {
     /// Scans an identifier, non-ASCII trivia, or an invalid character.
     fn scan_word_or_other(&mut self) -> Option<SyntaxKind> {
         if self.scan_identifier(0) {
-            return Some(identifier_token(&self.state.token_value));
+            return Some(identifier_token(self.state.token_value()));
         }
         // TypeScript-Go decodes U+FFFD as its UTF-8 error rune and treats the file as binary.
         if self.char_at_pos() == Some(char::REPLACEMENT_CHARACTER) {
             self.error_at(diagnostics::FILE_APPEARS_TO_BE_BINARY, 0, 0, &[]);
-            self.state.pos = self.text.len();
+            self.state.set_pos(self.text.len());
             return Some(SyntaxKind::NonTextFileMarkerTrivia);
         }
         match self.scan_non_ascii_trivia() {
@@ -299,15 +278,15 @@ impl<'text> Scanner<'text> {
     }
 
     fn byte_at(&self, offset: usize) -> Option<u8> {
-        self.text.as_bytes().get(self.state.pos + offset).copied()
+        self.text.as_bytes().get(self.state.pos() + offset).copied()
     }
 
     fn char_at_pos(&self) -> Option<char> {
-        self.text[self.state.pos..].chars().next()
+        self.text[self.state.pos()..].chars().next()
     }
 
     fn error(&mut self, message: Message) {
-        self.error_at(message, self.state.pos, 0, &[]);
+        self.error_at(message, self.state.pos(), 0, &[]);
     }
 
     fn error_at(&mut self, message: Message, start: usize, length: usize, arguments: &[&str]) {
@@ -324,7 +303,12 @@ impl<'text> Scanner<'text> {
 
     fn scan_invalid_character(&mut self) {
         let length = self.char_at_pos().map_or(1, char::len_utf8);
-        self.error_at(diagnostics::INVALID_CHARACTER, self.state.pos, length, &[]);
-        self.state.pos += length;
+        self.error_at(
+            diagnostics::INVALID_CHARACTER,
+            self.state.pos(),
+            length,
+            &[],
+        );
+        self.state.advance(length);
     }
 }

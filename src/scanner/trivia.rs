@@ -51,47 +51,47 @@ impl Scanner<'_> {
             if !is_white_space_single_line(character) {
                 break;
             }
-            self.state.pos += character.len_utf8();
+            self.state.advance(character.len_utf8());
         }
     }
 
     pub(super) fn scan_single_line_comment(&mut self) {
-        self.state.pos += 2;
+        self.state.advance(2);
         while let Some(character) = self.char_at_pos() {
             if is_line_break(character) {
                 break;
             }
-            self.state.pos += character.len_utf8();
+            self.state.advance(character.len_utf8());
         }
-        self.process_comment_directive(self.state.token_start, self.state.pos, false);
+        self.process_comment_directive(self.state.token_start(), self.state.pos(), false);
     }
 
     pub(super) fn scan_multi_line_comment(&mut self) {
-        self.state.pos += 2;
+        self.state.advance(2);
         let is_jsdoc = self.byte_at(0) == Some(b'*') && self.byte_at(1) != Some(b'/');
         let mut closed = false;
-        let mut last_line_start = self.state.token_start;
+        let mut last_line_start = self.state.token_start();
         while let Some(character) = self.char_at_pos() {
             if character == '*' && self.byte_at(1) == Some(b'/') {
-                self.state.pos += 2;
+                self.state.advance(2);
                 closed = true;
                 break;
             }
-            self.state.pos += character.len_utf8();
+            self.state.advance(character.len_utf8());
             if is_line_break(character) {
-                last_line_start = self.state.pos;
-                self.state.token_flags |= TokenFlags::PRECEDING_LINE_BREAK;
+                last_line_start = self.state.pos();
+                self.state.add_flags(TokenFlags::PRECEDING_LINE_BREAK);
             }
         }
         if is_jsdoc {
-            self.state.token_flags |= TokenFlags::PRECEDING_JSDOC_COMMENT;
-            self.scan_jsdoc_comment_for_tags(self.state.token_start, self.state.pos);
+            self.state.add_flags(TokenFlags::PRECEDING_JSDOC_COMMENT);
+            self.scan_jsdoc_comment_for_tags(self.state.token_start(), self.state.pos());
         }
-        self.process_comment_directive(last_line_start, self.state.pos, true);
+        self.process_comment_directive(last_line_start, self.state.pos(), true);
         if !closed {
             self.error(diagnostics::ASTERISK_SLASH_EXPECTED);
             if !self.skip_trivia {
-                self.state.token_flags |= TokenFlags::UNTERMINATED;
+                self.state.add_flags(TokenFlags::UNTERMINATED);
             }
         }
     }
@@ -100,7 +100,7 @@ impl Scanner<'_> {
     pub(super) fn scan_non_ascii_trivia(&mut self) -> Option<Option<SyntaxKind>> {
         let character = self.char_at_pos()?;
         if is_white_space_single_line(character) {
-            self.state.pos += character.len_utf8();
+            self.state.advance(character.len_utf8());
             if character == '\u{85}' || self.skip_trivia {
                 return Some(None);
             }
@@ -108,8 +108,8 @@ impl Scanner<'_> {
             return Some(Some(SyntaxKind::WhitespaceTrivia));
         }
         if is_line_break(character) {
-            self.state.token_flags |= TokenFlags::PRECEDING_LINE_BREAK;
-            self.state.pos += character.len_utf8();
+            self.state.add_flags(TokenFlags::PRECEDING_LINE_BREAK);
+            self.state.advance(character.len_utf8());
             return Some(None);
         }
         None
@@ -119,16 +119,17 @@ impl Scanner<'_> {
     ///
     /// Returns `Some(None)` when the marker was skipped as trivia.
     pub(super) fn scan_conflict_marker(&mut self) -> Option<Option<SyntaxKind>> {
-        if !is_conflict_marker_trivia(self.text, self.state.pos) {
+        if !is_conflict_marker_trivia(self.text, self.state.pos()) {
             return None;
         }
         self.error_at(
             diagnostics::MERGE_CONFLICT_MARKER_ENCOUNTERED,
-            self.state.pos,
+            self.state.pos(),
             MERGE_CONFLICT_MARKER_LENGTH,
             &[],
         );
-        self.state.pos = scan_conflict_marker_trivia(self.text, self.state.pos);
+        self.state
+            .set_pos(scan_conflict_marker_trivia(self.text, self.state.pos()));
         Some((!self.skip_trivia).then_some(SyntaxKind::ConflictMarkerTrivia))
     }
 
@@ -171,12 +172,14 @@ impl Scanner<'_> {
         while let Some(at) = comment.find('@') {
             comment = &comment[at + 1..];
             if has_jsdoc_tag(comment, &["deprecated"]) {
-                self.state.token_flags |= TokenFlags::PRECEDING_JSDOC_WITH_DEPRECATED;
+                self.state
+                    .add_flags(TokenFlags::PRECEDING_JSDOC_WITH_DEPRECATED);
             }
             if has_jsdoc_tag(comment, &["see", "link", "linkcode", "linkplain"]) {
-                self.state.token_flags |= TokenFlags::PRECEDING_JSDOC_WITH_SEE_OR_LINK;
+                self.state
+                    .add_flags(TokenFlags::PRECEDING_JSDOC_WITH_SEE_OR_LINK);
             }
-            let found = self.state.token_flags
+            let found = self.state.flags()
                 & (TokenFlags::PRECEDING_JSDOC_WITH_DEPRECATED
                     | TokenFlags::PRECEDING_JSDOC_WITH_SEE_OR_LINK);
             if found

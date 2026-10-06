@@ -16,7 +16,7 @@ impl Scanner<'_> {
                 let mut value = character.to_string();
                 value.push_str(&self.scan_identifier_parts());
                 let token = identifier_token(&value);
-                self.state.token_value = value;
+                self.state.set_token_value(value);
                 token
             }
             _ => {
@@ -29,41 +29,41 @@ impl Scanner<'_> {
     /// Scans identifier parts, cooking unicode escapes, and returns the cooked text.
     pub(super) fn scan_identifier_parts(&mut self) -> String {
         let mut value = String::new();
-        let mut start = self.state.pos;
+        let mut start = self.state.pos();
         while let Some(character) = self.char_at_pos() {
             if is_identifier_part(character) {
-                self.state.pos += character.len_utf8();
+                self.state.advance(character.len_utf8());
                 continue;
             }
             if character == '\\'
                 && let Some(escaped) = self.peek_unicode_escape().and_then(char::from_u32)
                 && is_identifier_part(escaped)
             {
-                value.push_str(&self.text[start..self.state.pos]);
+                value.push_str(&self.text[start..self.state.pos()]);
                 self.scan_unicode_escape(true);
                 value.push(escaped);
-                start = self.state.pos;
+                start = self.state.pos();
                 continue;
             }
             break;
         }
-        value.push_str(&self.text[start..self.state.pos]);
+        value.push_str(&self.text[start..self.state.pos()]);
         value
     }
 
     /// Scans an identifier after `prefix_length` bytes and stores its text as the token value.
     pub(super) fn scan_identifier(&mut self, prefix_length: usize) -> bool {
-        let start = self.state.pos;
-        self.state.pos += prefix_length;
+        let start = self.state.pos();
+        self.state.advance(prefix_length);
         match self.char_at_pos() {
             Some(character) if is_identifier_start(character) => {
-                self.state.pos += character.len_utf8();
+                self.state.advance(character.len_utf8());
             }
             _ => return false,
         }
-        let head = &self.text[start..self.state.pos];
+        let head = &self.text[start..self.state.pos()];
         let tail = self.scan_identifier_parts();
-        self.state.token_value = format!("{head}{tail}");
+        self.state.set_token_value(format!("{head}{tail}"));
         true
     }
 
@@ -72,34 +72,35 @@ impl Scanner<'_> {
     /// Returns `None` when a shebang was skipped as trivia.
     pub(super) fn scan_hash(&mut self) -> Option<SyntaxKind> {
         if self.byte_at(1) == Some(b'!') {
-            if self.state.pos == 0 {
-                self.state.pos = super::trivia::scan_shebang_trivia(self.text, 0);
+            if self.state.pos() == 0 {
+                self.state
+                    .set_pos(super::trivia::scan_shebang_trivia(self.text, 0));
                 return None;
             }
             self.error_at(
                 diagnostics::X_CAN_ONLY_BE_USED_AT_THE_START_OF_A_FILE,
-                self.state.pos,
+                self.state.pos(),
                 2,
                 &[],
             );
-            self.state.pos += 1;
+            self.state.advance(1);
             return Some(SyntaxKind::Unknown);
         }
         if self.byte_at(1) == Some(b'\\') {
-            self.state.pos += 1;
+            self.state.advance(1);
             if let Some(character) = self.peek_unicode_escape().and_then(char::from_u32)
                 && is_identifier_start(character)
             {
                 self.scan_unicode_escape(true);
                 let parts = self.scan_identifier_parts();
-                self.state.token_value = format!("#{character}{parts}");
+                self.state.set_token_value(format!("#{character}{parts}"));
                 return Some(SyntaxKind::PrivateIdentifier);
             }
-            self.state.pos -= 1;
+            self.state.retreat(1);
         }
         if !self.scan_identifier(1) {
-            self.error_at(diagnostics::INVALID_CHARACTER, self.state.pos - 1, 1, &[]);
-            self.state.token_value = "#".to_owned();
+            self.error_at(diagnostics::INVALID_CHARACTER, self.state.pos() - 1, 1, &[]);
+            self.state.set_token_value("#".to_owned());
         }
         Some(SyntaxKind::PrivateIdentifier)
     }

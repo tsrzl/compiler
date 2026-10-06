@@ -71,7 +71,7 @@ impl Scanner<'_> {
             (b'@', _, _) => (SyntaxKind::AtToken, 1),
             _ => return None,
         };
-        self.state.pos += length;
+        self.state.advance(length);
         Some(token)
     }
 }
