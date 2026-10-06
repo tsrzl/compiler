@@ -164,6 +164,49 @@ function usedFlagTypes(nodeShapes: NodeShape[]): string[] {
   return [...used].sort();
 }
 
+/// Fields shared by several node shapes with one type, exposed as `NodeData` accessors.
+function commonFields(nodeShapes: NodeShape[]): { name: string; rustType: string; shapes: NodeShape[] }[] {
+  const byName = new Map<string, { rustType: string; shapes: NodeShape[] } | null>();
+  for (const shape of nodeShapes) {
+    for (const field of shape.fields) {
+      const existing = byName.get(field.name);
+      if (existing === null) continue;
+      if (existing === undefined) {
+        byName.set(field.name, { rustType: field.rustType, shapes: [shape] });
+      } else if (existing.rustType.replace(/^Option<(.*)>$/, "$1") === field.rustType.replace(/^Option<(.*)>$/, "$1")) {
+        existing.shapes.push(shape);
+      } else {
+        byName.set(field.name, null);
+      }
+    }
+  }
+  return [...byName.entries()]
+    .filter((entry): entry is [string, { rustType: string; shapes: NodeShape[] }] => entry[1] !== null && entry[1].shapes.length > 1)
+    .map(([name, value]) => ({ name, ...value }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function renderCommonAccessor(name: string, rustType: string, shapes: NodeShape[]): string {
+  const inner = rustType.replace(/^Option<(.*)>$/, "$1");
+  const copyable = ["NodeId", "NodeList", "ModifierList", "SyntaxKind", "bool", "TokenFlags"].includes(inner);
+  const boxed = /^Box<(.*)>$/.exec(inner)?.[1];
+  const returnType = copyable ? `Option<${inner}>` : `Option<&${boxed ?? inner}>`;
+  const arms = shapes.map((shape) => {
+    const field = shape.fields.find((candidate) => candidate.name === name)!;
+    const optional = field.rustType.startsWith("Option<");
+    let value: string;
+    if (copyable) {
+      value = optional ? `data.${name}` : `Some(data.${name})`;
+    } else if (boxed !== undefined) {
+      value = optional ? `data.${name}.as_deref()` : `Some(&*data.${name})`;
+    } else {
+      value = optional ? `data.${name}.as_ref()` : `Some(&data.${name})`;
+    }
+    return `            Self::${shape.name}(data) => ${value},`;
+  });
+  return `    /// Returns the \`${name}\` member of any node shape that has one.\n    #[must_use]\n    pub ${copyable ? "const " : ""}fn ${name}(&self) -> ${returnType} {\n        match self {\n${arms.join("\n")}\n            _ => None,\n        }\n    }`;
+}
+
 function render(nodeShapes: NodeShape[]): string {
   const structs = nodeShapes.filter((shape) => shape.fields.length > 0).map(renderStruct).join("\n\n");
   const variants = nodeShapes
@@ -220,6 +263,8 @@ ${childArms}
     }
 
 ${accessors}
+
+${commonFields(nodeShapes).map(({ name, rustType, shapes }) => renderCommonAccessor(name, rustType, shapes)).join("\n\n")}
 }
 `;
 }

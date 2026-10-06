@@ -5785,4 +5785,759 @@ impl NodeData {
             _ => None,
         }
     }
+
+    /// Returns the `arguments` member of any node shape that has one.
+    #[must_use]
+    pub const fn arguments(&self) -> Option<NodeList> {
+        match self {
+            Self::CallExpression(data) => Some(data.arguments),
+            Self::NewExpression(data) => data.arguments,
+            _ => None,
+        }
+    }
+
+    /// Returns the `asterisk_token` member of any node shape that has one.
+    #[must_use]
+    pub const fn asterisk_token(&self) -> Option<NodeId> {
+        match self {
+            Self::FunctionDeclaration(data) => data.asterisk_token,
+            Self::MethodDeclaration(data) => data.asterisk_token,
+            Self::YieldExpression(data) => data.asterisk_token,
+            Self::FunctionExpression(data) => data.asterisk_token,
+            _ => None,
+        }
+    }
+
+    /// Returns the `body` member of any node shape that has one.
+    #[must_use]
+    pub const fn body(&self) -> Option<NodeId> {
+        match self {
+            Self::FunctionDeclaration(data) => data.body,
+            Self::ConstructorDeclaration(data) => data.body,
+            Self::GetAccessorDeclaration(data) => data.body,
+            Self::SetAccessorDeclaration(data) => data.body,
+            Self::MethodDeclaration(data) => data.body,
+            Self::ClassStaticBlockDeclaration(data) => Some(data.body),
+            Self::ArrowFunction(data) => Some(data.body),
+            Self::FunctionExpression(data) => Some(data.body),
+            Self::ModuleDeclaration(data) => data.body,
+            _ => None,
+        }
+    }
+
+    /// Returns the `class_name` member of any node shape that has one.
+    #[must_use]
+    pub const fn class_name(&self) -> Option<NodeId> {
+        match self {
+            Self::JSDocImplementsTag(data) => Some(data.class_name),
+            Self::JSDocAugmentsTag(data) => Some(data.class_name),
+            _ => None,
+        }
+    }
+
+    /// Returns the `comment` member of any node shape that has one.
+    #[must_use]
+    pub const fn comment(&self) -> Option<NodeList> {
+        match self {
+            Self::JSDoc(data) => Some(data.comment),
+            Self::JSDocTypeTag(data) => data.comment,
+            Self::JSDocUnknownTag(data) => data.comment,
+            Self::JSDocTemplateTag(data) => data.comment,
+            Self::JSDocReturnTag(data) => data.comment,
+            Self::JSDocPublicTag(data) => data.comment,
+            Self::JSDocPrivateTag(data) => data.comment,
+            Self::JSDocProtectedTag(data) => data.comment,
+            Self::JSDocReadonlyTag(data) => data.comment,
+            Self::JSDocOverrideTag(data) => data.comment,
+            Self::JSDocDeprecatedTag(data) => data.comment,
+            Self::JSDocSeeTag(data) => data.comment,
+            Self::JSDocImplementsTag(data) => data.comment,
+            Self::JSDocAugmentsTag(data) => data.comment,
+            Self::JSDocSatisfiesTag(data) => data.comment,
+            Self::JSDocThrowsTag(data) => data.comment,
+            Self::JSDocThisTag(data) => data.comment,
+            Self::JSDocImportTag(data) => data.comment,
+            Self::JSDocCallbackTag(data) => data.comment,
+            Self::JSDocOverloadTag(data) => data.comment,
+            Self::JSDocTypedefTag(data) => data.comment,
+            Self::JSDocParameterOrPropertyTag(data) => data.comment,
+            _ => None,
+        }
+    }
+
+    /// Returns the `condition` member of any node shape that has one.
+    #[must_use]
+    pub const fn condition(&self) -> Option<NodeId> {
+        match self {
+            Self::ForStatement(data) => data.condition,
+            Self::ConditionalExpression(data) => Some(data.condition),
+            _ => None,
+        }
+    }
+
+    /// Returns the `constraint` member of any node shape that has one.
+    #[must_use]
+    pub const fn constraint(&self) -> Option<NodeId> {
+        match self {
+            Self::JSDocTemplateTag(data) => Some(data.constraint),
+            Self::TypeParameterDeclaration(data) => data.constraint,
+            _ => None,
+        }
+    }
+
+    /// Returns the `dot_dot_dot_token` member of any node shape that has one.
+    #[must_use]
+    pub const fn dot_dot_dot_token(&self) -> Option<NodeId> {
+        match self {
+            Self::ParameterDeclaration(data) => data.dot_dot_dot_token,
+            Self::BindingElement(data) => data.dot_dot_dot_token,
+            Self::NamedTupleMember(data) => data.dot_dot_dot_token,
+            Self::JsxExpression(data) => data.dot_dot_dot_token,
+            _ => None,
+        }
+    }
+
+    /// Returns the `elements` member of any node shape that has one.
+    #[must_use]
+    pub const fn elements(&self) -> Option<NodeList> {
+        match self {
+            Self::BindingPattern(data) => Some(data.elements),
+            Self::NamedImports(data) => Some(data.elements),
+            Self::NamedExports(data) => Some(data.elements),
+            Self::ArrayLiteralExpression(data) => Some(data.elements),
+            Self::TupleTypeNode(data) => Some(data.elements),
+            _ => None,
+        }
+    }
+
+    /// Returns the `expression` member of any node shape that has one.
+    #[must_use]
+    pub const fn expression(&self) -> Option<NodeId> {
+        match self {
+            Self::ComputedPropertyName(data) => Some(data.expression),
+            Self::Decorator(data) => Some(data.expression),
+            Self::IfStatement(data) => Some(data.expression),
+            Self::DoStatement(data) => Some(data.expression),
+            Self::WhileStatement(data) => Some(data.expression),
+            Self::ForInOrOfStatement(data) => Some(data.expression),
+            Self::ReturnStatement(data) => data.expression,
+            Self::WithStatement(data) => Some(data.expression),
+            Self::SwitchStatement(data) => Some(data.expression),
+            Self::CaseOrDefaultClause(data) => data.expression,
+            Self::ThrowStatement(data) => Some(data.expression),
+            Self::ExpressionStatement(data) => Some(data.expression),
+            Self::ExternalModuleReference(data) => Some(data.expression),
+            Self::ExportAssignment(data) => Some(data.expression),
+            Self::YieldExpression(data) => data.expression,
+            Self::AsExpression(data) => Some(data.expression),
+            Self::SatisfiesExpression(data) => Some(data.expression),
+            Self::PropertyAccessExpression(data) => Some(data.expression),
+            Self::ElementAccessExpression(data) => Some(data.expression),
+            Self::CallExpression(data) => Some(data.expression),
+            Self::NewExpression(data) => Some(data.expression),
+            Self::NonNullExpression(data) => Some(data.expression),
+            Self::SpreadElement(data) => Some(data.expression),
+            Self::TemplateSpan(data) => Some(data.expression),
+            Self::ParenthesizedExpression(data) => Some(data.expression),
+            Self::SpreadAssignment(data) => Some(data.expression),
+            Self::DeleteExpression(data) => Some(data.expression),
+            Self::TypeOfExpression(data) => Some(data.expression),
+            Self::VoidExpression(data) => Some(data.expression),
+            Self::AwaitExpression(data) => Some(data.expression),
+            Self::TypeAssertion(data) => Some(data.expression),
+            Self::ExpressionWithTypeArguments(data) => Some(data.expression),
+            Self::PartiallyEmittedExpression(data) => Some(data.expression),
+            Self::JsxSpreadAttribute(data) => Some(data.expression),
+            Self::JsxExpression(data) => data.expression,
+            Self::TypeParameterDeclaration(data) => data.expression,
+            Self::SyntheticReferenceExpression(data) => Some(data.expression),
+            _ => None,
+        }
+    }
+
+    /// Returns the `full_signature` member of any node shape that has one.
+    #[must_use]
+    pub const fn full_signature(&self) -> Option<NodeId> {
+        match self {
+            Self::FunctionDeclaration(data) => data.full_signature,
+            Self::ConstructorDeclaration(data) => data.full_signature,
+            Self::GetAccessorDeclaration(data) => data.full_signature,
+            Self::SetAccessorDeclaration(data) => data.full_signature,
+            Self::MethodDeclaration(data) => data.full_signature,
+            Self::ArrowFunction(data) => data.full_signature,
+            Self::FunctionExpression(data) => data.full_signature,
+            _ => None,
+        }
+    }
+
+    /// Returns the `head` member of any node shape that has one.
+    #[must_use]
+    pub const fn head(&self) -> Option<NodeId> {
+        match self {
+            Self::TemplateExpression(data) => Some(data.head),
+            Self::TemplateLiteralTypeNode(data) => Some(data.head),
+            _ => None,
+        }
+    }
+
+    /// Returns the `heritage_clauses` member of any node shape that has one.
+    #[must_use]
+    pub const fn heritage_clauses(&self) -> Option<NodeList> {
+        match self {
+            Self::ClassDeclaration(data) => data.heritage_clauses,
+            Self::ClassExpression(data) => data.heritage_clauses,
+            Self::InterfaceDeclaration(data) => data.heritage_clauses,
+            _ => None,
+        }
+    }
+
+    /// Returns the `import_clause` member of any node shape that has one.
+    #[must_use]
+    pub const fn import_clause(&self) -> Option<NodeId> {
+        match self {
+            Self::ImportDeclaration(data) => data.import_clause,
+            Self::JSDocImportTag(data) => data.import_clause,
+            _ => None,
+        }
+    }
+
+    /// Returns the `initializer` member of any node shape that has one.
+    #[must_use]
+    pub const fn initializer(&self) -> Option<NodeId> {
+        match self {
+            Self::ForStatement(data) => data.initializer,
+            Self::ForInOrOfStatement(data) => Some(data.initializer),
+            Self::VariableDeclaration(data) => data.initializer,
+            Self::ParameterDeclaration(data) => data.initializer,
+            Self::BindingElement(data) => data.initializer,
+            Self::EnumMember(data) => data.initializer,
+            Self::PropertySignatureDeclaration(data) => data.initializer,
+            Self::PropertyDeclaration(data) => data.initializer,
+            Self::PropertyAssignment(data) => Some(data.initializer),
+            Self::JsxAttribute(data) => data.initializer,
+            _ => None,
+        }
+    }
+
+    /// Returns the `is_type_only` member of any node shape that has one.
+    #[must_use]
+    pub const fn is_type_only(&self) -> Option<bool> {
+        match self {
+            Self::ExportSpecifier(data) => Some(data.is_type_only),
+            Self::ImportEqualsDeclaration(data) => Some(data.is_type_only),
+            Self::ExportDeclaration(data) => Some(data.is_type_only),
+            Self::ImportSpecifier(data) => Some(data.is_type_only),
+            _ => None,
+        }
+    }
+
+    /// Returns the `label` member of any node shape that has one.
+    #[must_use]
+    pub const fn label(&self) -> Option<NodeId> {
+        match self {
+            Self::BreakStatement(data) => data.label,
+            Self::ContinueStatement(data) => data.label,
+            Self::LabeledStatement(data) => Some(data.label),
+            _ => None,
+        }
+    }
+
+    /// Returns the `left` member of any node shape that has one.
+    #[must_use]
+    pub const fn left(&self) -> Option<NodeId> {
+        match self {
+            Self::QualifiedName(data) => Some(data.left),
+            Self::BinaryExpression(data) => Some(data.left),
+            _ => None,
+        }
+    }
+
+    /// Returns the `literal` member of any node shape that has one.
+    #[must_use]
+    pub const fn literal(&self) -> Option<NodeId> {
+        match self {
+            Self::TemplateSpan(data) => Some(data.literal),
+            Self::LiteralTypeNode(data) => Some(data.literal),
+            Self::TemplateLiteralTypeSpan(data) => Some(data.literal),
+            _ => None,
+        }
+    }
+
+    /// Returns the `members` member of any node shape that has one.
+    #[must_use]
+    pub const fn members(&self) -> Option<NodeList> {
+        match self {
+            Self::ClassDeclaration(data) => Some(data.members),
+            Self::ClassExpression(data) => Some(data.members),
+            Self::InterfaceDeclaration(data) => Some(data.members),
+            Self::EnumDeclaration(data) => Some(data.members),
+            Self::MappedTypeNode(data) => data.members,
+            Self::TypeLiteralNode(data) => Some(data.members),
+            _ => None,
+        }
+    }
+
+    /// Returns the `modifiers` member of any node shape that has one.
+    #[must_use]
+    pub const fn modifiers(&self) -> Option<ModifierList> {
+        match self {
+            Self::VariableStatement(data) => data.modifiers,
+            Self::ParameterDeclaration(data) => data.modifiers,
+            Self::MissingDeclaration(data) => data.modifiers,
+            Self::FunctionDeclaration(data) => data.modifiers,
+            Self::ClassDeclaration(data) => data.modifiers,
+            Self::ClassExpression(data) => data.modifiers,
+            Self::InterfaceDeclaration(data) => data.modifiers,
+            Self::TypeAliasDeclaration(data) => data.modifiers,
+            Self::EnumDeclaration(data) => data.modifiers,
+            Self::ImportDeclaration(data) => data.modifiers,
+            Self::ExportAssignment(data) => data.modifiers,
+            Self::NamespaceExportDeclaration(data) => data.modifiers,
+            Self::ConstructorDeclaration(data) => data.modifiers,
+            Self::GetAccessorDeclaration(data) => data.modifiers,
+            Self::SetAccessorDeclaration(data) => data.modifiers,
+            Self::IndexSignatureDeclaration(data) => data.modifiers,
+            Self::MethodSignatureDeclaration(data) => data.modifiers,
+            Self::MethodDeclaration(data) => data.modifiers,
+            Self::PropertySignatureDeclaration(data) => data.modifiers,
+            Self::PropertyDeclaration(data) => data.modifiers,
+            Self::ClassStaticBlockDeclaration(data) => data.modifiers,
+            Self::BinaryExpression(data) => data.modifiers,
+            Self::ArrowFunction(data) => data.modifiers,
+            Self::FunctionExpression(data) => data.modifiers,
+            Self::PropertyAssignment(data) => data.modifiers,
+            Self::ShorthandPropertyAssignment(data) => data.modifiers,
+            Self::ConstructorTypeNode(data) => data.modifiers,
+            Self::ModuleDeclaration(data) => data.modifiers,
+            Self::ImportEqualsDeclaration(data) => data.modifiers,
+            Self::ExportDeclaration(data) => data.modifiers,
+            Self::TypeParameterDeclaration(data) => data.modifiers,
+            _ => None,
+        }
+    }
+
+    /// Returns the `module_specifier` member of any node shape that has one.
+    #[must_use]
+    pub const fn module_specifier(&self) -> Option<NodeId> {
+        match self {
+            Self::ImportDeclaration(data) => Some(data.module_specifier),
+            Self::JSDocImportTag(data) => Some(data.module_specifier),
+            Self::ExportDeclaration(data) => data.module_specifier,
+            _ => None,
+        }
+    }
+
+    /// Returns the `multi_line` member of any node shape that has one.
+    #[must_use]
+    pub const fn multi_line(&self) -> Option<bool> {
+        match self {
+            Self::Block(data) => Some(data.multi_line),
+            Self::ArrayLiteralExpression(data) => Some(data.multi_line),
+            Self::ObjectLiteralExpression(data) => Some(data.multi_line),
+            Self::ImportAttributes(data) => Some(data.multi_line),
+            _ => None,
+        }
+    }
+
+    /// Returns the `name` member of any node shape that has one.
+    #[must_use]
+    pub const fn name(&self) -> Option<NodeId> {
+        match self {
+            Self::VariableDeclaration(data) => Some(data.name),
+            Self::ParameterDeclaration(data) => Some(data.name),
+            Self::BindingElement(data) => data.name,
+            Self::FunctionDeclaration(data) => data.name,
+            Self::ClassDeclaration(data) => data.name,
+            Self::ClassExpression(data) => data.name,
+            Self::InterfaceDeclaration(data) => Some(data.name),
+            Self::TypeAliasDeclaration(data) => Some(data.name),
+            Self::EnumMember(data) => Some(data.name),
+            Self::EnumDeclaration(data) => Some(data.name),
+            Self::NamespaceImport(data) => Some(data.name),
+            Self::NamespaceExportDeclaration(data) => Some(data.name),
+            Self::NamespaceExport(data) => Some(data.name),
+            Self::ExportSpecifier(data) => Some(data.name),
+            Self::GetAccessorDeclaration(data) => Some(data.name),
+            Self::SetAccessorDeclaration(data) => Some(data.name),
+            Self::MethodSignatureDeclaration(data) => Some(data.name),
+            Self::MethodDeclaration(data) => Some(data.name),
+            Self::PropertySignatureDeclaration(data) => Some(data.name),
+            Self::PropertyDeclaration(data) => Some(data.name),
+            Self::FunctionExpression(data) => data.name,
+            Self::PropertyAccessExpression(data) => Some(data.name),
+            Self::MetaProperty(data) => Some(data.name),
+            Self::PropertyAssignment(data) => Some(data.name),
+            Self::ShorthandPropertyAssignment(data) => Some(data.name),
+            Self::ImportAttribute(data) => data.name,
+            Self::NamedTupleMember(data) => Some(data.name),
+            Self::JsxNamespacedName(data) => Some(data.name),
+            Self::JsxAttribute(data) => Some(data.name),
+            Self::JSDocCallbackTag(data) => data.name,
+            Self::JSDocTypedefTag(data) => data.name,
+            Self::JSDocNameReference(data) => Some(data.name),
+            Self::ModuleDeclaration(data) => Some(data.name),
+            Self::ImportEqualsDeclaration(data) => Some(data.name),
+            Self::ImportClause(data) => data.name,
+            Self::ImportSpecifier(data) => Some(data.name),
+            Self::JSDocLink(data) => data.name,
+            Self::JSDocLinkPlain(data) => data.name,
+            Self::JSDocLinkCode(data) => data.name,
+            Self::TypeParameterDeclaration(data) => Some(data.name),
+            Self::JSDocParameterOrPropertyTag(data) => Some(data.name),
+            _ => None,
+        }
+    }
+
+    /// Returns the `operand` member of any node shape that has one.
+    #[must_use]
+    pub const fn operand(&self) -> Option<NodeId> {
+        match self {
+            Self::PrefixUnaryExpression(data) => Some(data.operand),
+            Self::PostfixUnaryExpression(data) => Some(data.operand),
+            _ => None,
+        }
+    }
+
+    /// Returns the `operator` member of any node shape that has one.
+    #[must_use]
+    pub const fn operator(&self) -> Option<SyntaxKind> {
+        match self {
+            Self::PrefixUnaryExpression(data) => Some(data.operator),
+            Self::PostfixUnaryExpression(data) => Some(data.operator),
+            Self::TypeOperatorNode(data) => Some(data.operator),
+            _ => None,
+        }
+    }
+
+    /// Returns the `parameters` member of any node shape that has one.
+    #[must_use]
+    pub const fn parameters(&self) -> Option<NodeList> {
+        match self {
+            Self::FunctionDeclaration(data) => Some(data.parameters),
+            Self::CallSignatureDeclaration(data) => Some(data.parameters),
+            Self::ConstructSignatureDeclaration(data) => Some(data.parameters),
+            Self::ConstructorDeclaration(data) => Some(data.parameters),
+            Self::GetAccessorDeclaration(data) => Some(data.parameters),
+            Self::SetAccessorDeclaration(data) => Some(data.parameters),
+            Self::IndexSignatureDeclaration(data) => Some(data.parameters),
+            Self::MethodSignatureDeclaration(data) => Some(data.parameters),
+            Self::MethodDeclaration(data) => Some(data.parameters),
+            Self::ArrowFunction(data) => Some(data.parameters),
+            Self::FunctionExpression(data) => Some(data.parameters),
+            Self::FunctionTypeNode(data) => Some(data.parameters),
+            Self::ConstructorTypeNode(data) => Some(data.parameters),
+            Self::JSDocSignature(data) => Some(data.parameters),
+            _ => None,
+        }
+    }
+
+    /// Returns the `postfix_token` member of any node shape that has one.
+    #[must_use]
+    pub const fn postfix_token(&self) -> Option<NodeId> {
+        match self {
+            Self::MethodSignatureDeclaration(data) => data.postfix_token,
+            Self::MethodDeclaration(data) => data.postfix_token,
+            Self::PropertySignatureDeclaration(data) => data.postfix_token,
+            Self::PropertyDeclaration(data) => data.postfix_token,
+            Self::PropertyAssignment(data) => data.postfix_token,
+            Self::ShorthandPropertyAssignment(data) => data.postfix_token,
+            _ => None,
+        }
+    }
+
+    /// Returns the `properties` member of any node shape that has one.
+    #[must_use]
+    pub const fn properties(&self) -> Option<NodeList> {
+        match self {
+            Self::ObjectLiteralExpression(data) => Some(data.properties),
+            Self::JsxAttributes(data) => Some(data.properties),
+            _ => None,
+        }
+    }
+
+    /// Returns the `property_name` member of any node shape that has one.
+    #[must_use]
+    pub const fn property_name(&self) -> Option<NodeId> {
+        match self {
+            Self::BindingElement(data) => data.property_name,
+            Self::ExportSpecifier(data) => data.property_name,
+            Self::ImportSpecifier(data) => data.property_name,
+            _ => None,
+        }
+    }
+
+    /// Returns the `question_dot_token` member of any node shape that has one.
+    #[must_use]
+    pub const fn question_dot_token(&self) -> Option<NodeId> {
+        match self {
+            Self::PropertyAccessExpression(data) => data.question_dot_token,
+            Self::ElementAccessExpression(data) => data.question_dot_token,
+            Self::CallExpression(data) => data.question_dot_token,
+            Self::TaggedTemplateExpression(data) => data.question_dot_token,
+            _ => None,
+        }
+    }
+
+    /// Returns the `question_token` member of any node shape that has one.
+    #[must_use]
+    pub const fn question_token(&self) -> Option<NodeId> {
+        match self {
+            Self::ParameterDeclaration(data) => data.question_token,
+            Self::ConditionalExpression(data) => Some(data.question_token),
+            Self::MappedTypeNode(data) => data.question_token,
+            Self::NamedTupleMember(data) => data.question_token,
+            _ => None,
+        }
+    }
+
+    /// Returns the `raw_text` member of any node shape that has one.
+    #[must_use]
+    pub fn raw_text(&self) -> Option<&str> {
+        match self {
+            Self::TemplateHead(data) => Some(&*data.raw_text),
+            Self::TemplateMiddle(data) => Some(&*data.raw_text),
+            Self::TemplateTail(data) => Some(&*data.raw_text),
+            _ => None,
+        }
+    }
+
+    /// Returns the `right` member of any node shape that has one.
+    #[must_use]
+    pub const fn right(&self) -> Option<NodeId> {
+        match self {
+            Self::QualifiedName(data) => Some(data.right),
+            Self::BinaryExpression(data) => Some(data.right),
+            _ => None,
+        }
+    }
+
+    /// Returns the `statement` member of any node shape that has one.
+    #[must_use]
+    pub const fn statement(&self) -> Option<NodeId> {
+        match self {
+            Self::DoStatement(data) => Some(data.statement),
+            Self::WhileStatement(data) => Some(data.statement),
+            Self::ForStatement(data) => Some(data.statement),
+            Self::ForInOrOfStatement(data) => Some(data.statement),
+            Self::WithStatement(data) => Some(data.statement),
+            Self::LabeledStatement(data) => Some(data.statement),
+            _ => None,
+        }
+    }
+
+    /// Returns the `statements` member of any node shape that has one.
+    #[must_use]
+    pub const fn statements(&self) -> Option<NodeList> {
+        match self {
+            Self::CaseOrDefaultClause(data) => Some(data.statements),
+            Self::Block(data) => Some(data.statements),
+            Self::ModuleBlock(data) => Some(data.statements),
+            Self::SourceFile(data) => Some(data.statements),
+            _ => None,
+        }
+    }
+
+    /// Returns the `tag_name` member of any node shape that has one.
+    #[must_use]
+    pub const fn tag_name(&self) -> Option<NodeId> {
+        match self {
+            Self::JsxOpeningElement(data) => Some(data.tag_name),
+            Self::JsxSelfClosingElement(data) => Some(data.tag_name),
+            Self::JsxClosingElement(data) => Some(data.tag_name),
+            Self::JSDocTypeTag(data) => Some(data.tag_name),
+            Self::JSDocUnknownTag(data) => Some(data.tag_name),
+            Self::JSDocTemplateTag(data) => Some(data.tag_name),
+            Self::JSDocReturnTag(data) => Some(data.tag_name),
+            Self::JSDocPublicTag(data) => Some(data.tag_name),
+            Self::JSDocPrivateTag(data) => Some(data.tag_name),
+            Self::JSDocProtectedTag(data) => Some(data.tag_name),
+            Self::JSDocReadonlyTag(data) => Some(data.tag_name),
+            Self::JSDocOverrideTag(data) => Some(data.tag_name),
+            Self::JSDocDeprecatedTag(data) => Some(data.tag_name),
+            Self::JSDocSeeTag(data) => Some(data.tag_name),
+            Self::JSDocImplementsTag(data) => Some(data.tag_name),
+            Self::JSDocAugmentsTag(data) => Some(data.tag_name),
+            Self::JSDocSatisfiesTag(data) => Some(data.tag_name),
+            Self::JSDocThrowsTag(data) => Some(data.tag_name),
+            Self::JSDocThisTag(data) => Some(data.tag_name),
+            Self::JSDocImportTag(data) => Some(data.tag_name),
+            Self::JSDocCallbackTag(data) => Some(data.tag_name),
+            Self::JSDocOverloadTag(data) => Some(data.tag_name),
+            Self::JSDocTypedefTag(data) => Some(data.tag_name),
+            Self::JSDocParameterOrPropertyTag(data) => Some(data.tag_name),
+            _ => None,
+        }
+    }
+
+    /// Returns the `template_flags` member of any node shape that has one.
+    #[must_use]
+    pub const fn template_flags(&self) -> Option<TokenFlags> {
+        match self {
+            Self::NoSubstitutionTemplateLiteral(data) => Some(data.template_flags),
+            Self::TemplateHead(data) => Some(data.template_flags),
+            Self::TemplateMiddle(data) => Some(data.template_flags),
+            Self::TemplateTail(data) => Some(data.template_flags),
+            _ => None,
+        }
+    }
+
+    /// Returns the `template_spans` member of any node shape that has one.
+    #[must_use]
+    pub const fn template_spans(&self) -> Option<NodeList> {
+        match self {
+            Self::TemplateExpression(data) => Some(data.template_spans),
+            Self::TemplateLiteralTypeNode(data) => Some(data.template_spans),
+            _ => None,
+        }
+    }
+
+    /// Returns the `token` member of any node shape that has one.
+    #[must_use]
+    pub const fn token(&self) -> Option<SyntaxKind> {
+        match self {
+            Self::HeritageClause(data) => Some(data.token),
+            Self::ImportAttributes(data) => Some(data.token),
+            _ => None,
+        }
+    }
+
+    /// Returns the `token_flags` member of any node shape that has one.
+    #[must_use]
+    pub const fn token_flags(&self) -> Option<TokenFlags> {
+        match self {
+            Self::StringLiteral(data) => Some(data.token_flags),
+            Self::NumericLiteral(data) => Some(data.token_flags),
+            Self::BigIntLiteral(data) => Some(data.token_flags),
+            Self::RegularExpressionLiteral(data) => Some(data.token_flags),
+            _ => None,
+        }
+    }
+
+    /// Returns the `type_arguments` member of any node shape that has one.
+    #[must_use]
+    pub const fn type_arguments(&self) -> Option<NodeList> {
+        match self {
+            Self::CallExpression(data) => data.type_arguments,
+            Self::NewExpression(data) => data.type_arguments,
+            Self::TaggedTemplateExpression(data) => data.type_arguments,
+            Self::TypeReferenceNode(data) => data.type_arguments,
+            Self::ExpressionWithTypeArguments(data) => data.type_arguments,
+            Self::TypeQueryNode(data) => data.type_arguments,
+            Self::JsxOpeningElement(data) => data.type_arguments,
+            Self::JsxSelfClosingElement(data) => data.type_arguments,
+            Self::ImportTypeNode(data) => data.type_arguments,
+            _ => None,
+        }
+    }
+
+    /// Returns the `type_expression` member of any node shape that has one.
+    #[must_use]
+    pub const fn type_expression(&self) -> Option<NodeId> {
+        match self {
+            Self::JSDocTypeTag(data) => Some(data.type_expression),
+            Self::JSDocReturnTag(data) => data.type_expression,
+            Self::JSDocSatisfiesTag(data) => Some(data.type_expression),
+            Self::JSDocThrowsTag(data) => data.type_expression,
+            Self::JSDocThisTag(data) => Some(data.type_expression),
+            Self::JSDocCallbackTag(data) => Some(data.type_expression),
+            Self::JSDocOverloadTag(data) => Some(data.type_expression),
+            Self::JSDocTypedefTag(data) => data.type_expression,
+            Self::JSDocParameterOrPropertyTag(data) => data.type_expression,
+            _ => None,
+        }
+    }
+
+    /// Returns the `type_node` member of any node shape that has one.
+    #[must_use]
+    pub const fn type_node(&self) -> Option<NodeId> {
+        match self {
+            Self::VariableDeclaration(data) => data.type_node,
+            Self::ParameterDeclaration(data) => data.type_node,
+            Self::FunctionDeclaration(data) => data.type_node,
+            Self::TypeAliasDeclaration(data) => Some(data.type_node),
+            Self::ExportAssignment(data) => data.type_node,
+            Self::CallSignatureDeclaration(data) => data.type_node,
+            Self::ConstructSignatureDeclaration(data) => data.type_node,
+            Self::ConstructorDeclaration(data) => data.type_node,
+            Self::GetAccessorDeclaration(data) => data.type_node,
+            Self::SetAccessorDeclaration(data) => data.type_node,
+            Self::IndexSignatureDeclaration(data) => data.type_node,
+            Self::MethodSignatureDeclaration(data) => data.type_node,
+            Self::MethodDeclaration(data) => data.type_node,
+            Self::PropertySignatureDeclaration(data) => data.type_node,
+            Self::PropertyDeclaration(data) => data.type_node,
+            Self::BinaryExpression(data) => data.type_node,
+            Self::ArrowFunction(data) => data.type_node,
+            Self::FunctionExpression(data) => data.type_node,
+            Self::AsExpression(data) => Some(data.type_node),
+            Self::SatisfiesExpression(data) => Some(data.type_node),
+            Self::PropertyAssignment(data) => data.type_node,
+            Self::ShorthandPropertyAssignment(data) => data.type_node,
+            Self::TypeAssertion(data) => Some(data.type_node),
+            Self::TypeOperatorNode(data) => Some(data.type_node),
+            Self::TypePredicateNode(data) => data.type_node,
+            Self::MappedTypeNode(data) => data.type_node,
+            Self::NamedTupleMember(data) => Some(data.type_node),
+            Self::OptionalTypeNode(data) => Some(data.type_node),
+            Self::RestTypeNode(data) => Some(data.type_node),
+            Self::ParenthesizedTypeNode(data) => Some(data.type_node),
+            Self::FunctionTypeNode(data) => data.type_node,
+            Self::ConstructorTypeNode(data) => data.type_node,
+            Self::TemplateLiteralTypeSpan(data) => Some(data.type_node),
+            Self::JSDocTypeExpression(data) => Some(data.type_node),
+            Self::JSDocNonNullableType(data) => Some(data.type_node),
+            Self::JSDocNullableType(data) => Some(data.type_node),
+            Self::JSDocVariadicType(data) => Some(data.type_node),
+            Self::JSDocOptionalType(data) => Some(data.type_node),
+            Self::JSDocSignature(data) => data.type_node,
+            _ => None,
+        }
+    }
+
+    /// Returns the `type_parameter` member of any node shape that has one.
+    #[must_use]
+    pub const fn type_parameter(&self) -> Option<NodeId> {
+        match self {
+            Self::InferTypeNode(data) => Some(data.type_parameter),
+            Self::MappedTypeNode(data) => Some(data.type_parameter),
+            _ => None,
+        }
+    }
+
+    /// Returns the `type_parameters` member of any node shape that has one.
+    #[must_use]
+    pub const fn type_parameters(&self) -> Option<NodeList> {
+        match self {
+            Self::FunctionDeclaration(data) => data.type_parameters,
+            Self::ClassDeclaration(data) => data.type_parameters,
+            Self::ClassExpression(data) => data.type_parameters,
+            Self::InterfaceDeclaration(data) => data.type_parameters,
+            Self::TypeAliasDeclaration(data) => data.type_parameters,
+            Self::CallSignatureDeclaration(data) => data.type_parameters,
+            Self::ConstructSignatureDeclaration(data) => data.type_parameters,
+            Self::ConstructorDeclaration(data) => data.type_parameters,
+            Self::GetAccessorDeclaration(data) => data.type_parameters,
+            Self::SetAccessorDeclaration(data) => data.type_parameters,
+            Self::MethodSignatureDeclaration(data) => data.type_parameters,
+            Self::MethodDeclaration(data) => data.type_parameters,
+            Self::ArrowFunction(data) => data.type_parameters,
+            Self::FunctionExpression(data) => data.type_parameters,
+            Self::FunctionTypeNode(data) => data.type_parameters,
+            Self::ConstructorTypeNode(data) => data.type_parameters,
+            Self::JSDocTemplateTag(data) => Some(data.type_parameters),
+            Self::JSDocSignature(data) => data.type_parameters,
+            _ => None,
+        }
+    }
+
+    /// Returns the `types` member of any node shape that has one.
+    #[must_use]
+    pub const fn types(&self) -> Option<NodeList> {
+        match self {
+            Self::HeritageClause(data) => Some(data.types),
+            Self::UnionTypeNode(data) => Some(data.types),
+            Self::IntersectionTypeNode(data) => Some(data.types),
+            _ => None,
+        }
+    }
 }
