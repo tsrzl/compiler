@@ -168,3 +168,77 @@ fn should_return_boolean_given_type_predicate_when_resolving_type_node() {
         TypeFlags::UNION | TypeFlags::BOOLEAN
     );
 }
+
+fn diagnostic_texts(checker: &Checker<'_>) -> Vec<String> {
+    checker
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.diagnostic().text())
+        .collect()
+}
+
+#[test]
+fn should_resolve_alias_target_given_type_alias_reference_when_resolving_type_node() {
+    // Arrange
+    let text = "let value: Id;\ntype Id = string;";
+
+    // Act
+    let (checker, ty) = annotated_type(text);
+
+    // Assert
+    assert_eq!(ty, checker.types().intrinsics().string);
+}
+
+#[test]
+fn should_report_ts2456_on_each_alias_given_circular_type_aliases_when_resolving_type_node() {
+    // Arrange
+    let text = "let value: A;\ntype A = B;\ntype B = A;";
+
+    // Act
+    let (checker, _) = annotated_type(text);
+
+    // Assert
+    assert_eq!(
+        diagnostic_texts(&checker),
+        [
+            "Type alias 'B' circularly references itself.",
+            "Type alias 'A' circularly references itself."
+        ]
+    );
+}
+
+#[test]
+fn should_return_error_type_given_circular_type_aliases_when_resolving_type_node() {
+    // Arrange
+    let text = "let value: A;\ntype A = B;\ntype B = A;";
+
+    // Act
+    let (checker, ty) = annotated_type(text);
+
+    // Assert
+    assert_eq!(ty, checker.types().intrinsics().error);
+}
+
+#[test]
+fn should_report_ts2304_given_unknown_type_name_when_resolving_type_node() {
+    // Arrange
+    let text = "let value: Missing;";
+
+    // Act
+    let (checker, _) = annotated_type(text);
+
+    // Assert
+    assert_eq!(diagnostic_texts(&checker), ["Cannot find name 'Missing'."]);
+}
+
+#[test]
+fn should_report_ts2315_given_type_arguments_on_non_generic_alias_when_resolving_type_node() {
+    // Arrange
+    let text = "let value: Id<number>;\ntype Id = string;";
+
+    // Act
+    let (checker, _) = annotated_type(text);
+
+    // Assert
+    assert_eq!(diagnostic_texts(&checker), ["Type 'Id' is not generic."]);
+}

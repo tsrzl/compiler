@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 use super::program::{CheckDiagnostic, NodeRef};
 use super::symbol_store::{SymbolRef, SymbolStore};
+use super::type_references::TypeResolution;
 use super::type_table::TypeTable;
 use super::types::TypeId;
 use super::unresolved::PRIMITIVE_TYPE_ALIASES;
@@ -53,6 +54,9 @@ pub struct Checker<'program> {
     pub(super) globals: SymbolTable<SymbolRef>,
     pub(super) merged_symbols: HashMap<SymbolRef, SymbolRef>,
     pub(super) type_node_links: HashMap<NodeRef, TypeId>,
+    pub(super) symbol_node_links: HashMap<NodeRef, SymbolRef>,
+    pub(super) type_alias_declared_types: HashMap<SymbolRef, TypeId>,
+    pub(super) type_resolutions: Vec<TypeResolution>,
     diagnostics: Vec<CheckDiagnostic>,
 }
 
@@ -82,6 +86,9 @@ impl<'program> Checker<'program> {
             globals,
             merged_symbols: HashMap::new(),
             type_node_links: HashMap::new(),
+            symbol_node_links: HashMap::new(),
+            type_alias_declared_types: HashMap::new(),
+            type_resolutions: Vec::new(),
             diagnostics: Vec::new(),
         };
         checker.initialize();

@@ -1,6 +1,7 @@
 //! Types written in type positions, modeled on TypeScript-Go's `getTypeFromTypeNode`.
 //!
-//! Ported so far: keywords, parenthesized types, literal types, unions, and type predicates.
+//! Ported so far: keywords, parenthesized types, literal types, unions, type predicates, and
+//! type references.
 //! Other type nodes resolve to the error type, TypeScript-Go's fallback, until their kinds are
 //! ported. Union aliases are attached once type aliases are ported.
 
@@ -47,6 +48,7 @@ impl Checker<'_> {
                     .collect();
                 self.types.union_type(&constituents)
             }
+            NodeData::TypeReferenceNode(_) => self.type_from_type_reference(node),
             NodeData::TypePredicateNode(predicate) => {
                 if predicate.asserts_modifier.is_some() {
                     intrinsics.void

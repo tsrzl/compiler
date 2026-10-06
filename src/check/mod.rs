@@ -12,6 +12,7 @@ mod name_resolution;
 mod program;
 mod symbol_store;
 mod type_nodes;
+mod type_references;
 mod type_table;
 mod types;
 mod unresolved;
