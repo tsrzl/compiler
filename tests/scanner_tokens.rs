@@ -1,5 +1,5 @@
-use tsrzl::ast::SyntaxKind;
-use tsrzl::scanner::Scanner;
+use tsrzl::ast::{SyntaxKind, TokenFlags};
+use tsrzl::scanner::{CommentDirectiveKind, LanguageVariant, Scanner};
 
 fn scan_kinds(text: &str) -> Vec<SyntaxKind> {
     let mut scanner = Scanner::new(text);
@@ -221,4 +221,115 @@ fn should_cook_unicode_escapes_given_escaped_identifier_when_scanning_tokens() {
 
     // Assert
     assert_eq!(actual, (SyntaxKind::Identifier, "abc".to_owned()));
+}
+
+#[test]
+fn should_scan_template_head_given_substitution_start_when_scanning_tokens() {
+    // Arrange
+    let text = "`a$\u{7b}";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(actual, (SyntaxKind::TemplateHead, "a".to_owned()));
+}
+
+#[test]
+fn should_normalize_carriage_return_given_template_without_substitution_when_scanning_tokens() {
+    // Arrange
+    let text = "`a\r\nb`";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(
+        actual,
+        (SyntaxKind::NoSubstitutionTemplateLiteral, "a\nb".to_owned())
+    );
+}
+
+#[test]
+fn should_scan_private_identifier_given_hash_name_when_scanning_tokens() {
+    // Arrange
+    let text = "#secret";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(
+        actual,
+        (SyntaxKind::PrivateIdentifier, "#secret".to_owned())
+    );
+}
+
+#[test]
+fn should_skip_shebang_given_hash_bang_at_file_start_when_scanning_tokens() {
+    // Arrange
+    let text = "#!/usr/bin/env node\nx";
+
+    // Act
+    let actual = scan_kinds(text);
+
+    // Assert
+    assert_eq!(actual, [SyntaxKind::Identifier, SyntaxKind::EndOfFile]);
+}
+
+#[test]
+fn should_report_merge_conflict_given_conflict_marker_line_when_scanning_tokens() {
+    // Arrange
+    let text = "<<<<<<< HEAD\nx";
+
+    // Act
+    let actual = diagnostic_codes(text);
+
+    // Assert
+    assert_eq!(actual, [1185]);
+}
+
+#[test]
+fn should_record_ignore_directive_given_ts_ignore_comment_when_scanning_tokens() {
+    // Arrange
+    let mut scanner = Scanner::new("// @ts-ignore\nx");
+
+    // Act
+    while scanner.scan() != SyntaxKind::EndOfFile {}
+
+    // Assert
+    let directives = scanner
+        .comment_directives()
+        .iter()
+        .map(|directive| (directive.kind(), directive.start(), directive.end()))
+        .collect::<Vec<_>>();
+    assert_eq!(directives, [(CommentDirectiveKind::Ignore, 0, 13)]);
+}
+
+#[test]
+fn should_flag_deprecated_tag_given_preceding_jsdoc_when_scanning_tokens() {
+    // Arrange
+    let mut scanner = Scanner::new("/** @deprecated */ x");
+
+    // Act
+    scanner.scan();
+
+    // Assert
+    assert!(
+        scanner
+            .token_flags()
+            .intersects(TokenFlags::PRECEDING_JSDOC_WITH_DEPRECATED)
+    );
+}
+
+#[test]
+fn should_scan_closing_tag_start_given_jsx_variant_when_scanning_tokens() {
+    // Arrange
+    let mut scanner = Scanner::new("</").with_language_variant(LanguageVariant::Jsx);
+
+    // Act
+    let actual = scanner.scan();
+
+    // Assert
+    assert_eq!(actual, SyntaxKind::LessThanSlashToken);
 }
