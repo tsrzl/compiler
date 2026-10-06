@@ -104,3 +104,12 @@ Project/transpile rows also contain the runner configuration and oracle
 expectation. A fixture referenced by path is distinguished from one that only
 shares an area sample; neither link proves all of its configurations or
 artifacts are covered.
+
+## Bundled lib files
+
+The compiler embeds TypeScript's standard library declarations, as TypeScript-Go does. Refresh
+`libs/` and the generated `src/bundled/mod.rs` from the pinned TypeScript-Go checkout:
+
+```sh
+node scripts/vendor-typescript-libs.ts --typescript-go-root ../oracle/typescript-go
+```
