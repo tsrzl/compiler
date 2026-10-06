@@ -102,3 +102,26 @@ fn should_assign_file_ids_in_input_order_given_multiple_sources_when_compiling_s
         .collect::<Vec<_>>();
     assert_eq!(file_ids, [0, 1]);
 }
+
+#[test]
+fn should_attribute_diagnostic_to_second_file_given_error_in_second_source_when_compiling_sources()
+{
+    // Arrange
+    let sources = [
+        SourceFile::from_path(Path::new("first.ts"), "const first = 1;")
+            .expect("a TypeScript path has a supported source kind"),
+        SourceFile::from_path(Path::new("second.ts"), "const second: number = 'two';")
+            .expect("a TypeScript path has a supported source kind"),
+    ];
+
+    // Act
+    let result = Compiler::new().compile_sources(sources);
+
+    // Assert
+    let files = result
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.file().map(|file| file.index()))
+        .collect::<Vec<_>>();
+    assert_eq!(files, [Some(1)]);
+}

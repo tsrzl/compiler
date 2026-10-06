@@ -50,6 +50,7 @@ pub struct Diagnostic {
     code: u32,
     message: String,
     span: TextSpan,
+    file: Option<FileId>,
 }
 
 impl Diagnostic {
@@ -60,7 +61,15 @@ impl Diagnostic {
             code,
             message: message.into(),
             span,
+            file: None,
         }
+    }
+
+    /// Returns this diagnostic attributed to the source file that contains its span.
+    #[must_use]
+    pub const fn in_file(mut self, file: FileId) -> Self {
+        self.file = Some(file);
+        self
     }
 
     /// Returns the diagnostic code.
@@ -73,6 +82,12 @@ impl Diagnostic {
     #[must_use]
     pub fn message(&self) -> &str {
         &self.message
+    }
+
+    /// Returns the source file containing the span, when the diagnostic has one.
+    #[must_use]
+    pub const fn file(&self) -> Option<FileId> {
+        self.file
     }
 
     /// Returns the diagnostic source span.

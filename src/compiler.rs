@@ -326,6 +326,7 @@ fn collect_diagnostics(
                     &scoped_symbols,
                     strict_null_checks,
                 ))
+                .map(|diagnostic| diagnostic.in_file(syntax_tree.file_id()))
         })
         .collect()
 }
