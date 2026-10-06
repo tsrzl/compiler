@@ -3,12 +3,19 @@
 //! The checker consumes immutable parsed and bound files and owns every type it creates in a
 //! per-compilation arena, so types refer to each other by ID rather than by reference.
 
+mod checker;
 mod compare;
 mod flags;
+mod globals;
+mod program;
+mod symbol_store;
 mod type_table;
 mod types;
 
+pub use checker::{Checker, CheckerOptions};
 pub use compare::{compare_type_lists, compare_types};
 pub use flags::{ObjectFlags, TypeFlags};
+pub use program::{CheckDiagnostic, NodeRef, ProgramFile};
+pub use symbol_store::SymbolRef;
 pub use type_table::{Intrinsics, TypeTable};
 pub use types::{LiteralValue, Type, TypeData, TypeId};

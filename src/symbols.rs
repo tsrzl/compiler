@@ -167,23 +167,34 @@ impl SymbolArena {
 }
 
 /// Symbols by name, iterated in insertion order.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct SymbolTable {
-    entries: Vec<(String, SymbolId)>,
+///
+/// Bound files store [`SymbolId`]s; the checker stores references that span files.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SymbolTable<S = SymbolId> {
+    entries: Vec<(String, S)>,
     index: HashMap<String, usize>,
 }
 
-impl SymbolTable {
+impl<S> Default for SymbolTable<S> {
+    fn default() -> Self {
+        Self {
+            entries: Vec::new(),
+            index: HashMap::new(),
+        }
+    }
+}
+
+impl<S: Copy> SymbolTable<S> {
     /// Returns the symbol named `name`.
     #[must_use]
-    pub fn get(&self, name: &str) -> Option<SymbolId> {
+    pub fn get(&self, name: &str) -> Option<S> {
         self.index
             .get(name)
             .map(|&position| self.entries[position].1)
     }
 
     /// Sets the symbol named `name`, keeping its original position when it is replaced.
-    pub fn insert(&mut self, name: impl Into<String>, symbol: SymbolId) {
+    pub fn insert(&mut self, name: impl Into<String>, symbol: S) {
         let name = name.into();
         if let Some(&position) = self.index.get(&name) {
             self.entries[position].1 = symbol;
@@ -194,7 +205,7 @@ impl SymbolTable {
     }
 
     /// Returns the names and symbols in insertion order.
-    pub fn iter(&self) -> impl Iterator<Item = (&str, SymbolId)> {
+    pub fn iter(&self) -> impl Iterator<Item = (&str, S)> {
         self.entries
             .iter()
             .map(|(name, symbol)| (name.as_str(), *symbol))
