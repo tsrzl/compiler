@@ -117,3 +117,27 @@ fn should_parse_without_diagnostics_given_every_bundled_lib_when_parsing() {
     // Assert
     assert_eq!(failing, Vec::<&str>::new());
 }
+
+#[test]
+fn should_bind_without_diagnostics_given_every_bundled_lib_when_binding() {
+    // Arrange
+    let names = lib_names();
+
+    // Act
+    let failing: Vec<_> = names
+        .into_iter()
+        .filter(|name| {
+            let options = tsrzl::parser::ParseOptions::new(*name, tsrzl::parser::ScriptKind::Ts);
+            let text = lib_text(name).expect("listed libs have text");
+            let parsed = tsrzl::parser::parse_source_file(&options, text);
+            let bound = tsrzl::bind::bind_source_file(
+                &parsed,
+                tsrzl::parser::ExternalModuleIndicatorOptions::default(),
+            );
+            !bound.diagnostics().is_empty()
+        })
+        .collect();
+
+    // Assert
+    assert_eq!(failing, Vec::<&str>::new());
+}
