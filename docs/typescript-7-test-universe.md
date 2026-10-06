@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 765 behavior tests: 346 pass, 419 deliberately
+The Rust suite currently has 767 behavior tests: 346 pass, 421 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -653,6 +653,8 @@ test executed that fixture or covered every output/configuration.
 | `should_reject_numeric_type_query_target_given_numeric_operand_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeQueries/invalidTypeOfTarget.ts` | Report TS1003 when a numeric literal is used as a type-query target. |
 | `should_lower_instance_field_given_es2015_target_when_emitting_javascript` | `conformance/classes/propertyMemberDeclarations/instanceMemberInitialization.ts` | Emit an instance field initializer inside the generated constructor for ES2015. |
 | `should_lower_static_field_given_es2015_target_when_emitting_javascript` | `conformance/classes/propertyMemberDeclarations/staticMemberInitialization.ts` | Emit a static field initializer after the class for ES2015. |
+| `should_parse_array_binding_pattern_given_for_of_statement_when_building_syntax_tree` | `conformance/es6/for-ofStatements/for-of38.ts` | Parse an array binding pattern as a for-of initializer. |
+| `should_preserve_array_binding_pattern_given_for_of_statement_when_emitting_javascript` | `conformance/es6/for-ofStatements/for-of38.ts` | Preserve the array binding pattern in ES2015 JavaScript output. |
 | `should_parse_function_type_alias_given_typed_parameter_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeLiterals/functionLiteral.ts` | Parse a function type alias with a typed parameter and return type without syntax diagnostics. |
 | `should_parse_call_signature_type_literal_given_typed_parameter_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeLiterals/functionLiteral.ts` | Parse an object type literal containing a typed call signature without syntax diagnostics. |
 | `should_parse_construct_signature_given_typed_parameter_when_building_syntax_tree` | `conformance/types/specifyingTypes/typeLiterals/functionLiteral.ts` | Parse a construct signature with a typed parameter and return type without syntax diagnostics. |
