@@ -52,6 +52,17 @@ impl TemporaryProject {
             .expect("the compiler CLI can be started")
     }
 
+    fn incremental_build_application(&self) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_tsrzl"))
+            .current_dir(&self.path)
+            .arg("--build")
+            .arg("--incremental")
+            .arg("--verbose")
+            .arg(self.path.join("app/tsconfig.json"))
+            .output()
+            .expect("the compiler CLI can be started")
+    }
+
     fn dry_build_application(&self) -> Output {
         Command::new(env!("CARGO_BIN_EXE_tsrzl"))
             .current_dir(&self.path)
@@ -759,4 +770,33 @@ fn should_schedule_project_given_extended_tsconfig_change_when_running_dry_build
         1,
         "{diagnostics}"
     );
+}
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_rebuild_incremental_project_given_corrupt_build_info_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("corrupt-build-info");
+    project.write("app/tsconfig.json", "{}\n");
+    project.write("app/main.ts", "export const answer = 42;\n");
+    project.write("app/tsconfig.tsbuildinfo", "Some random string");
+
+    // Act
+    let output = project.incremental_build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert!(
+        project.path.join("app/main.js").is_file(),
+        "the source file should be emitted after corrupt build-info recovery"
+    );
+    let build_info = fs::read_to_string(project.path.join("app/tsconfig.tsbuildinfo"))
+        .expect("the build information should be rewritten");
+    assert_ne!(build_info, "Some random string");
+    assert!(build_info.contains("\"version\":\"7.0.2\""));
 }
