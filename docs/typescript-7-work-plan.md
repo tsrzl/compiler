@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 812 tests: 347 pass and 465 deliberately fail;
-none are ignored. The compiler/oracle map links 497 behaviors to upstream cases
+The Rust suite currently has 813 tests: 347 pass and 466 deliberately fail;
+none are ignored. The compiler/oracle map links 498 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
 which is a sample rather than exhaustive coverage. The latest full test run has
-all 465 failures mapped by
+all 466 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -249,6 +249,10 @@ resolution, so TypeScript-Go 7.0.2 reports TS5108 for its original options. A
 supported `bundler`/`esnext` project run reports TS2322 when directly importing
 the intermediate package loads its third-hop type; TSRZL currently fails first
 on `require`, bare-package resolution, and JavaScript export syntax.
+The same `maxDepthIncreased` project also has a focused `@types/m4` precedence
+test under supported resolution settings: TypeScript-Go uses its declared
+`foo: number` and reports TS2322 for a string assignment, while TSRZL reports
+TS2307 for the bare package.
 
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration

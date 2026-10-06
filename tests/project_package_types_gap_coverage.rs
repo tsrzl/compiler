@@ -7,9 +7,9 @@ struct TemporaryProject {
 }
 
 impl TemporaryProject {
-    fn new() -> Self {
+    fn new(name: &str) -> Self {
         let path = std::env::temp_dir().join(format!(
-            "tsrzl-project-package-types-{}",
+            "tsrzl-project-package-types-{}-{name}",
             std::process::id()
         ));
         fs::create_dir_all(&path).expect("the temporary project directory can be created");
@@ -48,7 +48,7 @@ impl Drop for TemporaryProject {
 #[test]
 fn should_resolve_scoped_package_types_given_package_json_types_field_when_running_compiler_cli() {
     // Arrange
-    let project = TemporaryProject::new();
+    let project = TemporaryProject::new("scoped-package");
     project.write(
         "tsconfig.json",
         r#"{"files":["main.ts"],"compilerOptions":{"target":"es2015","module":"commonjs"}}"#,
@@ -76,4 +76,50 @@ fn should_resolve_scoped_package_types_given_package_json_types_field_when_runni
         String::from_utf8_lossy(&process.stderr)
     );
     assert!(process.status.success(), "{diagnostics}");
+}
+
+// Pinned project: projects/NodeModulesSearch/maxDepthIncreased/node_modules/@types/m4/entry.d.ts.
+// TS-Go 7.0.2 resolves the @types declaration and reports TS2322 for assigning its number to string.
+#[test]
+fn should_report_ts2322_given_at_types_package_for_javascript_module_when_compiling_project() {
+    // Arrange
+    let project = TemporaryProject::new("javascript-at-types");
+    project.write(
+        "tsconfig.json",
+        r#"{"compilerOptions":{"allowJs":true,"maxNodeModuleJsDepth":3,"module":"esnext","moduleResolution":"bundler","noEmit":true},"files":["root.ts"]}"#,
+    );
+    project.write(
+        "root.ts",
+        "import * as m4 from \"m4\"; const value: string = m4.foo;",
+    );
+    project.write(
+        "node_modules/m4/package.json",
+        r#"{"name":"m4","version":"1.0.0","main":"entry.js"}"#,
+    );
+    project.write(
+        "node_modules/m4/entry.js",
+        "exports.test = \"hello, world\";",
+    );
+    project.write(
+        "node_modules/@types/m4/package.json",
+        r#"{"types":"entry.d.ts","name":"m4","version":"1.0.0"}"#,
+    );
+    project.write(
+        "node_modules/@types/m4/entry.d.ts",
+        "export declare var foo: number;",
+    );
+
+    // Act
+    let process = project.run_cli(&["--project".as_ref(), project.path().as_os_str()]);
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&process.stdout),
+        String::from_utf8_lossy(&process.stderr)
+    );
+
+    // Assert
+    assert!(
+        diagnostics.contains("TS2322"),
+        "the @types declaration should provide the numeric property type, got {diagnostics}"
+    );
 }
