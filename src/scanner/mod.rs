@@ -9,6 +9,7 @@ mod identifiers;
 mod keywords;
 mod numbers;
 mod punctuation;
+mod rescan;
 mod state;
 mod strings;
 mod templates;

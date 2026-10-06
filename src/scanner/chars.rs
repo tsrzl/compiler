@@ -38,3 +38,8 @@ fn in_table(table: &[(u32, u32, u32)], character: char) -> bool {
         value <= high && (value - low) % stride == 0
     }
 }
+
+/// Returns whether `character` is any ECMAScript whitespace or line terminator.
+pub(crate) const fn is_white_space_like(character: char) -> bool {
+    is_white_space_single_line(character) || is_line_break(character)
+}
