@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Generates src/ast/flags.rs from the pinned TypeScript-Go token, node, modifier, and symbol flag constants.
+// Generates src/ast/flags.rs from the pinned TypeScript-Go token, node, modifier, symbol, and flow flag constants.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
@@ -16,6 +16,7 @@ const FLAG_SETS: FlagSet[] = [
   { goType: "NodeFlags", file: "nodeflags.go", doc: "Flags describing a node's syntax and parse context." },
   { goType: "ModifierFlags", file: "modifierflags.go", doc: "Flags summarizing a declaration's modifiers." },
   { goType: "SymbolFlags", file: "symbolflags.go", doc: "Flags classifying the declarations merged into a symbol." },
+  { goType: "FlowFlags", file: "flow.go", doc: "Flags classifying a control flow graph node." },
 ];
 
 // Evaluates a Go constant expression with Go operator precedence: unary `^`, then

@@ -1,4 +1,4 @@
-use tsrzl::ast::SymbolFlags;
+use tsrzl::ast::{FlowFlags, SymbolFlags};
 
 #[test]
 fn should_match_typescript_go_bits_given_class_excludes_when_reading_symbol_flags() {
@@ -35,4 +35,16 @@ fn should_complement_supported_default_modifiers_given_unsupported_set_when_read
 
     // Assert
     assert_eq!(actual, !supported.bits());
+}
+
+#[test]
+fn should_combine_branch_and_loop_given_label_when_reading_flow_flags() {
+    // Arrange
+    let expected = FlowFlags::BRANCH_LABEL | FlowFlags::LOOP_LABEL;
+
+    // Act
+    let actual = FlowFlags::LABEL;
+
+    // Assert
+    assert_eq!(actual, expected);
 }

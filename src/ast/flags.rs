@@ -200,3 +200,24 @@ flags_type! {
         LATE_BINDING_CONTAINER = 0x0000_1870;
     }
 }
+
+flags_type! {
+    /// Flags classifying a control flow graph node.
+    FlowFlags {
+        UNREACHABLE = 0x0000_0001;
+        START = 0x0000_0002;
+        BRANCH_LABEL = 0x0000_0004;
+        LOOP_LABEL = 0x0000_0008;
+        ASSIGNMENT = 0x0000_0010;
+        TRUE_CONDITION = 0x0000_0020;
+        FALSE_CONDITION = 0x0000_0040;
+        SWITCH_CLAUSE = 0x0000_0080;
+        ARRAY_MUTATION = 0x0000_0100;
+        CALL = 0x0000_0200;
+        REDUCE_LABEL = 0x0000_0400;
+        REFERENCED = 0x0000_0800;
+        SHARED = 0x0000_1000;
+        LABEL = 0x0000_000c;
+        CONDITION = 0x0000_0060;
+    }
+}
