@@ -12,7 +12,7 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 829 tests: 347 pass and 482 deliberately fail;
+The Rust suite currently has 910 tests: 428 pass and 482 deliberately fail;
 none are ignored. The compiler/oracle map links 514 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
@@ -20,6 +20,13 @@ which is a sample rather than exhaustive coverage. The latest full test run has
 all 482 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
+
+The `core/contracts` front end is merged: `src/scanner`, `src/ast`, and
+`src/parser` port the TS-Go scanner, arena AST, and parser, including JSX and
+class modifiers such as `abstract`. The binder, checker, emitters, analyzers,
+generators, and CLI still consume the legacy `src/syntax` tree, so red tests
+that go through `SyntaxTree` or `Compiler` keep failing until those phases
+move onto the ported AST and `src/syntax` is retired.
 
 The pinned `compiler/accessorAccidentalCallDiagnostic.ts` case adds a focused
 TS6234 contract for calling a getter. TypeScript-Go 7.0.2 reports that the
