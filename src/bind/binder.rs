@@ -772,16 +772,5 @@ fn is_binding_pattern(ast: &Ast, node: NodeId) -> bool {
 
 /// Returns whether an exported expression names an entity or is a class expression.
 fn is_expression_alias(ast: &Ast, node: NodeId) -> bool {
-    is_entity_name_expression(ast, node) || ast.node(node).kind() == SyntaxKind::ClassExpression
-}
-
-fn is_entity_name_expression(ast: &Ast, node: NodeId) -> bool {
-    match ast.node(node).data() {
-        NodeData::Identifier(_) => true,
-        NodeData::PropertyAccessExpression(access) => {
-            ast.node(access.name).kind() == SyntaxKind::Identifier
-                && is_entity_name_expression(ast, access.expression)
-        }
-        _ => false,
-    }
+    ast.is_entity_name_expression(node) || ast.node(node).kind() == SyntaxKind::ClassExpression
 }

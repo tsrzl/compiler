@@ -1,6 +1,7 @@
 //! The arena syntax tree modeled on TypeScript-Go's `internal/ast` package.
 
 mod arena;
+mod expression_utilities;
 mod flags;
 mod flags_type;
 
@@ -26,6 +27,46 @@ impl SyntaxKind {
     #[must_use]
     pub fn is_reserved_word(self) -> bool {
         (Self::FIRST_RESERVED_WORD..=Self::LAST_RESERVED_WORD).contains(&self)
+    }
+
+    /// Returns whether the kind is a left-hand-side expression, as TypeScript-Go's
+    /// `IsLeftHandSideExpressionKind` decides.
+    #[must_use]
+    pub const fn is_left_hand_side_expression_kind(self) -> bool {
+        matches!(
+            self,
+            SyntaxKind::PropertyAccessExpression
+                | SyntaxKind::ElementAccessExpression
+                | SyntaxKind::NewExpression
+                | SyntaxKind::CallExpression
+                | SyntaxKind::JsxElement
+                | SyntaxKind::JsxSelfClosingElement
+                | SyntaxKind::JsxFragment
+                | SyntaxKind::TaggedTemplateExpression
+                | SyntaxKind::ArrayLiteralExpression
+                | SyntaxKind::ParenthesizedExpression
+                | SyntaxKind::ObjectLiteralExpression
+                | SyntaxKind::ClassExpression
+                | SyntaxKind::FunctionExpression
+                | SyntaxKind::Identifier
+                | SyntaxKind::PrivateIdentifier
+                | SyntaxKind::RegularExpressionLiteral
+                | SyntaxKind::NumericLiteral
+                | SyntaxKind::BigIntLiteral
+                | SyntaxKind::StringLiteral
+                | SyntaxKind::NoSubstitutionTemplateLiteral
+                | SyntaxKind::TemplateExpression
+                | SyntaxKind::FalseKeyword
+                | SyntaxKind::NullKeyword
+                | SyntaxKind::ThisKeyword
+                | SyntaxKind::TrueKeyword
+                | SyntaxKind::SuperKeyword
+                | SyntaxKind::NonNullExpression
+                | SyntaxKind::ExpressionWithTypeArguments
+                | SyntaxKind::MetaProperty
+                | SyntaxKind::ImportKeyword
+                | SyntaxKind::MissingDeclaration
+        )
     }
 
     /// Returns whether the kind is an identifier or any keyword.

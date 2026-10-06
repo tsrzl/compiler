@@ -1425,7 +1425,10 @@ impl Parser<'_> {
 
     /// Returns whether `expression` is a `LeftHandSideExpression` in TypeScript-Go's sense.
     fn is_left_hand_side_expression(&self, expression: NodeId) -> bool {
-        is_left_hand_side_expression_kind(self.builder.node(expression).kind())
+        self.builder
+            .node(expression)
+            .kind()
+            .is_left_hand_side_expression_kind()
     }
 }
 
@@ -1435,42 +1438,4 @@ fn optional_chain_flags(is_optional_chain: bool) -> NodeFlags {
     } else {
         NodeFlags::NONE
     }
-}
-
-/// Mirrors TypeScript-Go's `ast.IsLeftHandSideExpressionKind`.
-fn is_left_hand_side_expression_kind(kind: SyntaxKind) -> bool {
-    matches!(
-        kind,
-        SyntaxKind::PropertyAccessExpression
-            | SyntaxKind::ElementAccessExpression
-            | SyntaxKind::NewExpression
-            | SyntaxKind::CallExpression
-            | SyntaxKind::JsxElement
-            | SyntaxKind::JsxSelfClosingElement
-            | SyntaxKind::JsxFragment
-            | SyntaxKind::TaggedTemplateExpression
-            | SyntaxKind::ArrayLiteralExpression
-            | SyntaxKind::ParenthesizedExpression
-            | SyntaxKind::ObjectLiteralExpression
-            | SyntaxKind::ClassExpression
-            | SyntaxKind::FunctionExpression
-            | SyntaxKind::Identifier
-            | SyntaxKind::PrivateIdentifier
-            | SyntaxKind::RegularExpressionLiteral
-            | SyntaxKind::NumericLiteral
-            | SyntaxKind::BigIntLiteral
-            | SyntaxKind::StringLiteral
-            | SyntaxKind::NoSubstitutionTemplateLiteral
-            | SyntaxKind::TemplateExpression
-            | SyntaxKind::FalseKeyword
-            | SyntaxKind::NullKeyword
-            | SyntaxKind::ThisKeyword
-            | SyntaxKind::TrueKeyword
-            | SyntaxKind::SuperKeyword
-            | SyntaxKind::NonNullExpression
-            | SyntaxKind::ExpressionWithTypeArguments
-            | SyntaxKind::MetaProperty
-            | SyntaxKind::ImportKeyword
-            | SyntaxKind::MissingDeclaration
-    )
 }
