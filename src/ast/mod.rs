@@ -1,11 +1,17 @@
 //! The arena syntax tree modeled on TypeScript-Go's `internal/ast` package.
 
+mod arena;
 mod flags;
 mod flags_type;
 mod kind;
+mod nodes;
+mod visitor;
 
+pub use arena::{Ast, AstBuilder, ModifierList, Node, NodeId, NodeList};
 pub use flags::{ModifierFlags, NodeFlags, TokenFlags};
 pub use kind::SyntaxKind;
+pub use nodes::*;
+pub use visitor::ChildVisitor;
 
 impl SyntaxKind {
     /// Returns whether the kind is a keyword that cannot be used as an identifier.
