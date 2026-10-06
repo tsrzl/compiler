@@ -124,3 +124,57 @@ fn should_report_cross_file_namespace_merge_given_class_in_another_source_file_w
         result.diagnostics()
     );
 }
+
+// Pinned TypeScript fixture: conformance/internalModules/DeclarationMerging/FunctionAndModuleWithSameNameAndCommonRoot.ts.
+#[test]
+fn should_emit_function_namespace_member_given_exported_namespace_value_when_compiling() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("factory.ts"),
+        "function makePoint(x: number) { return { x }; }\nnamespace makePoint { export const origin = 0; }\nconst originValue: number = makePoint.origin;\n",
+    )
+    .expect("the function and namespace source path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    let javascript = result
+        .emitted_files()
+        .iter()
+        .find(|file| file.path().file_name().and_then(|name| name.to_str()) == Some("factory.js"))
+        .expect("the function and namespace source emits JavaScript")
+        .text();
+    assert!(
+        javascript.contains("makePoint.origin = 0;"),
+        "the namespace member should augment the function value; got {javascript:?}"
+    );
+}
+
+// Pinned TypeScript fixture: conformance/internalModules/DeclarationMerging/EnumAndModuleWithSameNameAndCommonRoot.ts.
+#[test]
+fn should_emit_enum_namespace_member_given_exported_namespace_value_when_compiling() {
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("status.ts"),
+        "enum Status { Ready }\nnamespace Status { export const description = \"ready\"; }\nconst label: string = Status.description;\n",
+    )
+    .expect("the enum and namespace source path has a supported source kind");
+    let options = CompilerOptions::new(ScriptTarget::Es2015);
+
+    // Act
+    let result = Compiler::with_options(options).compile(source);
+
+    // Assert
+    let javascript = result
+        .emitted_files()
+        .iter()
+        .find(|file| file.path().file_name().and_then(|name| name.to_str()) == Some("status.js"))
+        .expect("the enum and namespace source emits JavaScript")
+        .text();
+    assert!(
+        javascript.contains("Status.description = \"ready\";"),
+        "the namespace member should augment the enum value; got {javascript:?}"
+    );
+}

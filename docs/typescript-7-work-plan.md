@@ -152,6 +152,9 @@ An invalid-order contract also expects TS2434 when a runtime namespace appears
 before its merged class; TSRZL currently reports no such diagnostic.
 The merge boundary contract also expects TS2433 when the class and namespace
 declarations are split across files; TSRZL currently reports no such diagnostic.
+Function and enum augmentation now also have separate emit contracts, each
+requiring the namespace IIFE to attach its exported member to the merged value.
+TSRZL currently omits the required merged-value assignments in both cases.
 
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration
