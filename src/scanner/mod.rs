@@ -4,11 +4,14 @@
 //! UTF-16 offsets with [`crate::source_text::SourceText`] at reporting boundaries.
 
 mod chars;
+mod identifier_tables;
+mod keywords;
 
 use crate::ast::{SyntaxKind, TokenFlags};
 use crate::diagnostics::{self, Message};
 
-use chars::{is_line_break, is_white_space_single_line};
+use chars::{is_identifier_part, is_identifier_start, is_line_break, is_white_space_single_line};
+pub use keywords::{identifier_token, keyword};
 
 /// A diagnostic reported while scanning, located by UTF-8 byte offsets.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -215,16 +218,9 @@ impl<'text> Scanner<'text> {
                     }
                     SyntaxKind::MultiLineCommentTrivia
                 }
-                _ => match self.scan_punctuation(byte) {
+                _ => match self.scan_other_token(byte) {
                     Some(token) => token,
-                    None => match self.scan_non_ascii_trivia() {
-                        Some(None) => continue,
-                        Some(Some(token)) => token,
-                        None => {
-                            self.scan_invalid_character();
-                            SyntaxKind::Unknown
-                        }
-                    },
+                    None => continue,
                 },
             };
             self.state.token = token;
@@ -305,6 +301,46 @@ impl<'text> Scanner<'text> {
                 self.state.token_flags |= TokenFlags::UNTERMINATED;
             }
         }
+    }
+
+    /// Scans a token that is not ASCII trivia. Returns `None` when trivia was skipped.
+    fn scan_other_token(&mut self, byte: u8) -> Option<SyntaxKind> {
+        if let Some(token) = self.scan_punctuation(byte) {
+            return Some(token);
+        }
+        if self.scan_identifier(0) {
+            return Some(identifier_token(&self.state.token_value));
+        }
+        match self.scan_non_ascii_trivia() {
+            Some(trivia) => trivia,
+            None => {
+                self.scan_invalid_character();
+                Some(SyntaxKind::Unknown)
+            }
+        }
+    }
+
+    /// Scans an identifier after `prefix_length` bytes and stores its text as the token value.
+    fn scan_identifier(&mut self, prefix_length: usize) -> bool {
+        let start = self.state.pos;
+        self.state.pos += prefix_length;
+        match self.char_at_pos() {
+            Some(character) if is_identifier_start(character) => {
+                self.state.pos += character.len_utf8();
+            }
+            _ => {
+                self.state.pos = start;
+                return false;
+            }
+        }
+        while let Some(character) = self.char_at_pos() {
+            if !is_identifier_part(character) {
+                break;
+            }
+            self.state.pos += character.len_utf8();
+        }
+        self.state.token_value = self.text[start..self.state.pos].to_owned();
+        true
     }
 
     /// Scans non-ASCII whitespace and line breaks. Returns `Some(None)` when trivia was skipped.
