@@ -1,4 +1,4 @@
-//! ECMAScript number conversions, matching TypeScript-Go's `internal/jsnum` package.
+//! ECMAScript `Number::toString` formatting.
 
 /// Formats `value` as ECMAScript `Number.prototype.toString()` does for radix 10.
 #[must_use]
