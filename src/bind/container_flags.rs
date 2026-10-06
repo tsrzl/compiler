@@ -39,7 +39,7 @@ impl ContainerFlags {
         self.0 & other.0 != 0
     }
 
-    const fn with(self, other: Self) -> Self {
+    pub(super) const fn with(self, other: Self) -> Self {
         Self(self.0 | other.0)
     }
 }

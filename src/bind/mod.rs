@@ -6,18 +6,26 @@
 //! fact is a side table keyed by [`NodeId`].
 //!
 //! Ported so far: declarations, containers and locals, class, interface, enum, and literal
-//! members, namespaces and ambient modules, module exports, imports, JSX attributes, and the
-//! external-module symbol. Control flow, strict-mode checks, and JavaScript assignment
-//! declarations are ported in later increments.
+//! members, namespaces and ambient modules, module exports, imports, JSX attributes, the
+//! external-module symbol, and the control flow graph with reachability. Strict-mode checks
+//! and JavaScript assignment declarations are ported in later increments.
 
 mod binder;
 mod container_flags;
+mod control_flow;
 mod declarations;
+mod expression_flow;
+mod flow;
+mod flow_builder;
 mod modules;
+mod narrowing;
+mod walk;
+
+pub use flow::{FlowGraph, FlowId, FlowListId, FlowNode, FlowPayload};
 
 use std::collections::{HashMap, HashSet};
 
-use crate::ast::NodeId;
+use crate::ast::{NodeFlags, NodeId};
 use crate::diagnostics::Diagnostic;
 use crate::parser::{ExternalModuleIndicatorOptions, ParsedSourceFile};
 use crate::symbols::{SymbolArena, SymbolId, SymbolTable};
@@ -34,6 +42,12 @@ pub struct BoundFile {
     classifiable_names: HashSet<String>,
     global_exports: SymbolTable,
     pattern_ambient_modules: Vec<PatternAmbientModule>,
+    flow: FlowGraph,
+    flow_nodes: HashMap<NodeId, FlowId>,
+    end_flow_nodes: HashMap<NodeId, FlowId>,
+    return_flow_nodes: HashMap<NodeId, FlowId>,
+    fallthrough_flow_nodes: HashMap<NodeId, FlowId>,
+    node_flags: HashMap<NodeId, NodeFlags>,
 }
 
 /// An ambient module whose name contains one `*` wildcard, such as `declare module "*.css"`.
@@ -94,6 +108,43 @@ impl BoundFile {
     #[must_use]
     pub fn pattern_ambient_modules(&self) -> &[PatternAmbientModule] {
         &self.pattern_ambient_modules
+    }
+
+    /// Returns the file's control flow graph.
+    #[must_use]
+    pub const fn flow(&self) -> &FlowGraph {
+        &self.flow
+    }
+
+    /// Returns the flow reaching a reference, statement, or function expression.
+    #[must_use]
+    pub fn flow_node_of(&self, node: NodeId) -> Option<FlowId> {
+        self.flow_nodes.get(&node).copied()
+    }
+
+    /// Returns the flow at the end of a source file or a function-like body with a reachable end.
+    #[must_use]
+    pub fn end_flow_node_of(&self, node: NodeId) -> Option<FlowId> {
+        self.end_flow_nodes.get(&node).copied()
+    }
+
+    /// Returns the flow after every return of a constructor or class static block.
+    #[must_use]
+    pub fn return_flow_node_of(&self, node: NodeId) -> Option<FlowId> {
+        self.return_flow_nodes.get(&node).copied()
+    }
+
+    /// Returns the flow falling through the end of a non-final `case` or `default` clause.
+    #[must_use]
+    pub fn fallthrough_flow_node_of(&self, clause: NodeId) -> Option<FlowId> {
+        self.fallthrough_flow_nodes.get(&clause).copied()
+    }
+
+    /// Returns the flags the binder computed for a node, such as reachability, implicit and
+    /// explicit returns, and `this` usage; parser flags remain on the syntax tree.
+    #[must_use]
+    pub fn node_flags(&self, node: NodeId) -> NodeFlags {
+        self.node_flags.get(&node).copied().unwrap_or_default()
     }
 
     /// Returns the names of classifiable declarations, such as classes, enums, and aliases.

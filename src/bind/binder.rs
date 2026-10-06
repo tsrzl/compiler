@@ -2,9 +2,13 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::container_flags::{ContainerFlags, container_flags};
+use super::container_flags::is_object_literal_or_class_expression_method_or_accessor;
+use super::flow::FlowPayload;
+use super::flow::{FlowGraph, FlowId};
 use super::{BoundFile, PatternAmbientModule};
-use crate::ast::{Ast, ModifierFlags, NodeData, NodeFlags, NodeId, SymbolFlags, SyntaxKind};
+use crate::ast::{
+    Ast, FlowFlags, ModifierFlags, NodeData, NodeFlags, NodeId, SymbolFlags, SyntaxKind,
+};
 use crate::diagnostics::{self, Diagnostic, Message};
 use crate::parser::ParsedSourceFile;
 use crate::scanner::{LanguageVariant, error_range_for_node, range_of_token_at_position};
@@ -28,7 +32,19 @@ pub(super) enum Table {
     GlobalExports,
 }
 
+/// A label in scope for `break` and `continue` statements.
+pub(super) struct ActiveLabel {
+    pub(super) name: String,
+    pub(super) break_target: FlowId,
+    pub(super) continue_target: Option<FlowId>,
+    pub(super) referenced: bool,
+}
+
 /// The mutable state of one binding walk.
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "the walk flags mirror TypeScript-Go's independent binder state one for one"
+)]
 pub(super) struct Binder<'file> {
     pub(super) ast: &'file Ast,
     text: &'file str,
@@ -37,7 +53,7 @@ pub(super) struct Binder<'file> {
     pub(super) external_module_indicator: Option<NodeId>,
     pub(super) container: NodeId,
     pub(super) block_scope_container: NodeId,
-    this_container: NodeId,
+    pub(super) this_container: NodeId,
     pub(super) symbols: SymbolArena,
     pub(super) node_symbols: HashMap<NodeId, SymbolId>,
     pub(super) local_symbols: HashMap<NodeId, SymbolId>,
@@ -49,6 +65,28 @@ pub(super) struct Binder<'file> {
     pub(super) pattern_ambient_modules: Vec<PatternAmbientModule>,
     is_declaration_file: bool,
     diagnostics: Vec<Diagnostic>,
+    pub(super) flow: FlowGraph,
+    pub(super) unreachable_flow: FlowId,
+    pub(super) current_flow: FlowId,
+    pub(super) current_break_target: Option<FlowId>,
+    pub(super) current_continue_target: Option<FlowId>,
+    pub(super) current_return_target: Option<FlowId>,
+    pub(super) current_true_target: Option<FlowId>,
+    pub(super) current_false_target: Option<FlowId>,
+    pub(super) current_exception_target: Option<FlowId>,
+    pub(super) pre_switch_case_flow: Option<FlowId>,
+    pub(super) active_labels: Vec<ActiveLabel>,
+    pub(super) emit_flags: NodeFlags,
+    pub(super) seen_this_keyword: bool,
+    pub(super) has_explicit_return: bool,
+    pub(super) has_flow_effects: bool,
+    pub(super) in_assignment_pattern: bool,
+    pub(super) seen_parse_error: bool,
+    pub(super) flow_nodes: HashMap<NodeId, FlowId>,
+    pub(super) end_flow_nodes: HashMap<NodeId, FlowId>,
+    pub(super) return_flow_nodes: HashMap<NodeId, FlowId>,
+    pub(super) fallthrough_flow_nodes: HashMap<NodeId, FlowId>,
+    pub(super) node_flags: HashMap<NodeId, NodeFlags>,
 }
 
 impl<'file> Binder<'file> {
@@ -57,6 +95,8 @@ impl<'file> Binder<'file> {
         external_module_indicator: Option<NodeId>,
     ) -> Self {
         let ast = file.ast();
+        let mut flow = FlowGraph::default();
+        let unreachable_flow = flow.create(FlowFlags::UNREACHABLE, FlowPayload::None, None);
         Self {
             ast,
             text: file.text(),
@@ -77,6 +117,28 @@ impl<'file> Binder<'file> {
             pattern_ambient_modules: Vec::new(),
             is_declaration_file: file.is_declaration_file(),
             diagnostics: Vec::new(),
+            flow,
+            unreachable_flow,
+            current_flow: unreachable_flow,
+            current_break_target: None,
+            current_continue_target: None,
+            current_return_target: None,
+            current_true_target: None,
+            current_false_target: None,
+            current_exception_target: None,
+            pre_switch_case_flow: None,
+            active_labels: Vec::new(),
+            emit_flags: NodeFlags::NONE,
+            seen_this_keyword: false,
+            has_explicit_return: false,
+            has_flow_effects: false,
+            in_assignment_pattern: false,
+            seen_parse_error: false,
+            flow_nodes: HashMap::new(),
+            end_flow_nodes: HashMap::new(),
+            return_flow_nodes: HashMap::new(),
+            fallthrough_flow_nodes: HashMap::new(),
+            node_flags: HashMap::new(),
         }
     }
 
@@ -92,6 +154,12 @@ impl<'file> Binder<'file> {
             classifiable_names: self.classifiable_names,
             global_exports: self.global_exports,
             pattern_ambient_modules: self.pattern_ambient_modules,
+            flow: self.flow,
+            flow_nodes: self.flow_nodes,
+            end_flow_nodes: self.end_flow_nodes,
+            return_flow_nodes: self.return_flow_nodes,
+            fallthrough_flow_nodes: self.fallthrough_flow_nodes,
+            node_flags: self.node_flags,
         }
     }
 
@@ -100,20 +168,8 @@ impl<'file> Binder<'file> {
         self.external_module_indicator.is_some()
     }
 
-    fn bind(&mut self, node: NodeId) {
-        self.bind_declaration(node);
-        if self.ast.node(node).kind() > SyntaxKind::LAST_TOKEN {
-            let flags = container_flags(self.ast, node);
-            if flags == ContainerFlags::NONE {
-                self.bind_children(node);
-            } else {
-                self.bind_container(node, flags);
-            }
-        }
-    }
-
     /// Binds the declaration `node` introduces, if any, before its children are bound.
-    fn bind_declaration(&mut self, node: NodeId) {
+    pub(super) fn bind_declaration(&mut self, node: NodeId) {
         self.bind_member_declaration(node);
         self.bind_type_or_value_declaration(node);
         self.bind_module_declaration_syntax(node);
@@ -192,11 +248,14 @@ impl<'file> Binder<'file> {
     fn bind_type_or_value_declaration(&mut self, node: NodeId) {
         let ast = self.ast;
         match ast.node(node).kind() {
-            SyntaxKind::FunctionDeclaration => self.bind_block_scoped_declaration(
-                node,
-                SymbolFlags::FUNCTION,
-                SymbolFlags::FUNCTION_EXCLUDES,
-            ),
+            SyntaxKind::FunctionDeclaration => {
+                self.note_async_function(node);
+                self.bind_block_scoped_declaration(
+                    node,
+                    SymbolFlags::FUNCTION,
+                    SymbolFlags::FUNCTION_EXCLUDES,
+                );
+            }
             SyntaxKind::FunctionType | SyntaxKind::ConstructorType => {
                 self.bind_function_or_constructor_type(node);
             }
@@ -288,64 +347,6 @@ impl<'file> Binder<'file> {
             }
 
             _ => {}
-        }
-    }
-
-    fn bind_container(&mut self, node: NodeId, flags: ContainerFlags) {
-        let save_container = self.container;
-        let save_this_container = self.this_container;
-        let save_block_scope_container = self.block_scope_container;
-        if flags.intersects(ContainerFlags::IS_CONTAINER) {
-            self.container = node;
-            self.block_scope_container = node;
-        } else if flags.intersects(ContainerFlags::IS_BLOCK_SCOPED_CONTAINER) {
-            self.block_scope_container = node;
-        }
-        if flags.intersects(ContainerFlags::IS_THIS_CONTAINER) {
-            self.this_container = node;
-        }
-        self.bind_children(node);
-        self.container = save_container;
-        self.this_container = save_this_container;
-        self.block_scope_container = save_block_scope_container;
-    }
-
-    /// Binds children in source order, except that statement lists bind function declarations
-    /// first so hoisted functions are declared before the statements that use them.
-    fn bind_children(&mut self, node: NodeId) {
-        let ast = self.ast;
-        let data = ast.node(node).data();
-        match data {
-            NodeData::SourceFile(file) => {
-                self.bind_each_statement_functions_first(ast.list(file.statements));
-                self.bind(file.end_of_file_token);
-            }
-            NodeData::Block(_) | NodeData::ModuleBlock(_) => {
-                let statements = data
-                    .statements()
-                    .map_or(&[][..], |statements| ast.list(statements));
-                self.bind_each_statement_functions_first(statements);
-            }
-            _ => {
-                for child in ast.children(node) {
-                    self.bind(child);
-                }
-            }
-        }
-    }
-
-    fn bind_each_statement_functions_first(&mut self, statements: &[NodeId]) {
-        let ast = self.ast;
-        let is_function =
-            |&statement: &NodeId| ast.node(statement).kind() == SyntaxKind::FunctionDeclaration;
-        for &statement in statements.iter().filter(|statement| is_function(statement)) {
-            self.bind(statement);
-        }
-        for &statement in statements
-            .iter()
-            .filter(|statement| !is_function(statement))
-        {
-            self.bind(statement);
         }
     }
 
@@ -534,6 +535,10 @@ impl<'file> Binder<'file> {
         includes: SymbolFlags,
         excludes: SymbolFlags,
     ) {
+        self.note_async_function(node);
+        if is_object_literal_or_class_expression_method_or_accessor(self.ast, node) {
+            self.set_flow_node(node);
+        }
         if self.ast.has_dynamic_name(node) {
             self.bind_anonymous_declaration(node, includes, INTERNAL_SYMBOL_NAME_COMPUTED);
         } else {
@@ -559,6 +564,8 @@ impl<'file> Binder<'file> {
 
     fn bind_function_expression(&mut self, node: NodeId) {
         let ast = self.ast;
+        self.note_async_function(node);
+        self.set_flow_node(node);
         let name = ast
             .node(node)
             .data()
