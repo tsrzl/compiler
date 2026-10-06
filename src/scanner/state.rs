@@ -55,6 +55,13 @@ impl ScannerState {
         self.pos = pos;
     }
 
+    /// Moves the cursor to `pos` and starts the next token there.
+    pub(super) fn reset_pos(&mut self, pos: usize) {
+        self.pos = pos;
+        self.full_start_pos = pos;
+        self.token_start = pos;
+    }
+
     pub(super) fn advance(&mut self, length: usize) {
         self.pos += length;
     }

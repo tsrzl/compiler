@@ -9,6 +9,7 @@ mod kind;
 mod kind_guards;
 mod nodes;
 mod operators;
+mod utilities;
 mod visitor;
 
 pub use arena::{Ast, AstBuilder, AstBuilderMark, ModifierList, Node, NodeId, NodeList};

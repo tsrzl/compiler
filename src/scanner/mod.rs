@@ -122,6 +122,11 @@ impl<'text> Scanner<'text> {
         self
     }
 
+    /// Moves the scanner to UTF-8 byte offset `pos`, so the next scan starts there.
+    pub fn reset_pos(&mut self, pos: usize) {
+        self.state.reset_pos(pos);
+    }
+
     /// Returns the current token kind.
     #[must_use]
     pub const fn token(&self) -> SyntaxKind {

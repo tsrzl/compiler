@@ -125,3 +125,19 @@ fn should_split_asterisk_equals_given_generator_default_when_rescanning() {
     // Assert
     assert_eq!((actual, scanner.token_end()), (SyntaxKind::EqualsToken, 1));
 }
+
+#[test]
+fn should_scan_token_at_offset_given_reset_position_when_scanning() {
+    // Arrange
+    let mut scanner = Scanner::new("let value = 1;");
+    scanner.reset_pos(4);
+
+    // Act
+    let token = scanner.scan();
+
+    // Assert
+    assert_eq!(
+        (token, scanner.token_start(), scanner.token_end()),
+        (SyntaxKind::Identifier, 4, 9)
+    );
+}
