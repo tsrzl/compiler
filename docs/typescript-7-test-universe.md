@@ -307,6 +307,7 @@ test executed that fixture or covered every output/configuration.
 | `should_accept_contextually_typed_yield_given_annotated_variable_when_checking_types` | `conformance/generators/generatorImplicitAny.ts` | Contextually type a `yield` result from its annotated variable. |
 | `should_preserve_object_destructuring_given_object_initializer_when_emitting_javascript` | `conformance/es6/destructuring` | Preserve object binding patterns. |
 | `should_emit_namespace_given_exported_namespace_value_when_compiling` | `conformance/internalModules` | Bind and emit a namespace value. |
+| `should_emit_members_from_merged_namespaces_given_multiple_source_files_when_compiling` | `conformance/internalModules/DeclarationMerging/TwoInternalModulesWithTheSameNameAndSameCommonRoot.ts` | Emit exported members from separate declarations of the same namespace across source files. |
 | `should_accept_conditional_type_given_generic_type_parameter_when_checking_types` | `conformance/types/conditional/conditionalTypes1.ts` | Accept and represent a conditional type. |
 | `should_accept_mapped_type_given_keyof_type_parameter_when_checking_types` | `conformance/types/mapped/mappedTypeModifiers.ts` | Accept a mapped type over `keyof`. |
 | `should_accept_template_literal_type_given_string_type_interpolation_when_checking_types` | `conformance/types/literal/templateLiteralTypes1.ts` | Accept a template literal type. |

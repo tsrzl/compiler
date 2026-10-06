@@ -141,6 +141,11 @@ decides cross-area or oracle classifications.
 | Extension contracts | Analyzer ordering/views/diagnostics and generator inputs/outputs, deduplication, generated-source checking, and error behavior. | `analyzer_hooks.rs`, `generator_hooks.rs`, and `extension_lifecycle.rs`; one file per author. | Sixteen recorded contracts include twelve lifecycle tests: nine green and three red path/output-path cases. Semantic views, source-aware diagnostics, generated-file identity, and full ownership APIs remain contract work. |
 | Oracle and coverage accounting | Configuration variants, expected artifact kinds, runner skips, unsupported options, and missing references. | Inventory, audit and progress report; no production or test-file edits. | Integrator-owned. The missing-reference audit resolved all 62 cases: 51 resolved-option skips and 11 cases with empty outputs in 13 configurations. Keep all 45 explicit skips, 559 unsupported-option source cases and 11 empty-output cases distinct from Rust coverage. |
 
+Cross-file internal namespace merging now has an emit contract pinned to
+`conformance/internalModules/DeclarationMerging/TwoInternalModulesWithTheSameNameAndSameCommonRoot.ts`.
+TypeScript-Go emits exported assignments for both namespace declarations;
+TSRZL currently emits the `namespace` and member tokens as ordinary statements.
+
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration
 output has been built. The pinned TypeScript-Go 7.0.2 CLI reports the missing
