@@ -8,6 +8,7 @@ pub mod analyzer;
 pub mod ast;
 pub mod bind;
 mod binder;
+pub mod check;
 pub mod compiler;
 pub mod diagnostics;
 mod emit;
