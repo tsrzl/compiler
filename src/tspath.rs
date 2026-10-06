@@ -32,3 +32,18 @@ pub fn declaration_file_extension(file_name: &str) -> Option<&str> {
 pub fn is_declaration_file_name(file_name: &str) -> bool {
     declaration_file_extension(file_name).is_some()
 }
+
+/// Known extensions in removal order; declaration extensions precede their shorter suffixes.
+const EXTENSIONS_TO_REMOVE: [&str; 12] = [
+    ".d.ts", ".d.mts", ".d.cts", ".mjs", ".mts", ".cjs", ".cts", ".ts", ".js", ".tsx", ".jsx",
+    ".json",
+];
+
+/// Returns `path` without a known TypeScript, JavaScript, or JSON extension.
+#[must_use]
+pub fn remove_file_extension(path: &str) -> &str {
+    EXTENSIONS_TO_REMOVE
+        .iter()
+        .find_map(|extension| path.strip_suffix(extension))
+        .unwrap_or(path)
+}

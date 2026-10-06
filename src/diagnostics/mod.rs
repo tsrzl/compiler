@@ -1,7 +1,9 @@
 //! TypeScript diagnostic messages, generated from the pinned TypeScript-Go message table.
 
+mod diagnostic;
 mod messages;
 
+pub use diagnostic::Diagnostic;
 pub use messages::*;
 
 /// The severity class of a diagnostic message.
