@@ -4,13 +4,16 @@ mod arena;
 mod flags;
 mod flags_type;
 mod kind;
+mod kind_guards;
 mod nodes;
+mod operators;
 mod visitor;
 
-pub use arena::{Ast, AstBuilder, ModifierList, Node, NodeId, NodeList};
+pub use arena::{Ast, AstBuilder, AstBuilderMark, ModifierList, Node, NodeId, NodeList};
 pub use flags::{ModifierFlags, NodeFlags, TokenFlags};
 pub use kind::SyntaxKind;
 pub use nodes::*;
+pub use operators::OperatorPrecedence;
 pub use visitor::ChildVisitor;
 
 impl SyntaxKind {

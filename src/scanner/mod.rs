@@ -20,7 +20,7 @@ mod trivia;
 use crate::ast::{SyntaxKind, TokenFlags};
 use crate::diagnostics::{self, Message};
 
-pub use keywords::{identifier_token, keyword};
+pub use keywords::{identifier_token, keyword, token_to_string};
 pub use state::ScannerState;
 pub use trivia::{CommentDirective, CommentDirectiveKind};
 
@@ -60,6 +60,12 @@ impl ScanDiagnostic {
     #[must_use]
     pub const fn length(&self) -> usize {
         self.length
+    }
+
+    /// Returns the message arguments.
+    #[must_use]
+    pub fn arguments(&self) -> &[String] {
+        &self.arguments
     }
 
     /// Returns the formatted message text.
@@ -167,6 +173,17 @@ impl<'text> Scanner<'text> {
     #[must_use]
     pub fn diagnostics(&self) -> &[ScanDiagnostic] {
         &self.diagnostics
+    }
+
+    /// Removes and returns the diagnostics reported since the last call.
+    pub fn take_diagnostics(&mut self) -> Vec<ScanDiagnostic> {
+        std::mem::take(&mut self.diagnostics)
+    }
+
+    /// Returns the source text being scanned.
+    #[must_use]
+    pub const fn text(&self) -> &'text str {
+        self.text
     }
 
     /// Returns the `@ts-expect-error` and `@ts-ignore` comments scanned so far.

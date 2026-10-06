@@ -27,6 +27,7 @@ pub struct NodeList {
     end: u32,
     start: u32,
     len: u32,
+    missing: bool,
 }
 
 impl NodeList {
@@ -46,6 +47,13 @@ impl NodeList {
     #[must_use]
     pub const fn len(self) -> usize {
         self.len as usize
+    }
+
+    /// Returns whether the list is missing because its opening token was absent, as opposed to
+    /// present but empty.
+    #[must_use]
+    pub const fn is_missing(self) -> bool {
+        self.missing
     }
 
     /// Returns whether the list has no nodes.
@@ -187,6 +195,13 @@ impl Ast {
     }
 }
 
+/// The size of an [`AstBuilder`] at a point in time, used to discard speculative nodes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AstBuilderMark {
+    nodes: usize,
+    list_nodes: usize,
+}
+
 /// Builds an [`Ast`] bottom-up; parent links are assigned when the tree is finished.
 #[derive(Debug, Default)]
 pub struct AstBuilder {
@@ -227,6 +242,38 @@ impl AstBuilder {
         id
     }
 
+    /// Adds `flags` to a node that has already been added.
+    pub fn add_flags(&mut self, id: NodeId, flags: NodeFlags) {
+        self.nodes[id.as_usize()].flags |= flags;
+    }
+
+    /// Returns a node that has already been added.
+    #[must_use]
+    pub fn node(&self, id: NodeId) -> &Node {
+        &self.nodes[id.as_usize()]
+    }
+
+    /// Returns the nodes of a list that has already been added.
+    #[must_use]
+    pub fn list(&self, list: NodeList) -> &[NodeId] {
+        list.nodes(&self.list_nodes)
+    }
+
+    /// Captures the builder size so that speculatively added nodes can be discarded.
+    #[must_use]
+    pub fn mark(&self) -> AstBuilderMark {
+        AstBuilderMark {
+            nodes: self.nodes.len(),
+            list_nodes: self.list_nodes.len(),
+        }
+    }
+
+    /// Discards nodes and lists added after `mark`.
+    pub fn rewind(&mut self, mark: AstBuilderMark) {
+        self.nodes.truncate(mark.nodes);
+        self.list_nodes.truncate(mark.list_nodes);
+    }
+
     /// Adds a list of previously added nodes covering `pos..end`.
     ///
     /// # Panics
@@ -246,6 +293,15 @@ impl AstBuilder {
             end,
             start,
             len,
+            missing: false,
+        }
+    }
+
+    /// Adds an empty list at `pos` that records that its opening token was missing.
+    pub fn add_missing_list(&mut self, pos: u32) -> NodeList {
+        NodeList {
+            missing: true,
+            ..self.add_list(pos, pos, [])
         }
     }
 
