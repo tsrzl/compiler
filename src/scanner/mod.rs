@@ -4,6 +4,7 @@
 //! UTF-16 offsets with [`crate::source_text::SourceText`] at reporting boundaries.
 
 mod chars;
+mod comment_ranges;
 mod error_range;
 mod identifier_tables;
 mod identifiers;
@@ -21,6 +22,7 @@ mod trivia;
 use crate::ast::{SyntaxKind, TokenFlags};
 use crate::diagnostics::{self, Message};
 
+pub use comment_ranges::{CommentRange, leading_comment_ranges, trailing_comment_ranges};
 pub use error_range::{error_range_for_node, range_of_token_at_position};
 pub use keywords::{all_keywords, identifier_token, keyword, token_to_string};
 pub use state::ScannerState;
