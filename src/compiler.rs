@@ -287,7 +287,7 @@ impl Compiler {
                 .collect::<Vec<_>>()
         };
         diagnostics.extend(analyzer_diagnostics);
-        diagnostics.sort_by_key(|diagnostic| diagnostic.span().start());
+        diagnostics.sort_by_key(|diagnostic| (diagnostic.file(), diagnostic.span().start()));
         let emitted_files = syntax_trees
             .iter()
             .flat_map(|syntax_tree| {

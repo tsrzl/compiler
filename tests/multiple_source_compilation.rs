@@ -125,3 +125,29 @@ fn should_attribute_diagnostic_to_second_file_given_error_in_second_source_when_
         .collect::<Vec<_>>();
     assert_eq!(files, [Some(1)]);
 }
+
+#[test]
+fn should_order_diagnostics_by_input_file_given_earlier_offset_in_later_file_when_compiling_sources()
+ {
+    // Arrange
+    let sources = [
+        SourceFile::from_path(
+            Path::new("first.ts"),
+            "const padding = 0; const a: number = 'a';",
+        )
+        .expect("a TypeScript path has a supported source kind"),
+        SourceFile::from_path(Path::new("second.ts"), "const b: number = 'b';")
+            .expect("a TypeScript path has a supported source kind"),
+    ];
+
+    // Act
+    let result = Compiler::new().compile_sources(sources);
+
+    // Assert
+    let files = result
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.file().map(|file| file.index()))
+        .collect::<Vec<_>>();
+    assert_eq!(files, [Some(0), Some(1)]);
+}
