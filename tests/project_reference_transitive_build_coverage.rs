@@ -540,3 +540,67 @@ fn should_schedule_only_changed_leaf_project_given_source_change_when_running_dr
         "{diagnostics}"
     );
 }
+
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_schedule_changed_project_given_tsconfig_change_when_running_dry_build_cli() {
+    // Arrange
+    let project = TemporaryProject::new("changed-config-dry-build");
+    project.write(
+        "core/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("core/index.ts", "export const coreValue = 1;\n");
+    project.write(
+        "middle/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","outDir":"dist"},"references":[{"path":"../core"}],"include":["index.ts"]}"#,
+    );
+    project.write(
+        "middle/index.ts",
+        "import { coreValue } from \"../core\";\nexport const middleValue = coreValue;\n",
+    );
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2015","outDir":"dist"},"references":[{"path":"../middle"}],"include":["main.ts"]}"#,
+    );
+    project.write(
+        "app/main.ts",
+        "import { middleValue } from \"../middle\";\nexport const result = middleValue;\n",
+    );
+    let initial_build = project.build_application();
+    assert!(
+        initial_build.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&initial_build.stdout),
+        String::from_utf8_lossy(&initial_build.stderr)
+    );
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"composite":true,"declaration":true,"module":"commonjs","target":"es2020","outDir":"dist"},"references":[{"path":"../middle"}],"include":["main.ts"]}"#,
+    );
+
+    // Act
+    let output = project.verbose_dry_build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout)
+            .matches(" is up to date")
+            .count(),
+        2,
+        "{diagnostics}"
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout)
+            .matches("A non-dry build would build project")
+            .count(),
+        1,
+        "{diagnostics}"
+    );
+}
