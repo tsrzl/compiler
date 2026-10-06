@@ -8,6 +8,7 @@ pub mod analyzer;
 pub mod ast;
 mod binder;
 pub mod compiler;
+pub mod diagnostics;
 mod emit;
 mod enum_values;
 pub mod generator;
