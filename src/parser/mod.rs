@@ -6,6 +6,7 @@
 mod arrow_functions;
 mod bindings;
 mod class_members;
+mod classes;
 mod control_flow;
 mod declarations;
 mod expressions;
@@ -13,8 +14,10 @@ mod identifiers;
 mod lists;
 mod lookahead;
 mod modifiers;
+mod modules;
 mod signatures;
 mod statements;
+mod type_declarations;
 mod type_members;
 mod types;
 

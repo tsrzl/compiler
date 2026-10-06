@@ -71,6 +71,7 @@ const OPTIONAL_OVERRIDES = new Set([
   "IndexSignatureDeclaration.Type",
   "CaseOrDefaultClause.Expression",
   "ImportAttribute.name",
+  "ExportAssignment.Type",
 ]);
 
 function snakeCase(name: string): string {

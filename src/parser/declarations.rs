@@ -57,15 +57,42 @@ impl Parser<'_> {
             SyntaxKind::FunctionKeyword => {
                 return self.parse_function_declaration(pos, jsdoc, modifiers);
             }
-            SyntaxKind::ClassKeyword
-            | SyntaxKind::InterfaceKeyword
-            | SyntaxKind::TypeKeyword
-            | SyntaxKind::EnumKeyword
-            | SyntaxKind::GlobalKeyword
+            SyntaxKind::ClassKeyword => {
+                return self.parse_class_declaration_or_expression(
+                    pos,
+                    jsdoc,
+                    modifiers,
+                    SyntaxKind::ClassDeclaration,
+                );
+            }
+            SyntaxKind::InterfaceKeyword => {
+                return self.parse_interface_declaration(pos, jsdoc, modifiers);
+            }
+            SyntaxKind::TypeKeyword => {
+                return self.parse_type_alias_declaration(pos, jsdoc, modifiers);
+            }
+            SyntaxKind::EnumKeyword => return self.parse_enum_declaration(pos, jsdoc, modifiers),
+            SyntaxKind::GlobalKeyword
             | SyntaxKind::ModuleKeyword
-            | SyntaxKind::NamespaceKeyword
-            | SyntaxKind::ImportKeyword
-            | SyntaxKind::ExportKeyword => return self.parse_unported_statement(),
+            | SyntaxKind::NamespaceKeyword => {
+                return self.parse_module_declaration(pos, jsdoc, modifiers);
+            }
+            SyntaxKind::ImportKeyword => {
+                return self
+                    .parse_import_declaration_or_import_equals_declaration(pos, jsdoc, modifiers);
+            }
+            SyntaxKind::ExportKeyword => {
+                self.next_token();
+                return match self.token {
+                    SyntaxKind::DefaultKeyword | SyntaxKind::EqualsToken => {
+                        self.parse_export_assignment(pos, jsdoc, modifiers)
+                    }
+                    SyntaxKind::AsKeyword => {
+                        self.parse_namespace_export_declaration(pos, jsdoc, modifiers)
+                    }
+                    _ => self.parse_export_declaration(pos, jsdoc, modifiers),
+                };
+            }
             _ => {}
         }
         // Decorators or modifiers promised a declaration that did not follow; recover with an

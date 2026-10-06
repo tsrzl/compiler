@@ -328,7 +328,7 @@ pub struct NamedImports {
 pub struct ExportAssignment {
     pub modifiers: Option<ModifierList>,
     pub is_export_equals: bool,
-    pub type_node: NodeId,
+    pub type_node: Option<NodeId>,
     pub expression: NodeId,
 }
 
@@ -2528,7 +2528,9 @@ impl NodeData {
                 {
                     return true;
                 }
-                if visitor.visit_node(data.type_node) {
+                if let Some(type_node) = &data.type_node
+                    && visitor.visit_node(*type_node)
+                {
                     return true;
                 }
                 if visitor.visit_node(data.expression) {

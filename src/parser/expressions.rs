@@ -1022,7 +1022,6 @@ impl Parser<'_> {
     }
 
     fn parse_primary_expression(&mut self) -> NodeId {
-        let pos = self.node_pos();
         let token = self.token;
         match token {
             SyntaxKind::NoSubstitutionTemplateLiteral => {
@@ -1052,8 +1051,8 @@ impl Parser<'_> {
                 self.parse_function_expression()
             }
             SyntaxKind::FunctionKeyword => self.parse_function_expression(),
-            // Class expressions and decorated expressions are not ported yet.
-            SyntaxKind::AtToken | SyntaxKind::ClassKeyword => self.parse_unported_expression(pos),
+            SyntaxKind::AtToken => self.parse_decorated_expression(),
+            SyntaxKind::ClassKeyword => self.parse_class_expression(),
             SyntaxKind::NewKeyword => self.parse_new_expression_or_new_dot_target(),
             SyntaxKind::SlashToken | SyntaxKind::SlashEqualsToken
                 if self.rescan_slash_token() == SyntaxKind::RegularExpressionLiteral =>
@@ -1418,7 +1417,7 @@ impl Parser<'_> {
         self.next_token() == SyntaxKind::FunctionKeyword && !self.has_preceding_line_break()
     }
 
-    fn identifier_text(&self, id: NodeId) -> &str {
+    pub(super) fn identifier_text(&self, id: NodeId) -> &str {
         self.builder
             .node(id)
             .data()

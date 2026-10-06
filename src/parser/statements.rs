@@ -50,7 +50,15 @@ impl Parser<'_> {
                 let (pos, jsdoc) = (self.node_pos(), self.jsdoc_scanner_info());
                 return self.parse_function_declaration(pos, jsdoc, None);
             }
-            SyntaxKind::ClassKeyword => return self.parse_unported_statement(),
+            SyntaxKind::ClassKeyword => {
+                let (pos, jsdoc) = (self.node_pos(), self.jsdoc_scanner_info());
+                return self.parse_class_declaration_or_expression(
+                    pos,
+                    jsdoc,
+                    None,
+                    SyntaxKind::ClassDeclaration,
+                );
+            }
             SyntaxKind::IfKeyword => return self.parse_if_statement(),
             SyntaxKind::DoKeyword => return self.parse_do_statement(),
             SyntaxKind::WhileKeyword => return self.parse_while_statement(),
