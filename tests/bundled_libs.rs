@@ -71,3 +71,28 @@ fn should_use_plain_lib_given_es5_target_when_reading_default_lib() {
     // Assert
     assert_eq!(file, "lib.d.ts");
 }
+
+#[test]
+fn should_accept_file_name_given_lib_file_name_when_resolving_lib_name() {
+    // Arrange
+    let name = "LIB.ES2015.PROMISE.D.TS";
+
+    // Act
+    let file = tsrzl::bundled::lib_file_name(name);
+
+    // Assert
+    assert_eq!(file, Some("lib.es2015.promise.d.ts"));
+}
+
+#[test]
+fn should_sort_default_lib_first_given_lib_priorities_when_ordering_libs() {
+    // Arrange
+    let names = ["lib.dom.d.ts", "lib.d.ts", "lib.es5.d.ts"];
+
+    // Act
+    let mut sorted = names;
+    sorted.sort_by_key(|name| tsrzl::bundled::lib_priority(name));
+
+    // Assert
+    assert_eq!(sorted, ["lib.d.ts", "lib.es5.d.ts", "lib.dom.d.ts"]);
+}

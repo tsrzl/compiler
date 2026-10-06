@@ -591,6 +591,34 @@ pub fn lib_file_for_option(option: &str) -> Option<&'static str> {
         .map(|(_, file)| *file)
 }
 
+/// Returns the lib file for a `lib` option value or lib file name, compared case-insensitively.
+#[must_use]
+pub fn lib_file_name(name: &str) -> Option<&'static str> {
+    let name = name.to_ascii_lowercase();
+    LIB_OPTIONS
+        .iter()
+        .find(|(_, file)| *file == name)
+        .map(|(_, file)| *file)
+        .or_else(|| lib_file_for_option(&name))
+}
+
+/// Returns where a lib file sorts among a program's libs: `lib.d.ts` and `lib.es6.d.ts` first,
+/// then libs in `lib` option order, then any other file.
+#[must_use]
+pub fn lib_priority(file_name: &str) -> usize {
+    if file_name == "lib.d.ts" || file_name == "lib.es6.d.ts" {
+        return 0;
+    }
+    let name = file_name
+        .strip_prefix("lib.")
+        .and_then(|name| name.strip_suffix(".d.ts"))
+        .unwrap_or(file_name);
+    LIB_OPTIONS
+        .iter()
+        .position(|(option, _)| *option == name)
+        .map_or(LIB_OPTIONS.len() + 2, |index| index + 1)
+}
+
 /// Returns the lib file loaded by default for a target option name, such as `es2022`; targets
 /// before ES2015 load `lib.d.ts`.
 #[must_use]
