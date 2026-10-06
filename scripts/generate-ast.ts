@@ -19,6 +19,7 @@ interface SchemaType {
 
 interface SchemaMember {
   name: string;
+  inherited: boolean;
   type: SchemaType;
   listKind?: string;
   optional: boolean;
@@ -59,6 +60,14 @@ interface NodeShape {
 // Members whose values belong to other compiler phases rather than to syntax.
 const EXCLUDED_MEMBERS = new Set(["SyntheticExpression.Type"]);
 
+// Members the schema marks required but that TypeScript-Go's parser constructs as nil. Go permits a
+// nil pointer for any member; these overrides record each case found while porting the parser.
+const OPTIONAL_OVERRIDES = new Set([
+  "PropertyAssignment.Type",
+  "ShorthandPropertyAssignment.Type",
+  "TaggedTemplateExpression.QuestionDotToken",
+]);
+
 function snakeCase(name: string): string {
   const snake = name
     .replace(/JSDoc/g, "Jsdoc")
@@ -88,8 +97,10 @@ function primitiveType(member: SchemaMember, owner: string): string | undefined 
 
 function fieldFor(member: SchemaMember, owner: string): Field | undefined {
   if (member.noFactory || member.isKindParam() || EXCLUDED_MEMBERS.has(`${owner}.${member.name}`)) return undefined;
+  // The inherited `Flags` member is the node header's flags, which the arena stores on the node.
+  if (member.name === "Flags" && member.inherited) return undefined;
   const name = snakeCase(member.name);
-  const optional = member.optional;
+  const optional = member.optional || OPTIONAL_OVERRIDES.has(`${owner}.${member.name}`);
   const wrap = (rustType: string) => (optional ? `Option<${rustType}>` : rustType);
   const element = member.type.elementType;
   if (member.type.kind === "list" && element?.kind === "primitive" && element.name === "string") {

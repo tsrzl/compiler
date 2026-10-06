@@ -20,6 +20,7 @@ pub mod parser;
 pub mod scanner;
 pub mod source_file;
 pub mod source_text;
+pub mod spelling;
 pub mod syntax;
 pub mod tspath;
 mod type_checker;

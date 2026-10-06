@@ -3,7 +3,7 @@
 
 use super::arena::{ModifierList, NodeId, NodeList};
 use super::visitor::ChildVisitor;
-use super::{NodeFlags, SyntaxKind, TokenFlags};
+use super::{SyntaxKind, TokenFlags};
 
 /// The data of a `Identifier` node.
 #[derive(Debug, Clone, PartialEq)]
@@ -182,7 +182,6 @@ pub struct VariableDeclaration {
 #[derive(Debug, Clone, PartialEq)]
 pub struct VariableDeclarationList {
     pub declarations: NodeList,
-    pub flags: NodeFlags,
 }
 
 /// The data of a `BindingPattern` node.
@@ -592,7 +591,6 @@ pub struct PropertyAccessExpression {
     pub expression: NodeId,
     pub question_dot_token: Option<NodeId>,
     pub name: NodeId,
-    pub flags: NodeFlags,
 }
 
 /// The data of a `ElementAccessExpression` node.
@@ -601,7 +599,6 @@ pub struct ElementAccessExpression {
     pub expression: NodeId,
     pub question_dot_token: Option<NodeId>,
     pub argument_expression: NodeId,
-    pub flags: NodeFlags,
 }
 
 /// The data of a `CallExpression` node.
@@ -611,7 +608,6 @@ pub struct CallExpression {
     pub question_dot_token: Option<NodeId>,
     pub type_arguments: Option<NodeList>,
     pub arguments: NodeList,
-    pub flags: NodeFlags,
 }
 
 /// The data of a `NewExpression` node.
@@ -633,7 +629,6 @@ pub struct MetaProperty {
 #[derive(Debug, Clone, PartialEq)]
 pub struct NonNullExpression {
     pub expression: NodeId,
-    pub flags: NodeFlags,
 }
 
 /// The data of a `SpreadElement` node.
@@ -660,10 +655,9 @@ pub struct TemplateSpan {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TaggedTemplateExpression {
     pub tag: NodeId,
-    pub question_dot_token: NodeId,
+    pub question_dot_token: Option<NodeId>,
     pub type_arguments: Option<NodeList>,
     pub template: NodeId,
-    pub flags: NodeFlags,
 }
 
 /// The data of a `ParenthesizedExpression` node.
@@ -698,7 +692,7 @@ pub struct PropertyAssignment {
     pub modifiers: Option<ModifierList>,
     pub name: NodeId,
     pub postfix_token: Option<NodeId>,
-    pub type_node: NodeId,
+    pub type_node: Option<NodeId>,
     pub initializer: NodeId,
 }
 
@@ -708,7 +702,7 @@ pub struct ShorthandPropertyAssignment {
     pub modifiers: Option<ModifierList>,
     pub name: NodeId,
     pub postfix_token: Option<NodeId>,
-    pub type_node: NodeId,
+    pub type_node: Option<NodeId>,
     pub equals_token: Option<NodeId>,
     pub object_assignment_initializer: Option<NodeId>,
 }
@@ -3108,7 +3102,9 @@ impl NodeData {
                 if visitor.visit_node(data.tag) {
                     return true;
                 }
-                if visitor.visit_node(data.question_dot_token) {
+                if let Some(question_dot_token) = &data.question_dot_token
+                    && visitor.visit_node(*question_dot_token)
+                {
                     return true;
                 }
                 if let Some(type_arguments) = &data.type_arguments
@@ -3159,7 +3155,9 @@ impl NodeData {
                 {
                     return true;
                 }
-                if visitor.visit_node(data.type_node) {
+                if let Some(type_node) = &data.type_node
+                    && visitor.visit_node(*type_node)
+                {
                     return true;
                 }
                 if visitor.visit_node(data.initializer) {
@@ -3181,7 +3179,9 @@ impl NodeData {
                 {
                     return true;
                 }
-                if visitor.visit_node(data.type_node) {
+                if let Some(type_node) = &data.type_node
+                    && visitor.visit_node(*type_node)
+                {
                     return true;
                 }
                 if let Some(equals_token) = &data.equals_token
