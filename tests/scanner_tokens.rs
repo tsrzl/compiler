@@ -110,3 +110,115 @@ fn should_report_unterminated_string_given_line_break_in_literal_when_scanning_t
         .collect::<Vec<_>>();
     assert_eq!(codes, [1002]);
 }
+
+fn first_token_value(text: &str) -> (SyntaxKind, String) {
+    let mut scanner = Scanner::new(text);
+    let kind = scanner.scan();
+    (kind, scanner.token_value().to_owned())
+}
+
+fn diagnostic_codes(text: &str) -> Vec<u32> {
+    let mut scanner = Scanner::new(text);
+    while scanner.scan() != SyntaxKind::EndOfFile {}
+    scanner
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.message().code())
+        .collect()
+}
+
+#[test]
+fn should_normalize_value_given_separated_decimal_with_exponent_when_scanning_numeric_literal() {
+    // Arrange
+    let text = "1_000.50e1";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(actual, (SyntaxKind::NumericLiteral, "10005".to_owned()));
+}
+
+#[test]
+fn should_convert_to_decimal_value_given_hexadecimal_literal_when_scanning_numeric_literal() {
+    // Arrange
+    let text = "0x1F";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(actual, (SyntaxKind::NumericLiteral, "31".to_owned()));
+}
+
+#[test]
+fn should_convert_to_decimal_bigint_given_binary_bigint_literal_when_scanning_numeric_literal() {
+    // Arrange
+    let text = "0b101n";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(actual, (SyntaxKind::BigIntLiteral, "5n".to_owned()));
+}
+
+#[test]
+fn should_scan_fraction_given_leading_dot_when_scanning_numeric_literal() {
+    // Arrange
+    let text = ".25";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(actual, (SyntaxKind::NumericLiteral, "0.25".to_owned()));
+}
+
+#[test]
+fn should_report_leading_zero_given_decimal_starting_with_zero_when_scanning_numeric_literal() {
+    // Arrange
+    let text = "08";
+
+    // Act
+    let actual = diagnostic_codes(text);
+
+    // Assert
+    assert_eq!(actual, [1489]);
+}
+
+#[test]
+fn should_report_consecutive_separators_given_doubled_underscore_when_scanning_numeric_literal() {
+    // Arrange
+    let text = "1__0";
+
+    // Act
+    let actual = diagnostic_codes(text);
+
+    // Assert
+    assert_eq!(actual, [6189]);
+}
+
+#[test]
+fn should_report_identifier_after_number_given_adjacent_letters_when_scanning_numeric_literal() {
+    // Arrange
+    let text = "3in";
+
+    // Act
+    let actual = diagnostic_codes(text);
+
+    // Assert
+    assert_eq!(actual, [1351]);
+}
+
+#[test]
+fn should_cook_unicode_escapes_given_escaped_identifier_when_scanning_tokens() {
+    // Arrange
+    let text = r"ab\u{63}";
+
+    // Act
+    let actual = first_token_value(text);
+
+    // Assert
+    assert_eq!(actual, (SyntaxKind::Identifier, "abc".to_owned()));
+}

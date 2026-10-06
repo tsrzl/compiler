@@ -6,6 +6,7 @@
 mod chars;
 mod identifier_tables;
 mod keywords;
+mod numbers;
 mod strings;
 
 use crate::ast::{SyntaxKind, TokenFlags};
@@ -306,6 +307,19 @@ impl<'text> Scanner<'text> {
 
     /// Scans a token that is not ASCII trivia. Returns `None` when trivia was skipped.
     fn scan_other_token(&mut self, byte: u8) -> Option<SyntaxKind> {
+        if byte == b'0'
+            && let Some(token) = self.scan_prefixed_number()
+        {
+            return Some(token);
+        }
+        if byte.is_ascii_digit()
+            || (byte == b'.' && self.byte_at(1).is_some_and(|next| next.is_ascii_digit()))
+        {
+            return Some(self.scan_number());
+        }
+        if byte == b'\\' {
+            return Some(self.scan_escaped_identifier());
+        }
         if matches!(byte, b'"' | b'\'') {
             self.state.token_value = self.scan_string(false);
             return Some(SyntaxKind::StringLiteral);
@@ -325,6 +339,49 @@ impl<'text> Scanner<'text> {
         }
     }
 
+    /// Scans an identifier that starts with a unicode escape at a backslash.
+    fn scan_escaped_identifier(&mut self) -> SyntaxKind {
+        match self.peek_unicode_escape().and_then(char::from_u32) {
+            Some(character) if is_identifier_start(character) => {
+                self.scan_unicode_escape(true);
+                let mut value = character.to_string();
+                value.push_str(&self.scan_identifier_parts());
+                let token = identifier_token(&value);
+                self.state.token_value = value;
+                token
+            }
+            _ => {
+                self.scan_invalid_character();
+                SyntaxKind::Unknown
+            }
+        }
+    }
+
+    /// Scans identifier parts, cooking unicode escapes, and returns the cooked text.
+    fn scan_identifier_parts(&mut self) -> String {
+        let mut value = String::new();
+        let mut start = self.state.pos;
+        while let Some(character) = self.char_at_pos() {
+            if is_identifier_part(character) {
+                self.state.pos += character.len_utf8();
+                continue;
+            }
+            if character == '\\'
+                && let Some(escaped) = self.peek_unicode_escape().and_then(char::from_u32)
+                && is_identifier_part(escaped)
+            {
+                value.push_str(&self.text[start..self.state.pos]);
+                self.scan_unicode_escape(true);
+                value.push(escaped);
+                start = self.state.pos;
+                continue;
+            }
+            break;
+        }
+        value.push_str(&self.text[start..self.state.pos]);
+        value
+    }
+
     /// Scans an identifier after `prefix_length` bytes and stores its text as the token value.
     fn scan_identifier(&mut self, prefix_length: usize) -> bool {
         let start = self.state.pos;
@@ -338,13 +395,9 @@ impl<'text> Scanner<'text> {
                 return false;
             }
         }
-        while let Some(character) = self.char_at_pos() {
-            if !is_identifier_part(character) {
-                break;
-            }
-            self.state.pos += character.len_utf8();
-        }
-        self.state.token_value = self.text[start..self.state.pos].to_owned();
+        let head = &self.text[start..self.state.pos];
+        let tail = self.scan_identifier_parts();
+        self.state.token_value = format!("{head}{tail}");
         true
     }
 

@@ -251,6 +251,19 @@ impl Scanner<'_> {
         None
     }
 
+    /// Returns the code point of a valid unicode escape at a backslash without consuming it.
+    pub(super) fn peek_unicode_escape(&mut self) -> Option<u32> {
+        if self.byte_at(1) != Some(b'u') {
+            return None;
+        }
+        let saved_pos = self.state.pos;
+        let saved_flags = self.state.token_flags;
+        let code_point = self.scan_unicode_escape(false);
+        self.state.pos = saved_pos;
+        self.state.token_flags = saved_flags;
+        code_point
+    }
+
     /// Scans hexadecimal digits and returns them lowercased without separators.
     ///
     /// Returns an empty string when fewer than `min_count` digits are present.
