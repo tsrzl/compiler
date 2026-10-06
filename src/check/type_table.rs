@@ -339,7 +339,9 @@ impl TypeTable {
             && matches!(self.get(id).data(), TypeData::Literal { fresh_type: Some(fresh), .. } if *fresh == id)
     }
 
-    fn regular_type_of_literal(&self, id: TypeId) -> TypeId {
+    /// Returns the regular variant of a literal type; other types are returned unchanged.
+    #[must_use]
+    pub fn regular_type_of_literal(&self, id: TypeId) -> TypeId {
         match self.get(id).data() {
             TypeData::Literal { regular_type, .. } => *regular_type,
             _ => id,

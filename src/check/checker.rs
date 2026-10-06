@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use super::program::{CheckDiagnostic, NodeRef};
 use super::symbol_store::{SymbolRef, SymbolStore};
 use super::type_table::TypeTable;
+use super::types::TypeId;
 use crate::ast::{CheckFlags, SymbolFlags};
 use crate::program::ProgramFile;
 use crate::symbols::SymbolTable;
@@ -44,6 +45,7 @@ pub struct Checker<'program> {
     pub(super) special: SpecialSymbols,
     pub(super) globals: SymbolTable<SymbolRef>,
     pub(super) merged_symbols: HashMap<SymbolRef, SymbolRef>,
+    pub(super) type_node_links: HashMap<NodeRef, TypeId>,
     diagnostics: Vec<CheckDiagnostic>,
 }
 
@@ -68,6 +70,7 @@ impl<'program> Checker<'program> {
             special,
             globals,
             merged_symbols: HashMap::new(),
+            type_node_links: HashMap::new(),
             diagnostics: Vec::new(),
         };
         checker.initialize();
