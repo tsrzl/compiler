@@ -5,6 +5,7 @@
 //! Compiler behavior is added in focused, behavior-tested increments.
 
 pub mod analyzer;
+pub mod ast;
 mod binder;
 pub mod compiler;
 mod emit;
