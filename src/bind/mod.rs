@@ -7,8 +7,8 @@
 //!
 //! Ported so far: declarations, containers and locals, class, interface, enum, and literal
 //! members, namespaces and ambient modules, module exports, imports, JSX attributes, the
-//! external-module symbol, and the control flow graph with reachability. Strict-mode checks
-//! and JavaScript assignment declarations are ported in later increments.
+//! external-module symbol, the control flow graph with reachability, and strict-mode grammar
+//! checks. JavaScript assignment declarations are ported in a later increment.
 
 mod binder;
 mod container_flags;
@@ -19,6 +19,7 @@ mod flow;
 mod flow_builder;
 mod modules;
 mod narrowing;
+mod strict_mode;
 mod walk;
 
 pub use flow::{FlowGraph, FlowId, FlowListId, FlowNode, FlowPayload};

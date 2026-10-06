@@ -64,6 +64,7 @@ pub(super) struct Binder<'file> {
     pub(super) global_exports: SymbolTable,
     pub(super) pattern_ambient_modules: Vec<PatternAmbientModule>,
     is_declaration_file: bool,
+    has_parse_diagnostics: bool,
     diagnostics: Vec<Diagnostic>,
     pub(super) flow: FlowGraph,
     pub(super) unreachable_flow: FlowId,
@@ -116,6 +117,7 @@ impl<'file> Binder<'file> {
             global_exports: SymbolTable::default(),
             pattern_ambient_modules: Vec::new(),
             is_declaration_file: file.is_declaration_file(),
+            has_parse_diagnostics: !file.diagnostics().is_empty(),
             diagnostics: Vec::new(),
             flow,
             unreachable_flow,
@@ -250,6 +252,7 @@ impl<'file> Binder<'file> {
         match ast.node(node).kind() {
             SyntaxKind::FunctionDeclaration => {
                 self.note_async_function(node);
+                self.check_strict_mode_function_name(node);
                 self.bind_block_scoped_declaration(
                     node,
                     SymbolFlags::FUNCTION,
@@ -444,6 +447,9 @@ impl<'file> Binder<'file> {
             .node(node)
             .parent()
             .expect("a parameter has a parent signature");
+        if !ast.node(node).flags().intersects(NodeFlags::AMBIENT) {
+            self.check_strict_mode_eval_or_arguments(node, Some(parameter.name));
+        }
         if is_binding_pattern(ast, parameter.name) {
             let index = ast
                 .node(parent)
@@ -485,7 +491,9 @@ impl<'file> Binder<'file> {
 
     fn bind_variable_declaration_or_binding_element(&mut self, node: NodeId) {
         let ast = self.ast;
-        let Some(name) = ast.node(node).data().name() else {
+        let name = ast.node(node).data().name();
+        self.check_strict_mode_eval_or_arguments(node, name);
+        let Some(name) = name else {
             return;
         };
         if is_binding_pattern(ast, name) {
@@ -566,6 +574,11 @@ impl<'file> Binder<'file> {
         let ast = self.ast;
         self.note_async_function(node);
         self.set_flow_node(node);
+        if ast.node(node).kind() == SyntaxKind::FunctionExpression
+            && ast.node(node).data().name().is_some()
+        {
+            self.check_strict_mode_function_name(node);
+        }
         let name = ast
             .node(node)
             .data()
@@ -759,6 +772,11 @@ impl<'file> Binder<'file> {
         );
         self.diagnostics
             .push(Diagnostic::new(message, range, arguments));
+    }
+
+    /// Returns whether parsing reported errors, which suppresses contextual identifier checks.
+    pub(super) const fn has_parse_diagnostics(&self) -> bool {
+        self.has_parse_diagnostics
     }
 
     pub(super) const fn is_declaration_file(&self) -> bool {

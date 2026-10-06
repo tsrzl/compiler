@@ -11,6 +11,7 @@ use crate::ast::{FlowFlags, ModifierFlags, NodeData, NodeFlags, NodeId, SyntaxKi
 impl Binder<'_> {
     pub(super) fn bind(&mut self, node: NodeId) {
         self.record_reference_flow(node);
+        self.check_strict_mode_node(node);
         self.bind_declaration(node);
         let ast = self.ast;
         let mut has_error = ast
