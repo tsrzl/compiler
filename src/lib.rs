@@ -13,6 +13,7 @@ mod emit;
 mod enum_values;
 pub mod generator;
 pub mod module_resolver;
+pub mod scanner;
 pub mod source_file;
 pub mod source_text;
 pub mod syntax;
