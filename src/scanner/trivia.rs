@@ -267,3 +267,80 @@ pub(super) fn scan_shebang_trivia(text: &str, pos: usize) -> usize {
     }
     pos
 }
+
+/// Options for [`skip_trivia_with`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct SkipTriviaOptions {
+    /// Stop immediately after the first line break.
+    pub stop_after_line_break: bool,
+    /// Stop at the start of a comment instead of skipping it.
+    pub stop_at_comments: bool,
+    /// Skip a leading `*` after each line break, as at the start of JSDoc lines.
+    pub in_jsdoc: bool,
+}
+
+/// Returns the position of the first non-trivia character at or after `pos`.
+#[must_use]
+pub fn skip_trivia(text: &str, pos: usize) -> usize {
+    skip_trivia_with(text, pos, SkipTriviaOptions::default())
+}
+
+/// Returns the position of the first non-trivia character at or after `pos`, using `options`.
+#[must_use]
+pub fn skip_trivia_with(text: &str, mut pos: usize, options: SkipTriviaOptions) -> usize {
+    let bytes = text.as_bytes();
+    let mut can_consume_star = false;
+    while let Some(character) = text.get(pos..).and_then(|rest| rest.chars().next()) {
+        match character {
+            '\r' | '\n' => {
+                if character == '\r' && bytes.get(pos + 1) == Some(&b'\n') {
+                    pos += 1;
+                }
+                pos += 1;
+                if options.stop_after_line_break {
+                    return pos;
+                }
+                can_consume_star = options.in_jsdoc;
+            }
+            '\t' | '\u{b}' | '\u{c}' | ' ' => pos += 1,
+            '/' if !options.stop_at_comments && bytes.get(pos + 1) == Some(&b'/') => {
+                pos += 2;
+                while let Some(next) = text[pos..].chars().next() {
+                    if is_line_break(next) {
+                        break;
+                    }
+                    pos += next.len_utf8();
+                }
+                can_consume_star = false;
+            }
+            '/' if !options.stop_at_comments && bytes.get(pos + 1) == Some(&b'*') => {
+                pos += 2;
+                while pos < bytes.len() {
+                    if bytes[pos] == b'*' && bytes.get(pos + 1) == Some(&b'/') {
+                        pos += 2;
+                        break;
+                    }
+                    pos += text[pos..].chars().next().map_or(1, char::len_utf8);
+                }
+                can_consume_star = false;
+            }
+            '<' | '|' | '=' | '>' if is_conflict_marker_trivia(text, pos) => {
+                pos = scan_conflict_marker_trivia(text, pos);
+                can_consume_star = false;
+            }
+            '#' if pos == 0 && bytes.get(1) == Some(&b'!') => {
+                pos = scan_shebang_trivia(text, pos);
+                can_consume_star = false;
+            }
+            '*' if can_consume_star => {
+                pos += 1;
+                can_consume_star = false;
+            }
+            _ if !character.is_ascii() && super::chars::is_white_space_like(character) => {
+                pos += character.len_utf8();
+            }
+            _ => return pos,
+        }
+    }
+    pos
+}

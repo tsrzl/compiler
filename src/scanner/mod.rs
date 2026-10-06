@@ -20,9 +20,11 @@ mod trivia;
 use crate::ast::{SyntaxKind, TokenFlags};
 use crate::diagnostics::{self, Message};
 
-pub use keywords::{identifier_token, keyword, token_to_string};
+pub use keywords::{all_keywords, identifier_token, keyword, token_to_string};
 pub use state::ScannerState;
-pub use trivia::{CommentDirective, CommentDirectiveKind};
+pub use trivia::{
+    CommentDirective, CommentDirectiveKind, SkipTriviaOptions, skip_trivia, skip_trivia_with,
+};
 
 /// Whether the scanner recognizes JSX-specific tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]

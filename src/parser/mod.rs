@@ -3,6 +3,8 @@
 //! [`parse_source_file`] turns source text into an immutable [`ParsedSourceFile`]. Positions are
 //! UTF-8 byte offsets, matching TypeScript-Go.
 
+mod expressions;
+mod identifiers;
 mod lists;
 mod lookahead;
 mod statements;
@@ -223,6 +225,7 @@ struct Parser<'text> {
     diagnostics: Vec<ParseDiagnostic>,
     token: SyntaxKind,
     context_flags: NodeFlags,
+    source_flags: NodeFlags,
     parsing_contexts: u32,
     statement_has_await_identifier: bool,
     has_parse_error: bool,
@@ -245,6 +248,7 @@ impl<'text> Parser<'text> {
             diagnostics: Vec::new(),
             token: SyntaxKind::Unknown,
             context_flags,
+            source_flags: NodeFlags::NONE,
             parsing_contexts: 0,
             statement_has_await_identifier: false,
             has_parse_error: false,
@@ -435,6 +439,52 @@ impl<'text> Parser<'text> {
         false
     }
 
+    fn parse_optional_token(&mut self, kind: SyntaxKind) -> Option<NodeId> {
+        (self.token == kind).then(|| self.parse_token_node())
+    }
+
+    fn parse_expected_token(&mut self, kind: SyntaxKind) -> NodeId {
+        if let Some(token) = self.parse_optional_token(kind) {
+            return token;
+        }
+        self.parse_error_at_current_token(diagnostics::X_0_EXPECTED, &[token_to_string(kind)]);
+        let pos = self.node_pos();
+        self.finish_node(kind, pos, NodeData::Token)
+    }
+
+    fn try_parse_semicolon(&mut self) -> bool {
+        if !self.can_parse_semicolon() {
+            return false;
+        }
+        if self.token == SyntaxKind::SemicolonToken {
+            self.next_token();
+        }
+        true
+    }
+
+    fn parse_semicolon(&mut self) -> bool {
+        self.try_parse_semicolon() || self.parse_expected(SyntaxKind::SemicolonToken)
+    }
+
+    // Rescanning, keeping the current token and diagnostics in sync with the scanner.
+
+    fn rescan_greater_than_token(&mut self) -> SyntaxKind {
+        self.token = self.scanner.rescan_greater_than_token();
+        self.token
+    }
+
+    fn rescan_slash_token(&mut self) -> SyntaxKind {
+        self.token = self.scanner.rescan_slash_token();
+        self.drain_scanner_diagnostics();
+        self.token
+    }
+
+    fn rescan_template_token(&mut self, is_tagged_template: bool) -> SyntaxKind {
+        self.token = self.scanner.rescan_template_token(is_tagged_template);
+        self.drain_scanner_diagnostics();
+        self.token
+    }
+
     fn parse_token_node(&mut self) -> NodeId {
         let pos = self.node_pos();
         let kind = self.token;
@@ -448,6 +498,29 @@ impl<'text> Parser<'text> {
     fn finish_node(&mut self, kind: SyntaxKind, pos: usize, data: NodeData) -> NodeId {
         let end = self.node_pos();
         self.finish_node_with_end(kind, pos, end, data)
+    }
+
+    /// Adds a node whose own flags, such as `OptionalChain`, combine with the context flags.
+    fn finish_node_with_flags(
+        &mut self,
+        kind: SyntaxKind,
+        pos: usize,
+        flags: NodeFlags,
+        data: NodeData,
+    ) -> NodeId {
+        let node = self.finish_node(kind, pos, data);
+        self.builder.add_flags(node, flags);
+        node
+    }
+
+    /// Returns whether a node has source text; missing nodes are empty and not end of file.
+    fn node_is_present(&self, node: NodeId) -> bool {
+        let node = self.builder.node(node);
+        !(node.pos() == node.end() && node.kind() != SyntaxKind::EndOfFile)
+    }
+
+    fn skip_trivia(&self, pos: usize) -> usize {
+        crate::scanner::skip_trivia(self.scanner.text(), pos)
     }
 
     fn finish_node_with_end(
@@ -486,6 +559,28 @@ impl<'text> Parser<'text> {
 
     fn in_context(&self, flags: NodeFlags) -> bool {
         self.context_flags.intersects(flags)
+    }
+
+    fn set_context_flags(&mut self, flags: NodeFlags, value: bool) {
+        self.context_flags = if value {
+            self.context_flags | flags
+        } else {
+            self.context_flags.without(flags)
+        };
+    }
+
+    /// Runs `parse` with `flags` set to `value`, restoring the context flags afterwards.
+    fn do_in_context<T>(
+        &mut self,
+        flags: NodeFlags,
+        value: bool,
+        parse: impl FnOnce(&mut Self) -> T,
+    ) -> T {
+        let saved = self.context_flags;
+        self.set_context_flags(flags, value);
+        let result = parse(self);
+        self.context_flags = saved;
+        result
     }
 }
 

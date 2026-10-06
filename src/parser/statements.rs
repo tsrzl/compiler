@@ -1,16 +1,235 @@
 //! Statement parsing.
 
-use crate::ast::{Block, MissingDeclaration, NodeData, NodeId, SyntaxKind};
+use crate::ast::{
+    Block, ExpressionStatement, LabeledStatement, MissingDeclaration, NodeData, NodeId, SyntaxKind,
+};
 use crate::diagnostics::{self, Message};
+
+use crate::scanner::all_keywords;
+use crate::spelling::spelling_suggestion;
 
 use super::{Parser, ParsingContext, to_u32, token_to_string};
 
+/// Keywords longer than two characters, which TypeScript-Go offers as spelling suggestions.
+fn viable_keyword_suggestions() -> Vec<&'static str> {
+    all_keywords().filter(|keyword| keyword.len() > 2).collect()
+}
+
+/// Suggests a missing space after a keyword prefix, such as `declare module` for
+/// `declaremodule`. TypeScript-Go checks keywords in map order; sorted order keeps it stable.
+fn space_suggestion(expression_text: &str, keywords: &[&str]) -> Option<String> {
+    keywords.iter().find_map(|keyword| {
+        (expression_text.len() > keyword.len() + 2 && expression_text.starts_with(keyword))
+            .then(|| format!("{keyword} {}", &expression_text[keyword.len()..]))
+    })
+}
+
 impl Parser<'_> {
     pub(super) fn parse_statement(&mut self) -> NodeId {
-        match self.token {
-            SyntaxKind::SemicolonToken => self.parse_empty_statement(),
-            SyntaxKind::OpenBraceToken => self.parse_block(false, None),
-            _ => self.parse_unported_statement(),
+        let token = self.token;
+        match token {
+            SyntaxKind::SemicolonToken => return self.parse_empty_statement(),
+            SyntaxKind::OpenBraceToken => return self.parse_block(false, None),
+            SyntaxKind::VarKeyword
+            | SyntaxKind::FunctionKeyword
+            | SyntaxKind::ClassKeyword
+            | SyntaxKind::IfKeyword
+            | SyntaxKind::DoKeyword
+            | SyntaxKind::WhileKeyword
+            | SyntaxKind::ForKeyword
+            | SyntaxKind::ContinueKeyword
+            | SyntaxKind::BreakKeyword
+            | SyntaxKind::ReturnKeyword
+            | SyntaxKind::WithKeyword
+            | SyntaxKind::SwitchKeyword
+            | SyntaxKind::ThrowKeyword
+            | SyntaxKind::TryKeyword
+            | SyntaxKind::CatchKeyword
+            | SyntaxKind::FinallyKeyword
+            | SyntaxKind::DebuggerKeyword
+            | SyntaxKind::AtToken => return self.parse_unported_statement(),
+            SyntaxKind::LetKeyword if self.is_let_declaration() => {
+                return self.parse_unported_statement();
+            }
+            SyntaxKind::AwaitKeyword if self.is_await_using_declaration() => {
+                return self.parse_unported_statement();
+            }
+            SyntaxKind::UsingKeyword if self.is_using_declaration() => {
+                return self.parse_unported_statement();
+            }
+            SyntaxKind::AsyncKeyword
+            | SyntaxKind::InterfaceKeyword
+            | SyntaxKind::TypeKeyword
+            | SyntaxKind::ModuleKeyword
+            | SyntaxKind::NamespaceKeyword
+            | SyntaxKind::DeclareKeyword
+            | SyntaxKind::ConstKeyword
+            | SyntaxKind::EnumKeyword
+            | SyntaxKind::ExportKeyword
+            | SyntaxKind::ImportKeyword
+            | SyntaxKind::PrivateKeyword
+            | SyntaxKind::ProtectedKeyword
+            | SyntaxKind::PublicKeyword
+            | SyntaxKind::AbstractKeyword
+            | SyntaxKind::AccessorKeyword
+            | SyntaxKind::StaticKeyword
+            | SyntaxKind::ReadonlyKeyword
+            | SyntaxKind::GlobalKeyword
+                if self.is_start_of_declaration() =>
+            {
+                return self.parse_unported_statement();
+            }
+            _ => {}
+        }
+        self.parse_expression_or_labeled_statement()
+    }
+
+    /// Parses an expression statement, or a labeled statement when the expression is an
+    /// identifier followed by `:`.
+    fn parse_expression_or_labeled_statement(&mut self) -> NodeId {
+        let pos = self.node_pos();
+        let mut jsdoc = self.jsdoc_scanner_info();
+        let has_paren = self.token == SyntaxKind::OpenParenToken;
+        let expression = self.parse_expression();
+        if self.builder.node(expression).kind() == SyntaxKind::Identifier
+            && self.parse_optional(SyntaxKind::ColonToken)
+        {
+            let statement = self.parse_statement();
+            let result = self.finish_node(
+                SyntaxKind::LabeledStatement,
+                pos,
+                NodeData::LabeledStatement(LabeledStatement {
+                    label: expression,
+                    statement,
+                }),
+            );
+            self.with_jsdoc(result, jsdoc);
+            return result;
+        }
+        if !self.try_parse_semicolon() {
+            self.parse_error_for_missing_semicolon_after(expression);
+        }
+        let result = self.finish_node(
+            SyntaxKind::ExpressionStatement,
+            pos,
+            NodeData::ExpressionStatement(ExpressionStatement { expression }),
+        );
+        if has_paren {
+            jsdoc.has_jsdoc = false;
+        }
+        self.with_jsdoc(result, jsdoc);
+        result
+    }
+
+    fn parse_error_for_missing_semicolon_after(&mut self, node: NodeId) {
+        let node_ref = self.builder.node(node);
+        if let Some(tagged) = node_ref.data().as_tagged_template_expression() {
+            // `module `M1` {` parses as a tagged template.
+            let template = self.builder.node(tagged.template);
+            let (start, end) = (
+                self.skip_trivia(template.pos() as usize),
+                template.end() as usize,
+            );
+            self.parse_error_at(
+                start,
+                end,
+                diagnostics::MODULE_DECLARATION_NAMES_MAY_ONLY_USE_OR_QUOTED_STRINGS,
+                &[],
+            );
+            return;
+        }
+        let expression_text = node_ref
+            .data()
+            .as_identifier()
+            .map_or_else(String::new, |identifier| identifier.text.to_string());
+        if expression_text.is_empty() {
+            self.parse_error_at_current_token(
+                diagnostics::X_0_EXPECTED,
+                &[token_to_string(SyntaxKind::SemicolonToken)],
+            );
+            return;
+        }
+        let pos = self.skip_trivia(node_ref.pos() as usize);
+        let end = node_ref.end() as usize;
+        match expression_text.as_str() {
+            "const" | "let" | "var" => {
+                self.parse_error_at(
+                    pos,
+                    end,
+                    diagnostics::VARIABLE_DECLARATION_NOT_ALLOWED_AT_THIS_LOCATION,
+                    &[],
+                );
+                return;
+            }
+            "declare" => return,
+            "interface" => {
+                self.parse_error_for_invalid_name(
+                    diagnostics::INTERFACE_NAME_CANNOT_BE_0,
+                    diagnostics::INTERFACE_MUST_BE_GIVEN_A_NAME,
+                    SyntaxKind::OpenBraceToken,
+                );
+                return;
+            }
+            "is" => {
+                let token_start = self.scanner.token_start();
+                self.parse_error_at(
+                    pos,
+                    token_start,
+                    diagnostics::A_TYPE_PREDICATE_IS_ONLY_ALLOWED_IN_RETURN_TYPE_POSITION_FOR_FUNCTIONS_AND_METHODS,
+                    &[],
+                );
+                return;
+            }
+            "module" | "namespace" => {
+                self.parse_error_for_invalid_name(
+                    diagnostics::NAMESPACE_NAME_CANNOT_BE_0,
+                    diagnostics::NAMESPACE_MUST_BE_GIVEN_A_NAME,
+                    SyntaxKind::OpenBraceToken,
+                );
+                return;
+            }
+            "type" => {
+                self.parse_error_for_invalid_name(
+                    diagnostics::TYPE_ALIAS_NAME_CANNOT_BE_0,
+                    diagnostics::TYPE_ALIAS_MUST_BE_GIVEN_A_NAME,
+                    SyntaxKind::EqualsToken,
+                );
+                return;
+            }
+            _ => {}
+        }
+        // A misspelled keyword, or a keyword missing its following space.
+        let keywords = viable_keyword_suggestions();
+        let suggestion = spelling_suggestion(&expression_text, keywords.iter().copied())
+            .map(str::to_owned)
+            .or_else(|| space_suggestion(&expression_text, &keywords));
+        if let Some(suggestion) = suggestion {
+            self.parse_error_at(
+                pos,
+                end,
+                diagnostics::UNKNOWN_KEYWORD_OR_IDENTIFIER_DID_YOU_MEAN_0,
+                &[&suggestion],
+            );
+            return;
+        }
+        // Unknown tokens were already reported by the scanner.
+        if self.token == SyntaxKind::Unknown {
+            return;
+        }
+        self.parse_error_at(pos, end, diagnostics::UNEXPECTED_KEYWORD_OR_IDENTIFIER, &[]);
+    }
+
+    fn parse_error_for_invalid_name(
+        &mut self,
+        name_message: Message,
+        blank_message: Message,
+        token_if_blank_name: SyntaxKind,
+    ) {
+        if self.token == token_if_blank_name {
+            self.parse_error_at_current_token(blank_message, &[]);
+        } else {
+            let value = self.scanner.token_value().to_owned();
+            self.parse_error_at_current_token(name_message, &[&value]);
         }
     }
 
