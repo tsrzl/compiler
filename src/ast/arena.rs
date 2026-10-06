@@ -249,7 +249,8 @@ impl AstBuilder {
         }
     }
 
-    /// Finishes the tree rooted at `root`, linking every child to its parent.
+    /// Finishes the tree rooted at `root`, linking every node reachable from the root to its
+    /// parent. Unreachable nodes, such as those replaced during reparsing, keep no parent.
     #[must_use]
     pub fn finish(self, root: NodeId) -> Ast {
         let mut ast = Ast {
@@ -257,16 +258,12 @@ impl AstBuilder {
             list_nodes: self.list_nodes.into_boxed_slice(),
             root,
         };
-        let links = (0..ast.nodes.len())
-            .flat_map(|index| {
-                let parent = NodeId(u32::try_from(index).expect("node count fits in u32"));
-                ast.children(parent)
-                    .into_iter()
-                    .map(move |child| (child, parent))
-            })
-            .collect::<Vec<_>>();
-        for (child, parent) in links {
-            ast.nodes[child.as_usize()].parent = Some(parent);
+        let mut pending = vec![root];
+        while let Some(parent) = pending.pop() {
+            for child in ast.children(parent) {
+                ast.nodes[child.as_usize()].parent = Some(parent);
+                pending.push(child);
+            }
         }
         ast
     }

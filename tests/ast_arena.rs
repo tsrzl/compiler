@@ -61,3 +61,33 @@ fn should_link_child_to_parent_given_finished_binary_expression_when_reading_par
     // Assert
     assert_eq!(actual, Some(binary));
 }
+
+#[test]
+fn should_link_shared_child_to_reachable_parent_given_orphaned_former_parent_when_finishing_ast() {
+    // Arrange
+    let mut builder = AstBuilder::new();
+    let shared = identifier(&mut builder, "x", 0);
+    let statement_data =
+        || NodeData::ExpressionStatement(tsrzl::ast::ExpressionStatement { expression: shared });
+    let reachable = builder.add_node(
+        SyntaxKind::ExpressionStatement,
+        0,
+        1,
+        NodeFlags::NONE,
+        statement_data(),
+    );
+    builder.add_node(
+        SyntaxKind::ExpressionStatement,
+        0,
+        1,
+        NodeFlags::NONE,
+        statement_data(),
+    );
+    let ast = builder.finish(reachable);
+
+    // Act
+    let actual = ast.node(shared).parent();
+
+    // Assert
+    assert_eq!(actual, Some(reachable));
+}
