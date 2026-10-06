@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 785 behavior tests: 346 pass, 439 deliberately
+The Rust suite currently has 788 behavior tests: 346 pass, 442 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 470 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 473 behavior entries, touching
 all 110 source-suite/area groups in the inventory. Each mapped test samples its
 group rather than exhaustively covering it. The largest remaining backlogs
 include compiler regressions, JSDoc, external modules, statements,
 Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 439 deliberate Rust failures have
+The red-test map validator confirms that all 442 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -364,6 +364,9 @@ test executed that fixture or covered every output/configuration.
 | `should_report_ts2790_given_delete_on_required_property_when_checking_types` | `compiler/deleteExpressionMustBeOptional_exactOptionalPropertyTypes.ts` | Report TS2790 when deleting a required property with strict null checking enabled. |
 | `should_report_ts6234_given_call_to_get_accessor_when_checking_types` | `compiler/accessorAccidentalCallDiagnostic.ts` | Report TS6234 with an accessor-specific diagnostic when calling a getter. |
 | `should_report_ts1183_given_getter_body_in_object_type_when_checking_types` | `compiler/accessorBodyInTypeContext.ts` | Report TS1183 when a getter implementation appears in an object type. |
+| `should_report_ts1183_given_setter_body_in_object_type_when_checking_types` | `compiler/accessorBodyInTypeContext.ts` | Report TS1183 when a setter implementation appears in an object type. |
+| `should_report_ts1183_given_getter_body_in_interface_when_checking_types` | `compiler/accessorBodyInTypeContext.ts` | Report TS1183 when a getter implementation appears in an interface. |
+| `should_report_ts1183_given_setter_body_in_interface_when_checking_types` | `compiler/accessorBodyInTypeContext.ts` | Report TS1183 when a setter implementation appears in an interface. |
 | `should_report_ts2511_given_union_with_abstract_constructor_when_checking_types` | `compiler/abstractClassUnionInstantiation.ts` | Report TS2511 when instantiating a constructor union that includes an abstract class. |
 | `should_report_ts2427_given_interface_named_string_when_checking_types` | `compiler/InterfaceDeclaration8.ts` | Report TS2427 when an interface uses the predefined type name `string`. |
 | `should_report_ts2369_given_constructor_signature_parameter_property_when_checking_types` | `compiler/ParameterList13.ts` | Report TS2369 when a construct signature parameter uses a parameter-property modifier. |
