@@ -2,10 +2,11 @@
 
 use std::collections::HashMap;
 
-use super::program::{CheckDiagnostic, NodeRef, ProgramFile};
+use super::program::{CheckDiagnostic, NodeRef};
 use super::symbol_store::{SymbolRef, SymbolStore};
 use super::type_table::TypeTable;
 use crate::ast::{CheckFlags, SymbolFlags};
+use crate::program::ProgramFile;
 use crate::symbols::SymbolTable;
 
 /// Compiler options that change checking.

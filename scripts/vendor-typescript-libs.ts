@@ -71,6 +71,12 @@ pub fn lib_file_for_option(option: &str) -> Option<&'static str> {
         .map(|(_, file)| *file)
 }
 
+/// Returns every \`lib\` option name in TypeScript-Go's order.
+#[must_use]
+pub fn lib_option_names() -> Vec<&'static str> {
+    LIB_OPTIONS.iter().map(|(name, _)| *name).collect()
+}
+
 /// Returns the lib file for a \`lib\` option value or lib file name, compared case-insensitively.
 #[must_use]
 pub fn lib_file_name(name: &str) -> Option<&'static str> {

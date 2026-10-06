@@ -4,8 +4,9 @@
 //! the checker creates, such as clones that receive merged declarations, are transient and owned
 //! by the checker.
 
-use super::program::{NodeRef, ProgramFile};
+use super::program::NodeRef;
 use crate::ast::{CheckFlags, SymbolFlags};
+use crate::program::ProgramFile;
 use crate::symbols::{SymbolId, SymbolTable};
 
 /// A symbol anywhere in a program.

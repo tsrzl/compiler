@@ -1,63 +1,7 @@
-//! The files a checker reads: each parsed file with its binding.
+//! Checker locations and diagnostics that span a program's files.
 
 use crate::ast::NodeId;
-use crate::bind::{BoundFile, bind_source_file};
 use crate::diagnostics::Diagnostic;
-use crate::parser::{ExternalModuleIndicatorOptions, ParsedSourceFile};
-use crate::scanner::error_range_for_node;
-
-/// A parsed and bound source file in a program.
-#[derive(Debug, Clone)]
-pub struct ProgramFile {
-    parsed: ParsedSourceFile,
-    bound: BoundFile,
-}
-
-impl ProgramFile {
-    /// Binds `parsed` with default module detection.
-    #[must_use]
-    pub fn new(parsed: ParsedSourceFile) -> Self {
-        Self::with_options(parsed, ExternalModuleIndicatorOptions::default())
-    }
-
-    /// Binds `parsed` with the given module detection options.
-    #[must_use]
-    pub fn with_options(parsed: ParsedSourceFile, options: ExternalModuleIndicatorOptions) -> Self {
-        let bound = bind_source_file(&parsed, options);
-        Self { parsed, bound }
-    }
-
-    /// Returns the parsed file.
-    #[must_use]
-    pub const fn parsed(&self) -> &ParsedSourceFile {
-        &self.parsed
-    }
-
-    /// Returns the file's binding.
-    #[must_use]
-    pub const fn bound(&self) -> &BoundFile {
-        &self.bound
-    }
-
-    /// Returns whether the file is an external module rather than a global script.
-    #[must_use]
-    pub const fn is_external_module(&self) -> bool {
-        self.bound.external_module_indicator().is_some()
-    }
-
-    /// Returns a diagnostic covering `node`'s error range.
-    pub(super) fn diagnostic_for_node(
-        &self,
-        node: NodeId,
-        message: crate::diagnostics::Message,
-        arguments: &[&str],
-    ) -> Diagnostic {
-        let parsed = &self.parsed;
-        let range =
-            error_range_for_node(parsed.ast(), parsed.text(), parsed.language_variant(), node);
-        Diagnostic::new(message, range, arguments)
-    }
-}
 
 /// A node in a specific program file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

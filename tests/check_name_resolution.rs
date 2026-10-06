@@ -1,7 +1,8 @@
 use tsrzl::ast::{Ast, NodeId, SymbolFlags, SyntaxKind};
-use tsrzl::check::{Checker, CheckerOptions, NodeRef, ProgramFile, SymbolRef};
+use tsrzl::check::{Checker, CheckerOptions, NodeRef, SymbolRef};
 use tsrzl::diagnostics;
 use tsrzl::parser::{ParseOptions, ScriptKind, parse_source_file};
+use tsrzl::program::ProgramFile;
 
 fn file(name: &str, text: &str) -> ProgramFile {
     ProgramFile::new(parse_source_file(

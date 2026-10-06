@@ -1,6 +1,7 @@
 use tsrzl::ast::SymbolFlags;
-use tsrzl::check::{Checker, CheckerOptions, ProgramFile};
+use tsrzl::check::{Checker, CheckerOptions};
 use tsrzl::parser::{ParseOptions, ScriptKind, parse_source_file};
+use tsrzl::program::ProgramFile;
 
 fn file(name: &str, text: &str) -> ProgramFile {
     ProgramFile::new(parse_source_file(
@@ -181,4 +182,20 @@ fn should_merge_namespace_exports_given_namespace_in_two_files_when_initializing
     let shapes = checker.globals().get("Shapes").expect("Shapes is global");
     let names: Vec<_> = checker.export_names(shapes);
     assert_eq!(names, ["sides", "corners"]);
+}
+
+#[test]
+fn should_merge_lib_globals_without_conflicts_given_default_libs_when_initializing_checker() {
+    // Arrange
+    let roots = vec![parse_source_file(
+        &ParseOptions::new("/app/main.ts", ScriptKind::Ts),
+        "let value = 1;",
+    )];
+    let program = tsrzl::program::Program::load(roots, &tsrzl::program::ProgramOptions::default());
+
+    // Act
+    let checker = Checker::new(program.files(), CheckerOptions::default());
+
+    // Assert
+    assert!(checker.globals().get("Array").is_some() && checker.diagnostics().is_empty());
 }

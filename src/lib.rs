@@ -18,6 +18,7 @@ pub mod generator;
 pub mod jsnum;
 pub mod module_resolver;
 pub mod parser;
+pub mod program;
 pub mod scanner;
 pub mod source_file;
 pub mod source_text;
