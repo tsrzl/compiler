@@ -18,6 +18,10 @@ impl Program {
 
 /// A top-level statement supported by the current parser.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[expect(
+    clippy::large_enum_variant,
+    reason = "the legacy tree is retired once compiler phases consume the ported arena AST"
+)]
 pub enum Statement {
     /// A `const`, `let`, or `var` declaration.
     VariableDeclaration(VariableDeclaration),

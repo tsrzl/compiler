@@ -1282,17 +1282,17 @@ fn infer_expression_types(expression: &Expression) -> Vec<String> {
             operator: crate::syntax::UnaryOperator::Plus | crate::syntax::UnaryOperator::Negate,
             ..
         } => vec!["number".to_owned()],
-        Expression::UnaryExpression {
-            operator: crate::syntax::UnaryOperator::TypeOf,
-            ..
-        } => vec!["string".to_owned()],
         Expression::BooleanLiteral { .. }
         | Expression::UnaryExpression {
             operator: crate::syntax::UnaryOperator::LogicalNot,
             ..
         } => vec!["boolean".to_owned()],
         Expression::NullLiteral { .. } => vec!["null".to_owned()],
-        Expression::StringLiteral { .. } => vec!["string".to_owned()],
+        Expression::StringLiteral { .. }
+        | Expression::UnaryExpression {
+            operator: crate::syntax::UnaryOperator::TypeOf,
+            ..
+        } => vec!["string".to_owned()],
         Expression::TypeAssertionExpression {
             type_annotation, ..
         } => type_annotation.type_spellings().collect(),

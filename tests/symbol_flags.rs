@@ -26,8 +26,7 @@ fn should_exclude_global_lookup_given_all_when_reading_symbol_flags() {
 }
 
 #[test]
-fn should_complement_supported_default_modifiers_given_unsupported_set_when_reading_symbol_flags()
-{
+fn should_complement_supported_default_modifiers_given_unsupported_set_when_reading_symbol_flags() {
     // Arrange
     let supported = SymbolFlags::EXPORT_SUPPORTS_DEFAULT_MODIFIER;
 

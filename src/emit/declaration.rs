@@ -446,7 +446,7 @@ fn infer_function_return_type(
     parameter_types: &HashMap<&str, String>,
 ) -> String {
     if let Some(return_type) = function.return_type() {
-        return return_type.return_type_spelling();
+        return_type.return_type_spelling()
     } else if let Some(expression) = function
         .body()
         .iter()
@@ -529,12 +529,12 @@ fn infer_expression_type_with_parameters(
             ..
         }
         | Expression::BooleanLiteral { .. } => "boolean".to_owned(),
-        Expression::UnaryExpression {
+        Expression::NullLiteral { .. } => "null".to_owned(),
+        Expression::StringLiteral { .. }
+        | Expression::UnaryExpression {
             operator: crate::syntax::UnaryOperator::TypeOf,
             ..
         } => "string".to_owned(),
-        Expression::NullLiteral { .. } => "null".to_owned(),
-        Expression::StringLiteral { .. } => "string".to_owned(),
         Expression::TypeAssertionExpression {
             type_annotation, ..
         } => type_annotation

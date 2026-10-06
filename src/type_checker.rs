@@ -11,8 +11,8 @@ mod statements;
 use crate::binder::ScopedSymbolTable;
 use crate::syntax::{
     AssignmentOperator, BinaryOperator, Diagnostic, Expression, FunctionBodyStatement,
-    FunctionDeclaration, ObjectProperty, Program, ReturnStatement, Statement, TypeReference,
-    UnaryOperator, VariableDeclaration, VariableDeclarationKind,
+    FunctionDeclaration, ObjectProperty, Program, ReturnStatement, Statement, TextSpan,
+    TypeReference, UnaryOperator, VariableDeclaration, VariableDeclarationKind,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -32,6 +32,22 @@ use statements::{
     check_exported_values, check_function_declaration, check_interface_declaration,
     check_top_level_control_flow,
 };
+
+fn top_level_break(span: TextSpan) -> Diagnostic {
+    Diagnostic::new(
+        1105,
+        "A 'break' statement can only be used within an enclosing iteration or switch statement.",
+        span,
+    )
+}
+
+fn top_level_continue(span: TextSpan) -> Diagnostic {
+    Diagnostic::new(
+        1104,
+        "A 'continue' statement can only be used within an enclosing iteration statement.",
+        span,
+    )
+}
 
 pub(crate) fn check(
     program: &Program,
@@ -65,8 +81,8 @@ pub(crate) fn check(
                     environment.insert(declaration.name().to_owned(), types);
                 }
             }
-            Statement::FunctionDeclaration(function) => diagnostics.extend(
-                check_function_declaration(
+            Statement::FunctionDeclaration(function) => {
+                diagnostics.extend(check_function_declaration(
                     function,
                     symbols,
                     &environment,
@@ -74,8 +90,8 @@ pub(crate) fn check(
                     &constant_bindings,
                     strict_null_checks,
                     None,
-                ),
-            ),
+                ));
+            }
             Statement::ExpressionStatement(expression) | Statement::ExportDefault(expression) => {
                 diagnostics.extend(check_expression_statement(
                     expression,
@@ -87,45 +103,37 @@ pub(crate) fn check(
                     None,
                 ));
             }
-            Statement::ControlFlowStatement(control_flow) => diagnostics.extend(
-                check_top_level_control_flow(
+            Statement::ControlFlowStatement(control_flow) => {
+                diagnostics.extend(check_top_level_control_flow(
                     control_flow,
                     symbols,
                     &environment,
                     &functions,
                     &constant_bindings,
                     strict_null_checks,
-                ),
-            ),
-            Statement::Break { span } => diagnostics.push(Diagnostic::new(
-                1105,
-                "A 'break' statement can only be used within an enclosing iteration or switch statement.",
-                *span,
-            )),
-            Statement::Continue { span } => diagnostics.push(Diagnostic::new(
-                1104,
-                "A 'continue' statement can only be used within an enclosing iteration statement.",
-                *span,
-            )),
+                ));
+            }
+            Statement::Break { span } => diagnostics.push(top_level_break(*span)),
+            Statement::Continue { span } => diagnostics.push(top_level_continue(*span)),
             Statement::ExportNamed(specifiers) => {
                 diagnostics.extend(check_exported_values(specifiers, &declared_names));
             }
             Statement::ExportTypeNamed(specifiers) => {
                 diagnostics.extend(check_exported_types(specifiers, symbols));
             }
-            Statement::InterfaceDeclaration(declaration) => diagnostics.extend(
-                check_interface_declaration(declaration, symbols),
-            ),
-            Statement::ClassDeclaration(declaration) => diagnostics.extend(
-                check_class_declaration(
+            Statement::InterfaceDeclaration(declaration) => {
+                diagnostics.extend(check_interface_declaration(declaration, symbols));
+            }
+            Statement::ClassDeclaration(declaration) => {
+                diagnostics.extend(check_class_declaration(
                     declaration,
                     symbols,
                     &environment,
                     &functions,
                     &constant_bindings,
                     strict_null_checks,
-                ),
-            ),
+                ));
+            }
             Statement::EnumDeclaration(declaration) => {
                 diagnostics.extend(enums::check_enum_declaration(declaration));
             }
@@ -760,6 +768,38 @@ fn check_expression_statement(
         .collect()
 }
 
+fn infer_property_access_types(
+    receiver: &Expression,
+    name: &str,
+    environment: &HashMap<String, Vec<String>>,
+    symbols: &ScopedSymbolTable<'_>,
+) -> Option<Vec<String>> {
+    let receiver_types = infer_expression_types(receiver, environment, symbols)?;
+    let mut property_types = Vec::new();
+    for receiver_type in receiver_types {
+        if name == "length" && (receiver_type.ends_with("[]") || receiver_type == "string") {
+            if !property_types
+                .iter()
+                .any(|property_type| property_type == "number")
+            {
+                property_types.push("number".to_owned());
+            }
+            continue;
+        }
+        let Some(properties) = symbols.properties_for_type(&receiver_type) else {
+            continue;
+        };
+        if let Some(property) = properties.iter().find(|property| property.name == name) {
+            for property_type in symbols.resolve_names(&property.type_names) {
+                if !property_types.contains(&property_type) {
+                    property_types.push(property_type);
+                }
+            }
+        }
+    }
+    (!property_types.is_empty()).then_some(property_types)
+}
+
 pub(super) fn infer_expression_types(
     expression: &Expression,
     environment: &HashMap<String, Vec<String>>,
@@ -780,12 +820,12 @@ pub(super) fn infer_expression_types(
             operator: UnaryOperator::LogicalNot,
             ..
         } => Some(vec!["boolean".to_owned()]),
-        Expression::UnaryExpression {
+        Expression::NullLiteral { .. } => Some(vec!["null".to_owned()]),
+        Expression::StringLiteral { .. }
+        | Expression::UnaryExpression {
             operator: UnaryOperator::TypeOf,
             ..
         } => Some(vec!["string".to_owned()]),
-        Expression::NullLiteral { .. } => Some(vec!["null".to_owned()]),
-        Expression::StringLiteral { .. } => Some(vec!["string".to_owned()]),
         Expression::TypeAssertionExpression {
             type_annotation, ..
         } => Some(symbols.resolve_annotation(type_annotation)),
@@ -810,31 +850,7 @@ pub(super) fn infer_expression_types(
             infer_element_access_types(receiver, environment, symbols)
         }
         Expression::PropertyAccessExpression { receiver, name, .. } => {
-            let receiver_types = infer_expression_types(receiver, environment, symbols)?;
-            let mut property_types = Vec::new();
-            for receiver_type in receiver_types {
-                if name == "length" && (receiver_type.ends_with("[]") || receiver_type == "string")
-                {
-                    if !property_types
-                        .iter()
-                        .any(|property_type| property_type == "number")
-                    {
-                        property_types.push("number".to_owned());
-                    }
-                    continue;
-                }
-                let Some(properties) = symbols.properties_for_type(&receiver_type) else {
-                    continue;
-                };
-                if let Some(property) = properties.iter().find(|property| property.name == *name) {
-                    for property_type in symbols.resolve_names(&property.type_names) {
-                        if !property_types.contains(&property_type) {
-                            property_types.push(property_type);
-                        }
-                    }
-                }
-            }
-            (!property_types.is_empty()).then_some(property_types)
+            infer_property_access_types(receiver, name, environment, symbols)
         }
         Expression::UnaryExpression { operand, .. } => {
             let operand_types = infer_expression_types(operand, environment, symbols)?;
