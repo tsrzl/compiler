@@ -27,7 +27,6 @@ impl Default for CheckerOptions {
 #[derive(Debug, Clone, Copy)]
 pub(super) struct SpecialSymbols {
     pub(super) undefined: SymbolRef,
-    #[expect(dead_code, reason = "name resolution reads it once ported")]
     pub(super) arguments: SymbolRef,
     #[expect(dead_code, reason = "name resolution reads it once ported")]
     pub(super) require: SymbolRef,

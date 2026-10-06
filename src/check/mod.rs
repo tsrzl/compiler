@@ -7,6 +7,7 @@ mod checker;
 mod compare;
 mod flags;
 mod globals;
+mod name_resolution;
 mod program;
 mod symbol_store;
 mod type_table;
