@@ -1,4 +1,4 @@
-use tsrzl::ast::{SyntaxKind, TokenFlags};
+use tsrzl::ast::{NodeFlags, SyntaxKind, TokenFlags};
 
 #[test]
 fn should_classify_break_as_reserved_word_given_break_keyword_when_checking_kind() {
@@ -22,4 +22,16 @@ fn should_expose_typescript_go_bit_values_given_combined_token_flags_when_readin
 
     // Assert
     assert_eq!(actual, 48);
+}
+
+#[test]
+fn should_include_all_variable_declaration_kinds_given_block_scoped_node_flags_when_reading_bits() {
+    // Arrange
+    let flags = NodeFlags::BLOCK_SCOPED;
+
+    // Act
+    let actual = flags.bits();
+
+    // Assert
+    assert_eq!(actual, 0b111);
 }
