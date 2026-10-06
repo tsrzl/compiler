@@ -8,6 +8,23 @@ pub fn spelling_suggestion<'candidate>(
     name: &str,
     candidates: impl IntoIterator<Item = &'candidate str>,
 ) -> Option<&'candidate str> {
+    spelling_suggestion_by(
+        name,
+        candidates,
+        |candidate| (*candidate).to_owned(),
+        Ord::cmp,
+    )
+}
+
+/// Returns the candidate whose name, given by `name_of`, is closest to `name`, as TypeScript-Go's
+/// generic `GetSpellingSuggestion` does. Candidates with an empty name are skipped, and equally
+/// close candidates are ordered by `compare`.
+pub fn spelling_suggestion_by<T: Copy>(
+    name: &str,
+    candidates: impl IntoIterator<Item = T>,
+    name_of: impl Fn(&T) -> String,
+    compare: impl Fn(&T, &T) -> std::cmp::Ordering,
+) -> Option<T> {
     let name_chars = name.chars().collect::<Vec<_>>();
     #[allow(
         clippy::cast_precision_loss,
@@ -17,20 +34,23 @@ pub fn spelling_suggestion<'candidate>(
     let maximum_length_difference = 2.max((name_chars.len() as f64 * 0.34) as usize);
     #[allow(clippy::cast_precision_loss)]
     let mut best_distance = (name_chars.len() as f64 * 0.4).floor() + 0.9;
-    let mut best: Option<&str> = None;
+    let mut best: Option<T> = None;
     for candidate in candidates {
+        let candidate_name = name_of(&candidate);
         // TypeScript-Go compares the candidate's byte length with the name's character count.
-        let longer = candidate.len().max(name_chars.len());
-        let shorter = candidate.len().min(name_chars.len());
-        if candidate.is_empty() || longer - shorter > maximum_length_difference || candidate == name
+        let longer = candidate_name.len().max(name_chars.len());
+        let shorter = candidate_name.len().min(name_chars.len());
+        if candidate_name.is_empty()
+            || longer - shorter > maximum_length_difference
+            || candidate_name == name
         {
             continue;
         }
         // A user would notice other differences in names under three characters.
-        if candidate.len() < 3 && !candidate.eq_ignore_ascii_case(name) {
+        if candidate_name.len() < 3 && !candidate_name.eq_ignore_ascii_case(name) {
             continue;
         }
-        let candidate_chars = candidate.chars().collect::<Vec<_>>();
+        let candidate_chars = candidate_name.chars().collect::<Vec<_>>();
         let Some(distance) = levenshtein_with_max(&name_chars, &candidate_chars, best_distance)
         else {
             continue;
@@ -38,7 +58,7 @@ pub fn spelling_suggestion<'candidate>(
         if distance < best_distance {
             best_distance = distance;
             best = Some(candidate);
-        } else if best.is_none_or(|best| candidate < best) {
+        } else if best.is_none_or(|best| compare(&candidate, &best).is_lt()) {
             best = Some(candidate);
         }
     }
