@@ -78,3 +78,35 @@ fn should_return_identifier_text_given_unicode_identifier_when_reading_token_val
     // Assert
     assert_eq!(scanner.token_value(), "café_1");
 }
+
+#[test]
+fn should_cook_escape_sequences_given_string_literal_when_reading_token_value() {
+    // Arrange
+    let mut scanner = Scanner::new(
+        r#""a\tb\x41B\u{1F600}😀\
+c""#,
+    );
+
+    // Act
+    scanner.scan();
+
+    // Assert
+    assert_eq!(scanner.token_value(), "a\tbAB😀😀c");
+}
+
+#[test]
+fn should_report_unterminated_string_given_line_break_in_literal_when_scanning_tokens() {
+    // Arrange
+    let mut scanner = Scanner::new("'abc\n");
+
+    // Act
+    scanner.scan();
+
+    // Assert
+    let codes = scanner
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.message().code())
+        .collect::<Vec<_>>();
+    assert_eq!(codes, [1002]);
+}

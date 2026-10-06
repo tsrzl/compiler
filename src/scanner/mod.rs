@@ -6,6 +6,7 @@
 mod chars;
 mod identifier_tables;
 mod keywords;
+mod strings;
 
 use crate::ast::{SyntaxKind, TokenFlags};
 use crate::diagnostics::{self, Message};
@@ -305,6 +306,10 @@ impl<'text> Scanner<'text> {
 
     /// Scans a token that is not ASCII trivia. Returns `None` when trivia was skipped.
     fn scan_other_token(&mut self, byte: u8) -> Option<SyntaxKind> {
+        if matches!(byte, b'"' | b'\'') {
+            self.state.token_value = self.scan_string(false);
+            return Some(SyntaxKind::StringLiteral);
+        }
         if let Some(token) = self.scan_punctuation(byte) {
             return Some(token);
         }
