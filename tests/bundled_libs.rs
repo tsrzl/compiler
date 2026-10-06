@@ -96,3 +96,24 @@ fn should_sort_default_lib_first_given_lib_priorities_when_ordering_libs() {
     // Assert
     assert_eq!(sorted, ["lib.d.ts", "lib.es5.d.ts", "lib.dom.d.ts"]);
 }
+
+#[test]
+fn should_parse_without_diagnostics_given_every_bundled_lib_when_parsing() {
+    // Arrange
+    let names = lib_names();
+
+    // Act
+    let failing: Vec<_> = names
+        .into_iter()
+        .filter(|name| {
+            let options = tsrzl::parser::ParseOptions::new(*name, tsrzl::parser::ScriptKind::Ts);
+            let text = lib_text(name).expect("listed libs have text");
+            !tsrzl::parser::parse_source_file(&options, text)
+                .diagnostics()
+                .is_empty()
+        })
+        .collect();
+
+    // Assert
+    assert_eq!(failing, Vec::<&str>::new());
+}
