@@ -117,7 +117,7 @@ pub struct CaseBlock {
 /// The data of a `CaseOrDefaultClause` node.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CaseOrDefaultClause {
-    pub expression: NodeId,
+    pub expression: Option<NodeId>,
     pub statements: NodeList,
 }
 
@@ -415,7 +415,7 @@ pub struct SetAccessorDeclaration {
 pub struct IndexSignatureDeclaration {
     pub modifiers: Option<ModifierList>,
     pub parameters: NodeList,
-    pub type_node: NodeId,
+    pub type_node: Option<NodeId>,
 }
 
 /// The data of a `MethodSignatureDeclaration` node.
@@ -449,8 +449,8 @@ pub struct PropertySignatureDeclaration {
     pub modifiers: Option<ModifierList>,
     pub name: NodeId,
     pub postfix_token: Option<NodeId>,
-    pub type_node: NodeId,
-    pub initializer: NodeId,
+    pub type_node: Option<NodeId>,
+    pub initializer: Option<NodeId>,
 }
 
 /// The data of a `PropertyDeclaration` node.
@@ -816,7 +816,7 @@ pub struct TypePredicateNode {
 /// The data of a `ImportAttribute` node.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportAttribute {
-    pub name: NodeId,
+    pub name: Option<NodeId>,
     pub value: NodeId,
 }
 
@@ -2140,7 +2140,9 @@ impl NodeData {
                 false
             }
             Self::CaseOrDefaultClause(data) => {
-                if visitor.visit_node(data.expression) {
+                if let Some(expression) = &data.expression
+                    && visitor.visit_node(*expression)
+                {
                     return true;
                 }
                 if visitor.visit_list(&data.statements) {
@@ -2708,7 +2710,9 @@ impl NodeData {
                 if visitor.visit_list(&data.parameters) {
                     return true;
                 }
-                if visitor.visit_node(data.type_node) {
+                if let Some(type_node) = &data.type_node
+                    && visitor.visit_node(*type_node)
+                {
                     return true;
                 }
                 false
@@ -2800,10 +2804,14 @@ impl NodeData {
                 {
                     return true;
                 }
-                if visitor.visit_node(data.type_node) {
+                if let Some(type_node) = &data.type_node
+                    && visitor.visit_node(*type_node)
+                {
                     return true;
                 }
-                if visitor.visit_node(data.initializer) {
+                if let Some(initializer) = &data.initializer
+                    && visitor.visit_node(*initializer)
+                {
                     return true;
                 }
                 false
@@ -3328,7 +3336,9 @@ impl NodeData {
                 false
             }
             Self::ImportAttribute(data) => {
-                if visitor.visit_node(data.name) {
+                if let Some(name) = &data.name
+                    && visitor.visit_node(*name)
+                {
                     return true;
                 }
                 if visitor.visit_node(data.value) {

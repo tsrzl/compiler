@@ -3,6 +3,8 @@
 mod arena;
 mod flags;
 mod flags_type;
+
+pub(crate) use flags_type::flags_type;
 mod kind;
 mod kind_guards;
 mod nodes;

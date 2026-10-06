@@ -30,33 +30,47 @@ impl Parser<'_> {
         match token {
             SyntaxKind::SemicolonToken => return self.parse_empty_statement(),
             SyntaxKind::OpenBraceToken => return self.parse_block(false, None),
-            SyntaxKind::VarKeyword
-            | SyntaxKind::FunctionKeyword
-            | SyntaxKind::ClassKeyword
-            | SyntaxKind::IfKeyword
-            | SyntaxKind::DoKeyword
-            | SyntaxKind::WhileKeyword
-            | SyntaxKind::ForKeyword
-            | SyntaxKind::ContinueKeyword
-            | SyntaxKind::BreakKeyword
-            | SyntaxKind::ReturnKeyword
-            | SyntaxKind::WithKeyword
-            | SyntaxKind::SwitchKeyword
-            | SyntaxKind::ThrowKeyword
-            | SyntaxKind::TryKeyword
-            | SyntaxKind::CatchKeyword
-            | SyntaxKind::FinallyKeyword
-            | SyntaxKind::DebuggerKeyword
-            | SyntaxKind::AtToken => return self.parse_unported_statement(),
+            SyntaxKind::VarKeyword => {
+                let (pos, jsdoc) = (self.node_pos(), self.jsdoc_scanner_info());
+                return self.parse_variable_statement(pos, jsdoc, None);
+            }
             SyntaxKind::LetKeyword if self.is_let_declaration() => {
-                return self.parse_unported_statement();
+                let (pos, jsdoc) = (self.node_pos(), self.jsdoc_scanner_info());
+                return self.parse_variable_statement(pos, jsdoc, None);
             }
             SyntaxKind::AwaitKeyword if self.is_await_using_declaration() => {
-                return self.parse_unported_statement();
+                let (pos, jsdoc) = (self.node_pos(), self.jsdoc_scanner_info());
+                return self.parse_variable_statement(pos, jsdoc, None);
             }
             SyntaxKind::UsingKeyword if self.is_using_declaration() => {
-                return self.parse_unported_statement();
+                let (pos, jsdoc) = (self.node_pos(), self.jsdoc_scanner_info());
+                return self.parse_variable_statement(pos, jsdoc, None);
             }
+            SyntaxKind::FunctionKeyword => {
+                let (pos, jsdoc) = (self.node_pos(), self.jsdoc_scanner_info());
+                return self.parse_function_declaration(pos, jsdoc, None);
+            }
+            SyntaxKind::ClassKeyword => return self.parse_unported_statement(),
+            SyntaxKind::IfKeyword => return self.parse_if_statement(),
+            SyntaxKind::DoKeyword => return self.parse_do_statement(),
+            SyntaxKind::WhileKeyword => return self.parse_while_statement(),
+            SyntaxKind::ForKeyword => return self.parse_for_or_for_in_or_for_of_statement(),
+            SyntaxKind::ContinueKeyword => {
+                return self.parse_break_or_continue_statement(SyntaxKind::ContinueStatement);
+            }
+            SyntaxKind::BreakKeyword => {
+                return self.parse_break_or_continue_statement(SyntaxKind::BreakStatement);
+            }
+            SyntaxKind::ReturnKeyword => return self.parse_return_statement(),
+            SyntaxKind::WithKeyword => return self.parse_with_statement(),
+            SyntaxKind::SwitchKeyword => return self.parse_switch_statement(),
+            SyntaxKind::ThrowKeyword => return self.parse_throw_statement(),
+            // `catch` and `finally` without `try` are parsed as a try statement and reported.
+            SyntaxKind::TryKeyword | SyntaxKind::CatchKeyword | SyntaxKind::FinallyKeyword => {
+                return self.parse_try_statement();
+            }
+            SyntaxKind::DebuggerKeyword => return self.parse_debugger_statement(),
+            SyntaxKind::AtToken => return self.parse_declaration(),
             SyntaxKind::AsyncKeyword
             | SyntaxKind::InterfaceKeyword
             | SyntaxKind::TypeKeyword
@@ -77,13 +91,14 @@ impl Parser<'_> {
             | SyntaxKind::GlobalKeyword
                 if self.is_start_of_declaration() =>
             {
-                return self.parse_unported_statement();
+                return self.parse_declaration();
             }
             _ => {}
         }
         self.parse_expression_or_labeled_statement()
     }
 
+    /// identifier followed by `:`.
     /// Parses an expression statement, or a labeled statement when the expression is an
     /// identifier followed by `:`.
     fn parse_expression_or_labeled_statement(&mut self) -> NodeId {
@@ -121,7 +136,7 @@ impl Parser<'_> {
         result
     }
 
-    fn parse_error_for_missing_semicolon_after(&mut self, node: NodeId) {
+    pub(super) fn parse_error_for_missing_semicolon_after(&mut self, node: NodeId) {
         let node_ref = self.builder.node(node);
         if let Some(tagged) = node_ref.data().as_tagged_template_expression() {
             // `module `M1` {` parses as a tagged template.
@@ -237,7 +252,7 @@ impl Parser<'_> {
     ///
     /// This keeps unported syntax visible as TS1128 instead of producing a plausible tree; it is
     /// removed when statement parsing is complete.
-    fn parse_unported_statement(&mut self) -> NodeId {
+    pub(super) fn parse_unported_statement(&mut self) -> NodeId {
         let pos = self.node_pos();
         self.parse_error_at_current_token(diagnostics::DECLARATION_OR_STATEMENT_EXPECTED, &[]);
         self.next_token();

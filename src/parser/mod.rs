@@ -3,11 +3,22 @@
 //! [`parse_source_file`] turns source text into an immutable [`ParsedSourceFile`]. Positions are
 //! UTF-8 byte offsets, matching TypeScript-Go.
 
+mod arrow_functions;
+mod bindings;
+mod class_members;
+mod control_flow;
+mod declarations;
 mod expressions;
 mod identifiers;
 mod lists;
 mod lookahead;
+mod modifiers;
+mod signatures;
 mod statements;
+mod type_members;
+mod types;
+
+use std::collections::HashSet;
 
 use crate::ast::{
     Ast, AstBuilder, AstBuilderMark, NodeData, NodeFlags, NodeId, NodeList, SourceFile, SyntaxKind,
@@ -229,6 +240,8 @@ struct Parser<'text> {
     parsing_contexts: u32,
     statement_has_await_identifier: bool,
     has_parse_error: bool,
+    /// Token positions already found not to start a parenthesized arrow function.
+    not_parenthesized_arrow: HashSet<usize>,
 }
 
 impl<'text> Parser<'text> {
@@ -252,6 +265,7 @@ impl<'text> Parser<'text> {
             parsing_contexts: 0,
             statement_has_await_identifier: false,
             has_parse_error: false,
+            not_parenthesized_arrow: HashSet::new(),
         }
     }
 
@@ -470,6 +484,11 @@ impl<'text> Parser<'text> {
 
     fn rescan_greater_than_token(&mut self) -> SyntaxKind {
         self.token = self.scanner.rescan_greater_than_token();
+        self.token
+    }
+
+    fn rescan_less_than_token(&mut self) -> SyntaxKind {
+        self.token = self.scanner.rescan_less_than_token();
         self.token
     }
 

@@ -64,6 +64,18 @@ impl Parser<'_> {
             .then(|| self.parse_binding_identifier())
     }
 
+    pub(super) fn create_identifier(&mut self, is_identifier: bool) -> NodeId {
+        self.create_identifier_with_diagnostic(is_identifier, None, None)
+    }
+
+    pub(super) fn parse_identifier_name_with_diagnostic(
+        &mut self,
+        message: Option<Message>,
+    ) -> NodeId {
+        let is_identifier = self.token.is_identifier_or_keyword();
+        self.create_identifier_with_diagnostic(is_identifier, message, None)
+    }
+
     fn create_identifier_with_diagnostic(
         &mut self,
         is_identifier: bool,

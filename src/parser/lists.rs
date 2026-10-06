@@ -192,6 +192,24 @@ impl Parser<'_> {
         Some(self.new_node_list(pos, end, list))
     }
 
+    /// Parses a delimited list between `opening` and `closing`, or a missing list when
+    /// `opening` is absent. Returns `None` when an element fails to parse.
+    pub(super) fn parse_bracketed_list(
+        &mut self,
+        kind: ParsingContext,
+        parse_element: impl FnMut(&mut Self) -> Option<NodeId>,
+        opening: SyntaxKind,
+        closing: SyntaxKind,
+    ) -> Option<NodeList> {
+        if self.parse_expected(opening) {
+            let result = self.parse_delimited_list(kind, parse_element);
+            self.parse_expected(closing);
+            return result;
+        }
+        let pos = self.node_pos();
+        Some(self.builder.add_missing_list(super::to_u32(pos)))
+    }
+
     fn abort_parsing_list_or_move_to_next_token(&mut self, kind: ParsingContext) -> bool {
         self.parsing_context_errors(kind);
         if self.is_in_some_parsing_context() {

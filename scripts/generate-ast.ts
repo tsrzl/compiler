@@ -66,6 +66,11 @@ const OPTIONAL_OVERRIDES = new Set([
   "PropertyAssignment.Type",
   "ShorthandPropertyAssignment.Type",
   "TaggedTemplateExpression.QuestionDotToken",
+  "PropertySignatureDeclaration.Type",
+  "PropertySignatureDeclaration.Initializer",
+  "IndexSignatureDeclaration.Type",
+  "CaseOrDefaultClause.Expression",
+  "ImportAttribute.name",
 ]);
 
 function snakeCase(name: string): string {
