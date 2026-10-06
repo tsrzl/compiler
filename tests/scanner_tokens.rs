@@ -333,3 +333,15 @@ fn should_scan_closing_tag_start_given_jsx_variant_when_scanning_tokens() {
     // Assert
     assert_eq!(actual, SyntaxKind::LessThanSlashToken);
 }
+
+#[test]
+fn should_report_binary_file_given_replacement_character_when_scanning_tokens() {
+    // Arrange
+    let text = "x \u{fffd} y";
+
+    // Act
+    let actual = diagnostic_codes(text);
+
+    // Assert
+    assert_eq!(actual, [1490]);
+}

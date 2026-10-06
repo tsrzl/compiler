@@ -283,6 +283,12 @@ impl<'text> Scanner<'text> {
         if self.scan_identifier(0) {
             return Some(identifier_token(&self.state.token_value));
         }
+        // TypeScript-Go decodes U+FFFD as its UTF-8 error rune and treats the file as binary.
+        if self.char_at_pos() == Some(char::REPLACEMENT_CHARACTER) {
+            self.error_at(diagnostics::FILE_APPEARS_TO_BE_BINARY, 0, 0, &[]);
+            self.state.pos = self.text.len();
+            return Some(SyntaxKind::NonTextFileMarkerTrivia);
+        }
         match self.scan_non_ascii_trivia() {
             Some(trivia) => trivia,
             None => {
