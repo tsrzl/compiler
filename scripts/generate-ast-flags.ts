@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Generates src/ast/flags.rs from the pinned TypeScript-Go token, node, and modifier flag constants.
+// Generates src/ast/flags.rs from the pinned TypeScript-Go token, node, modifier, and symbol flag constants.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
@@ -15,21 +15,57 @@ const FLAG_SETS: FlagSet[] = [
   { goType: "TokenFlags", file: "tokenflags.go", doc: "Flags describing how a token was written." },
   { goType: "NodeFlags", file: "nodeflags.go", doc: "Flags describing a node's syntax and parse context." },
   { goType: "ModifierFlags", file: "modifierflags.go", doc: "Flags summarizing a declaration's modifiers." },
+  { goType: "SymbolFlags", file: "symbolflags.go", doc: "Flags classifying the declarations merged into a symbol." },
 ];
 
+// Evaluates a Go constant expression with Go operator precedence: unary `^`, then
+// `<<` and `&`/`&^` (multiplicative), then `|` and `-` (additive).
 function evaluate(expression: string, values: Map<string, number>, goType: string): number {
-  const term = (text: string): number => {
-    const trimmed = text.trim();
-    const shift = /^(\d+) << (\d+)$/.exec(trimmed);
-    if (shift !== null) return (Number(shift[1]) << Number(shift[2])) >>> 0;
-    if (/^\d+$/.test(trimmed)) return Number(trimmed);
-    const value = values.get(trimmed.replace(new RegExp(`^${goType}`), ""));
-    if (value === undefined) throw new Error(`Unknown ${goType} operand: ${trimmed}`);
+  const tokens = expression.match(/\w+|<<|&\^|[|&^()-]/g) ?? [];
+  let index = 0;
+  const peek = (): string | undefined => tokens[index];
+  const take = (expected?: string): string => {
+    const token = tokens[index++];
+    if (token === undefined || (expected !== undefined && token !== expected)) {
+      throw new Error(`Unexpected token in ${goType} expression: ${expression}`);
+    }
+    return token;
+  };
+  const unary = (): number => {
+    const token = take();
+    if (token === "^") return ~unary() >>> 0;
+    if (token === "(") {
+      const value = additive();
+      take(")");
+      return value;
+    }
+    if (/^\d+$/.test(token)) return Number(token);
+    const value = values.get(token.replace(new RegExp(`^${goType}`), ""));
+    if (value === undefined) throw new Error(`Unknown ${goType} operand: ${token}`);
     return value;
   };
-  const [included, excluded] = expression.split("& ^");
-  let value = included.split("|").reduce((sum, part) => (sum | term(part)) >>> 0, 0);
-  if (excluded !== undefined) value = (value & ~term(excluded)) >>> 0;
+  const multiplicative = (): number => {
+    let value = unary();
+    for (let operator = peek(); operator === "<<" || operator === "&" || operator === "&^"; operator = peek()) {
+      take();
+      const right = unary();
+      if (operator === "<<") value = (value << right) >>> 0;
+      else if (operator === "&") value = (value & right) >>> 0;
+      else value = (value & ~right) >>> 0;
+    }
+    return value;
+  };
+  const additive = (): number => {
+    let value = multiplicative();
+    for (let operator = peek(); operator === "|" || operator === "-"; operator = peek()) {
+      take();
+      const right = multiplicative();
+      value = operator === "|" ? (value | right) >>> 0 : (value - right) >>> 0;
+    }
+    return value;
+  };
+  const value = additive();
+  if (index !== tokens.length) throw new Error(`Trailing tokens in ${goType} expression: ${expression}`);
   return value;
 }
 
