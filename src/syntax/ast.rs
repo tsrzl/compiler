@@ -1211,11 +1211,12 @@ pub enum VariableDeclarationKind {
     Var,
 }
 
-/// A named type reference.
+/// A type annotation represented by one or more named types.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TypeReference {
     pub(super) names: Vec<String>,
     pub(super) array_dimensions: Vec<usize>,
+    pub(super) predicate_parameter: Option<String>,
     pub(super) span: TextSpan,
 }
 
@@ -1240,7 +1241,23 @@ impl TypeReference {
             .map(|(name, dimensions)| format!("{name}{}", "[]".repeat(*dimensions)))
     }
 
-    /// Returns the source span of the type name.
+    /// Returns the parameter named by a type-predicate return annotation.
+    #[must_use]
+    pub fn predicate_parameter(&self) -> Option<&str> {
+        self.predicate_parameter.as_deref()
+    }
+
+    /// Returns the source-level spelling used when emitting a function return type.
+    #[must_use]
+    pub fn return_type_spelling(&self) -> String {
+        let type_spelling = self.type_spellings().collect::<Vec<_>>().join(" | ");
+        match self.predicate_parameter.as_deref() {
+            Some(name) => format!("{name} is {type_spelling}"),
+            None => type_spelling,
+        }
+    }
+
+    /// Returns the source span of the type annotation.
     #[must_use]
     pub const fn span(&self) -> TextSpan {
         self.span

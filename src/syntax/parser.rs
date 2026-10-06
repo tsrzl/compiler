@@ -181,7 +181,7 @@ impl Parser {
         }
 
         let return_type = if self.matches(&TokenKind::Colon) {
-            Some(self.parse_type_reference("expected a function return type")?)
+            Some(self.parse_return_type_reference("expected a function return type")?)
         } else {
             None
         };
@@ -1103,8 +1103,30 @@ impl Parser {
         Ok(TypeReference {
             names,
             array_dimensions,
+            predicate_parameter: None,
             span: TextSpan::new(start, end - start.get()),
         })
+    }
+
+    fn parse_return_type_reference(&mut self, message: &str) -> Result<TypeReference, Diagnostic> {
+        let mut return_type = self.parse_type_reference(message)?;
+        if !matches!(&self.peek().kind, TokenKind::Identifier(name) if name == "is")
+            || return_type.names.len() != 1
+            || return_type.array_dimensions.first() != Some(&0)
+        {
+            return Ok(return_type);
+        }
+
+        let parameter_name = return_type.names[0].clone();
+        self.advance();
+        let predicate_type = self.parse_type_reference(message)?;
+        let start = return_type.span.start();
+        let end = predicate_type.span.start().get() + predicate_type.span.length();
+        return_type.names = predicate_type.names;
+        return_type.array_dimensions = predicate_type.array_dimensions;
+        return_type.predicate_parameter = Some(parameter_name);
+        return_type.span = TextSpan::new(start, end - start.get());
+        Ok(return_type)
     }
 
     fn parse_type_member(&mut self, message: &str) -> Result<(String, usize, usize), Diagnostic> {

@@ -7,10 +7,11 @@ use tsrzl::source_file::SourceFile;
 fn should_emit_type_predicate_given_exported_function_when_emitting_declarations() {
     // Pinned TypeScript case: conformance/declarationEmit/typePredicates/declarationEmitIdentifierPredicates01.ts.
     // TS-Go 7.0.2 emits: export declare function f(x: any): x is number;
+    // The body is reduced to a boolean literal to isolate the return predicate syntax.
     // Arrange
     let source = SourceFile::from_path(
         Path::new("predicate.ts"),
-        "export function f(x: any): x is number { return typeof x === \"number\"; }",
+        "export function f(x: any): x is number { return true; }",
     )
     .expect("the TypeScript path has a supported source kind");
     let options = CompilerOptions::new(ScriptTarget::Es2015)

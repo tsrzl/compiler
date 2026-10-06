@@ -201,6 +201,9 @@ impl ScopedSymbolTable<'_> {
     }
 
     pub(crate) fn resolve_annotation(&self, annotation: &TypeReference) -> Vec<String> {
+        if annotation.predicate_parameter().is_some() {
+            return vec!["boolean".to_owned()];
+        }
         let type_spellings = annotation.type_spellings().collect::<Vec<_>>();
         self.resolve_names(&type_spellings)
     }

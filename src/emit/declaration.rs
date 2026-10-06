@@ -446,7 +446,7 @@ fn infer_function_return_type(
     parameter_types: &HashMap<&str, String>,
 ) -> String {
     if let Some(return_type) = function.return_type() {
-        return_type.type_spellings().collect::<Vec<_>>().join(" | ")
+        return return_type.return_type_spelling();
     } else if let Some(expression) = function
         .body()
         .iter()
