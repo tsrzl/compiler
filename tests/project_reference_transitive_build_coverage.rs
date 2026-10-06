@@ -120,6 +120,33 @@ fn should_build_transitive_project_references_given_three_level_graph_when_runni
     }
 }
 
+// Pinned TypeScript-Go test: internal/execute/tsctests/tscbuild_test.go.
+#[test]
+fn should_build_non_composite_project_given_project_build_mode_when_running_compiler_cli() {
+    // Arrange
+    let project = TemporaryProject::new("non-composite-build");
+    project.write(
+        "app/tsconfig.json",
+        r#"{"compilerOptions":{"module":"commonjs","outDir":"dist"},"include":["index.ts"]}"#,
+    );
+    project.write("app/index.ts", "export const answer: number = 42;\n");
+
+    // Act
+    let output = project.build_application();
+    let diagnostics = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    // Assert
+    assert!(output.status.success(), "{diagnostics}");
+    assert!(
+        project.path.join("app/dist/index.js").is_file(),
+        "the non-composite project should emit JavaScript"
+    );
+}
+
 // Pinned TypeScript-Go test: internal/project/projectreferencesprogram_test.go.
 #[test]
 fn should_rebuild_dependent_declarations_given_dependency_type_changes_when_running_compiler_cli() {

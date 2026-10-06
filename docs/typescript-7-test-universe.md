@@ -175,7 +175,7 @@ unsupported oracle cases.
 
 ## Rust behavior coverage status
 
-The Rust suite currently has 727 behavior tests: 324 pass, 403 deliberately
+The Rust suite currently has 728 behavior tests: 324 pass, 404 deliberately
 fail, and none are ignored. Coverage remains test-first: these red tests record
 compiler, project, and extension behavior that still needs implementation. The
 304 tests that preceded this test-first pass are grouped as follows:
@@ -246,14 +246,14 @@ The TypeScript 7 oracle reports TS1360 for a string checked against `number`
 with `satisfies`; the current parser treats the new syntax as unresolved names
 or parse errors.
 
-At this checkpoint, the compiler/oracle map has 412 behavior entries, touching
+At this checkpoint, the compiler/oracle map has 413 behavior entries, touching
 106 of the 110 source-suite/area groups in the inventory; 4 project groups
 still have no mapped Rust behavior test. A mapped example is only a sample for that group. The largest
 remaining backlogs include compiler regressions, JSDoc, external modules,
 statements, Salsa/incremental behavior, and project/transpile configurations. See
 [`typescript-7-work-plan.md`](typescript-7-work-plan.md) for parallel work
 ownership and exit gates.
-The red-test map validator confirms that all 403 deliberate Rust failures have
+The red-test map validator confirms that all 404 deliberate Rust failures have
 links to the compiler/oracle, option, project, or extension maps.
 
 [`typescript-7-rust-behavior-backlog.tsv`](typescript-7-rust-behavior-backlog.tsv)
@@ -279,6 +279,7 @@ test executed that fixture or covered every output/configuration.
 | `should_accept_unicode_escape_given_identifier_when_compiling` | `conformance/scanner/ecmascript5/scannerS7.6_A4.2_T1.ts` | Decode Unicode escapes in identifiers. |
 | `should_build_referenced_project_given_project_reference_when_running_compiler_cli` | `typescript-go/internal/project/projectreferencesprogram_test.go` | Build a referenced library before the application project. |
 | `should_build_transitive_project_references_given_three_level_graph_when_running_compiler_cli` | `typescript-go/internal/project/projectreferencesprogram_test.go` | Build core and middle dependencies before the app and emit JavaScript for all three projects. |
+| `should_build_non_composite_project_given_project_build_mode_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Build a standalone project in build mode when it is not composite and has no references. |
 | `should_rebuild_dependent_declarations_given_dependency_type_changes_when_running_compiler_cli` | `typescript-go/internal/project/projectreferencesprogram_test.go` | Rebuild the dependent projects so an app declaration reflects a changed core export type. |
 | `should_skip_project_outputs_given_dry_build_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | List pending project builds without writing any project outputs. |
 | `should_remove_outputs_given_clean_build_of_referenced_projects_when_running_compiler_cli` | `typescript-go/internal/execute/tsctests/tscbuild_test.go` | Remove JavaScript, declaration, and build-info outputs from every referenced project. |
