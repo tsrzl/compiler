@@ -296,6 +296,7 @@ impl<'text> Parser<'text> {
             end_of_file_token,
         });
         let root = self.finish_node(SyntaxKind::SourceFile, pos, data);
+        self.builder.add_flags(root, self.source_flags);
         let comment_directives = self.scanner.comment_directives().to_vec();
         ParsedSourceFile {
             options: options.clone(),

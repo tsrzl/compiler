@@ -1,4 +1,4 @@
-use tsrzl::ast::SyntaxKind;
+use tsrzl::ast::{NodeFlags, SyntaxKind};
 use tsrzl::parser::{ParseOptions, ScriptKind, parse_source_file};
 
 fn statement_kinds(text: &str) -> Vec<SyntaxKind> {
@@ -28,4 +28,17 @@ fn should_parse_empty_statements_given_semicolons_when_parsing_source_file() {
         actual,
         [SyntaxKind::EmptyStatement, SyntaxKind::EmptyStatement]
     );
+}
+
+#[test]
+fn should_flag_possible_dynamic_import_on_source_file_given_import_call_when_parsing_source_file() {
+    // Arrange
+    let text = r#"import("m");"#;
+
+    // Act
+    let parsed = parse_source_file(&ParseOptions::new("test.ts", ScriptKind::Ts), text);
+
+    // Assert
+    let flags = parsed.ast().node(parsed.ast().root()).flags();
+    assert!(flags.intersects(NodeFlags::POSSIBLY_CONTAINS_DYNAMIC_IMPORT));
 }
