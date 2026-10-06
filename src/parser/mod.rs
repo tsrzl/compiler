@@ -10,6 +10,7 @@ mod classes;
 mod control_flow;
 mod declarations;
 mod expressions;
+mod external_module;
 mod identifiers;
 mod jsx;
 mod lists;
@@ -32,6 +33,7 @@ use crate::diagnostics::{self, Message};
 use crate::scanner::{CommentDirective, LanguageVariant, Scanner, ScannerState};
 use crate::tspath::is_declaration_file_name;
 
+pub use external_module::ExternalModuleIndicatorOptions;
 pub use lists::ParsingContext;
 
 /// The kind of script a file contains, matching TypeScript-Go's `core.ScriptKind`.
@@ -156,6 +158,7 @@ impl ParseDiagnostic {
 #[derive(Debug, Clone)]
 pub struct ParsedSourceFile {
     options: ParseOptions,
+    text: Box<str>,
     ast: Ast,
     diagnostics: Vec<ParseDiagnostic>,
     comment_directives: Vec<CommentDirective>,
@@ -168,6 +171,12 @@ impl ParsedSourceFile {
     #[must_use]
     pub const fn options(&self) -> &ParseOptions {
         &self.options
+    }
+
+    /// Returns the parsed source text.
+    #[must_use]
+    pub const fn text(&self) -> &str {
+        &self.text
     }
 
     /// Returns the syntax tree, rooted at the `SourceFile` node.
@@ -295,6 +304,7 @@ impl<'text> Parser<'text> {
         let comment_directives = self.scanner.comment_directives().to_vec();
         ParsedSourceFile {
             options: options.clone(),
+            text: self.scanner.text().into(),
             ast: self.builder.finish(root),
             diagnostics: self.diagnostics,
             comment_directives,

@@ -160,9 +160,9 @@ impl SymbolArena {
     #[must_use]
     pub fn combined_local_and_export_symbol_flags(&self, id: SymbolId) -> SymbolFlags {
         let symbol = self.symbol(id);
-        symbol
-            .export_symbol
-            .map_or(symbol.flags, |export| symbol.flags | self.symbol(export).flags)
+        symbol.export_symbol.map_or(symbol.flags, |export| {
+            symbol.flags | self.symbol(export).flags
+        })
     }
 }
 
@@ -177,7 +177,9 @@ impl SymbolTable {
     /// Returns the symbol named `name`.
     #[must_use]
     pub fn get(&self, name: &str) -> Option<SymbolId> {
-        self.index.get(name).map(|&position| self.entries[position].1)
+        self.index
+            .get(name)
+            .map(|&position| self.entries[position].1)
     }
 
     /// Sets the symbol named `name`, keeping its original position when it is replaced.
@@ -193,7 +195,9 @@ impl SymbolTable {
 
     /// Returns the names and symbols in insertion order.
     pub fn iter(&self) -> impl Iterator<Item = (&str, SymbolId)> {
-        self.entries.iter().map(|(name, symbol)| (name.as_str(), *symbol))
+        self.entries
+            .iter()
+            .map(|(name, symbol)| (name.as_str(), *symbol))
     }
 
     /// Returns the number of symbols.
