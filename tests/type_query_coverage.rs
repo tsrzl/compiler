@@ -141,3 +141,48 @@ fn should_accept_enum_member_type_query_given_enum_member_when_checking_types() 
     // Assert
     assert_eq!(result.diagnostics(), []);
 }
+
+#[test]
+fn should_report_type_only_query_given_type_alias_when_checking_types() {
+    // Pinned fixture: conformance/types/specifyingTypes/typeQueries/typeofTypeParameter.ts.
+    // Arrange
+    let source = SourceFile::from_path(
+        Path::new("type-only-query.ts"),
+        "type TypeOnly = string;\ntype Value = typeof TypeOnly;",
+    )
+    .expect("a TypeScript path has a supported source kind");
+
+    // Act
+    let result = Compiler::new().compile(source);
+
+    // Assert
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 2693),
+        "a type-only symbol used as a value query should report TS2693, got {:?}",
+        result.diagnostics()
+    );
+}
+
+#[test]
+fn should_reject_numeric_type_query_target_given_numeric_operand_when_building_syntax_tree() {
+    // Pinned fixture: conformance/types/specifyingTypes/typeQueries/invalidTypeOfTarget.ts.
+    // Arrange
+    let source = SourceFile::from_path(Path::new("invalid-query.ts"), "type Invalid = typeof 1;")
+        .expect("a TypeScript path has a supported source kind");
+
+    // Act
+    let syntax_tree = SyntaxTree::parse(source);
+
+    // Assert
+    assert!(
+        syntax_tree
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == 1003),
+        "a numeric type-query target should report TS1003, got {:?}",
+        syntax_tree.diagnostics()
+    );
+}
