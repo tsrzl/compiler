@@ -33,6 +33,11 @@ impl ScannerState {
         self.token_flags = TokenFlags::NONE;
     }
 
+    /// Marks the current position as the token's full start, keeping its flags.
+    pub(super) fn begin_full_start(&mut self) {
+        self.full_start_pos = self.pos;
+    }
+
     /// Marks the current position as the start of the token's non-trivia text.
     pub(super) fn begin_token_text(&mut self) {
         self.token_start = self.pos;

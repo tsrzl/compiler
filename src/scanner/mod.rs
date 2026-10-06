@@ -6,6 +6,8 @@
 mod chars;
 mod identifier_tables;
 mod identifiers;
+mod jsdoc;
+mod jsx;
 mod keywords;
 mod numbers;
 mod punctuation;

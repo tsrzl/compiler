@@ -122,6 +122,12 @@ impl Scanner<'_> {
         if !is_conflict_marker_trivia(self.text, self.state.pos()) {
             return None;
         }
+        self.skip_conflict_marker();
+        Some((!self.skip_trivia).then_some(SyntaxKind::ConflictMarkerTrivia))
+    }
+
+    /// Reports and skips the merge conflict marker at the current position.
+    pub(super) fn skip_conflict_marker(&mut self) {
         self.error_at(
             diagnostics::MERGE_CONFLICT_MARKER_ENCOUNTERED,
             self.state.pos(),
@@ -130,7 +136,6 @@ impl Scanner<'_> {
         );
         self.state
             .set_pos(scan_conflict_marker_trivia(self.text, self.state.pos()));
-        Some((!self.skip_trivia).then_some(SyntaxKind::ConflictMarkerTrivia))
     }
 
     fn process_comment_directive(&mut self, start: usize, end: usize, multiline: bool) {

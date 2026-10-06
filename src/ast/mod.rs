@@ -12,4 +12,10 @@ impl SyntaxKind {
     pub fn is_reserved_word(self) -> bool {
         (Self::FIRST_RESERVED_WORD..=Self::LAST_RESERVED_WORD).contains(&self)
     }
+
+    /// Returns whether the kind is an identifier or any keyword.
+    #[must_use]
+    pub fn is_identifier_or_keyword(self) -> bool {
+        self >= Self::Identifier
+    }
 }
