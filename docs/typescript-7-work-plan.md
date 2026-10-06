@@ -12,12 +12,12 @@ fixtures expand to option configurations and 44,689 TypeScript-Go reference
 artifacts. The inventory and baseline classifications are documented in
 [`typescript-7-test-universe.md`](typescript-7-test-universe.md).
 
-The Rust suite currently has 809 tests: 347 pass and 462 deliberately fail;
-none are ignored. The compiler/oracle map links 494 behaviors to upstream cases
+The Rust suite currently has 811 tests: 347 pass and 464 deliberately fail;
+none are ignored. The compiler/oracle map links 496 behaviors to upstream cases
 or areas. A separate map records 16 extension contracts. Corpus links touch all
 110 source-suite/area groups; each group now has at least one mapped Rust test,
 which is a sample rather than exhaustive coverage. The latest full test run has
-all 462 failures mapped by
+all 464 failures mapped by
 `scripts/validate-red-test-map.ts`. Keep adding focused red tests to complete
 the behavior map before implementation resumes behind the shared contracts.
 
@@ -238,6 +238,15 @@ The expanded emission slice now separately maps namespace private-value scoping,
 nested namespace output, exported enum assignment, function JavaScript output,
 and namespace declarations. These focused namespace emission tests currently
 fail because the parser stores namespace members but the emitters ignore them.
+
+`projects/NodeModulesSearch/maxDepthExceeded/root.ts` now has separate tests
+for checking a first nested JavaScript dependency at `maxNodeModuleJsDepth=1`
+and leaving a third-hop property untyped. TypeScript-Go 7.0.2 confirms both
+behaviors using the checked-in project configuration; TSRZL currently reports
+TS2304 for JavaScript `require` and `exports`, with parser errors in those
+files. The sibling `importHigher` runner case requests Node 10 module
+resolution, which TypeScript-Go 7.0.2 rejects with TS5108; its deeper-import
+behavior needs a modern-resolution equivalent before it can serve as an oracle.
 
 Project-reference coverage now includes a focused red TS6305 contract for an
 application importing a composite project before that project's declaration
